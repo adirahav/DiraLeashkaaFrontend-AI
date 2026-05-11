@@ -1,60 +1,66 @@
-import axios from 'axios'
+import { Capacitor } from '@capacitor/core'
+import Axios, { AxiosRequestConfig, AxiosResponse, Method } from 'axios'
+import { utilService } from './util.service'
 import { useStore } from '../store/store'
 
-const BASE_URL = import.meta.env.VITE_API_URL as string
+const BASE_URL: string = import.meta.env.VITE_API_URL
 
-const api = axios.create({
-  baseURL: BASE_URL,
-  withCredentials: true,
+const axios = Axios.create({
+    withCredentials: true
 })
 
-api.interceptors.request.use((config) => {
-  const token = useStore.getState().token
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
-  return config
-})
-
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      useStore.getState().logout()
-    }
-    return Promise.reject(error)
-  }
-)
+type ApiData = Record<string, any> | null;
 
 export const httpService = {
-  get,
-  post,
-  put,
-  patch,
-  delete: _delete,
+    get<T = any>(endpoint: string, data?: ApiData, token?: string): Promise<T> {
+        return ajax<T>(endpoint, 'GET', data, token)
+    },
+    post<T = any>(endpoint: string, data?: ApiData, token?: string): Promise<T> {
+        return ajax<T>(endpoint, 'POST', data, token)
+    },
+    put<T = any>(endpoint: string, data?: ApiData, token?: string): Promise<T> {
+        return ajax<T>(endpoint, 'PUT', data, token)
+    },
+    patch<T = any>(endpoint: string, data?: ApiData, token?: string): Promise<T> {
+        return ajax<T>(endpoint, 'PATCH', data, token)
+    },
+    delete<T = any>(endpoint: string, data?: ApiData, token?: string): Promise<T> {
+        return ajax<T>(endpoint, 'DELETE', data, token)
+    }
 }
 
-async function get<T>(endpoint: string): Promise<T> {
-  const { data } = await api.get<T>(endpoint)
-  return data
-}
+async function ajax<T>(
+    endpoint: string,
+    method: Method = 'GET',
+    data: ApiData = null,
+    token: string | null = null
+): Promise<T> {
 
-async function post<T>(endpoint: string, body: unknown): Promise<T> {
-  const { data } = await api.post<T>(endpoint, body)
-  return data
-}
+    const platform = Capacitor.isNativePlatform() ? "android" : "web"
+    const jwtToken = token || useStore.getState().token
 
-async function put<T>(endpoint: string, body: unknown): Promise<T> {
-  const { data } = await api.put<T>(endpoint, body)
-  return data
-}
+    const config: AxiosRequestConfig = {
+        url: `${BASE_URL}${endpoint}`,
+        method,
+        params: method === 'GET' ? { ...data, platform } : null,
+        data: method !== 'GET' ? { ...data, platform } : null,
+        headers: jwtToken ? { Authorization: `Bearer ${jwtToken}` } : {},
+    }
 
-async function patch<T>(endpoint: string, body: unknown): Promise<T> {
-  const { data } = await api.patch<T>(endpoint, body)
-  return data
-}
+    try {
+        const res: AxiosResponse<T> = await axios(config)
+        return res.data
+    } catch (err: any) {
+        console.error(`Had Issues ${method}ing to the backend, endpoint: ${endpoint}, with data: `, data)
+        console.dir(err)
 
-async function _delete<T>(endpoint: string): Promise<T> {
-  const { data } = await api.delete<T>(endpoint)
-  return data
+        if (err.response && err.response.status === 401) {
+            await utilService.deleteFromStorage("token")
+            const email = await utilService.getFromStorage("email")
+            if (typeof window !== 'undefined') {
+                window.location.assign(email ? '/login' : '/landing')
+            }
+        }
+        throw err
+    }
 }
