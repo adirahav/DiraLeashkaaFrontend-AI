@@ -1,0 +1,119 @@
+openapi: 3.0.3
+info:
+  title: Diraleashkaa API
+  description: API for property investment management and user authentication.
+  version: 1.0.0
+
+servers:
+  - url: /api/auth
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LoginCredentials:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          format: password
+          example: "123456"
+
+    UserData:
+      type: object
+      properties:
+        fullname:
+          type: string
+        email:
+          type: string
+        yearOfBirth:
+          type: string
+        equity:
+          type: number
+        incomes:
+          type: number
+        commitments:
+          type: number
+        isAdmin:
+          type: boolean
+        registrationExpiredTime:
+          type: integer
+          format: int64
+          description: Expiration timestamp in milliseconds
+
+paths:
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login a user
+      description: Validates credentials and returns a JWT token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginCredentials'
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                type: string
+                description: The raw JWT token
+                example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        '400':
+          description: Invalid email or password
+        '500':
+          description: Server error
+
+  /auth/signup:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserData'
+      responses:
+        '200':
+          description: User registered and logged in successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserData'
+        '400':
+          description: Registration failed (e.g. email already exists)
+
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Logout user
+      description: Clears the loginToken cookie on the server.
+      responses:
+        '200':
+          description: Successfully logged out
+          content:
+            application/json:
+              schema:
+                type: boolean
+                example: true
+
+security:
+  - bearerAuth: []

@@ -1,0 +1,61 @@
+openapi: 3.0.3
+info:
+  title: Contact Us API
+  description: API for sending contact messages from users to the support email.
+  version: 1.0.0
+
+servers:
+  - url: /api/contactUs
+
+paths:
+  /:
+    post:
+      summary: Send a contact us message
+      tags:
+        - Contact Us
+      description: |
+        Sends an email message to support. 
+        If a user is logged in, their ID is included in the email subject.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - subject
+                - message
+                - appEnv
+                - platform
+              properties:
+                subject:
+                  type: string
+                  example: "Issue with mortgage calculator"
+                message:
+                  type: string
+                  example: "The calculation seems off when entering a 30-year term."
+                appEnv:
+                  type: string
+                  example: "production"
+                  description: "The environment from which the message was sent (e.g., development, production)."
+                platform:
+                  type: string
+                  example: "web"
+                  description: "The platform used (e.g., web, android, ios)."
+      responses:
+        '200':
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                type: boolean
+                example: true
+        '400':
+          description: Bad request or internal error
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Couldn't send contact us message"
+        '500':
+          description: Server error

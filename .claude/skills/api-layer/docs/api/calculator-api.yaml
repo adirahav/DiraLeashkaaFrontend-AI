@@ -1,0 +1,123 @@
+openapi: 3.0.3
+info:
+  title: Calculator API
+  version: 1.0.0
+  description: API for managing investment calculators, max price calculations, and property comparisons.
+
+servers:
+  - url: /api/calculator
+
+paths:
+  /:
+    get:
+      summary: List available calculators
+      tags: [Calculator]
+      description: Returns a list of active calculators based on user permissions and platform.
+      responses:
+        '200':
+          description: A list of calculators
+        '400':
+          description: Couldn't get calculators
+
+  /maxPrice:
+    get:
+      summary: Get maximum property price calculation
+      tags: [Calculator]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Max price calculation results
+        '400':
+          description: Couldn't get calc max price
+
+    put:
+      summary: Update maximum price calculation based on field changes
+      tags: [Calculator]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fieldName:
+                  type: string
+                  description: The name of the field that changed (e.g., 'equity')
+                fieldValue:
+                  type: object
+                  description: The new value for the field
+      responses:
+        '200':
+          description: Updated max price calculation
+        '400':
+          description: Couldn't update calc max price
+
+  /compare:
+    get:
+      summary: Get compared properties data
+      tags: [Calculator]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: platform
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Object containing all properties and selected UUIDs for comparison
+        '400':
+          description: Couldn't get compared data
+
+    put:
+      summary: Save selected properties for comparison
+      tags: [Calculator]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                platform:
+                  type: string
+                propertiesIds:
+                  type: array
+                  items:
+                    type: string
+                  description: List of property MongoDB IDs to compare
+      responses:
+        '200':
+          description: Returns the saved property IDs
+        '400':
+          description: Couldn't save compared properties
+
+  /{calculatorUUID}:
+    get:
+      summary: Get a specific calculator by UUID
+      tags: [Calculator]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: calculatorUUID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Detailed calculator object
+        '400':
+          description: Couldn't get calculator
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

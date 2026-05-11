@@ -1,0 +1,104 @@
+# Property Service API Specification
+# Project: Real Estate Investment Calculator
+
+# Global Definitions
+servers:
+  - url: /api/property
+  
+enums:
+  PROPERTY_TYPES:
+    PROPERTY: "property"
+    MAX_PRICE: "maxPrice"
+  APARTMENT_TYPES:
+    SINGLE: "single"      
+    INVESTMENT: "investment"
+    ALTERNATE: "alternate"  
+
+# Main Entity Schema
+entities:
+  Property:
+    fields:
+      uuid: { type: String, description: "Unique identifier for frontend/public use" }
+      userId: { type: ObjectId, description: "Reference to the owner user" }
+      type: { type: String, enum: [PROPERTY_TYPES] }
+      apartmentType: { type: String, enum: [APARTMENT_TYPES] }
+      price: { type: Number, nullable: true }
+      equity: { type: Number, description: "הון עצמי" }
+      incomes: { type: Number, description: "הכנסות חודשיות" }
+      commitments: { type: Number, description: "התחייבויות חודשיות" }
+      archive: { type: Boolean, default: false }
+      updateTime: { type: Date }
+      # Calculated Fields (Prefix with calc_)
+      calcAmortizationSchedule: { type: JSON, description: "לוח סילוקין מחושב" }
+      calcYieldForecast: { type: JSON, description: "תחזית תשואות" }
+      calcMortgageRequired: { type: Number }
+      # UI Meta
+      showInterestsContainer: { type: Boolean, default: true }
+
+# Controller / Endpoint Mappings
+endpoints:
+  - path: "/"
+    methods:
+      GET:
+        action: "list"
+        function: "getProperties"
+        query_params: [archive, type]
+        auth: "requireAuth"
+      POST:
+        action: "create"
+        function: "addProperty"
+        middleware: ["fieldsValidation"]
+        body: [fieldName, fieldValue]
+      PUT:
+        action: "update"
+        function: "updateProperty"
+        middleware: ["requireOwner", "fieldsValidation"]
+        body: [fieldName, fieldValue]
+
+  - path: "/:propertyUUID"
+    methods:
+      GET:
+        action: "read"
+        function: "getProperty"
+        query_params: [calcYields]
+        middleware: ["requireOwner"]
+
+  - path: "/:propertyId/archive"
+    methods:
+      PATCH:
+        action: "archive"
+        function: "archiveProperty"
+        middleware: ["requireOwner"]
+
+# Internal Service Logic (Chain Reactions)
+business_logic:
+  update_flow:
+    description: "When a field changes, re-calculate the entire property chain"
+    sequence:
+      - step: "Update local field value"
+      - step: "Calculate dependencies via onChangedProperty()"
+      - step: "Apply default values via defaultProperty()"
+      - step: "Run calcProperty() to update all financial indicators"
+      - step: "Generate Amortization Schedule (לוח סילוקין)"
+      - step: "Generate Yield Forecast (תחזית תשואה)"
+      - step: "Clean calculated fields before DB save"
+
+# Validation Rules
+validation_rules:
+  requireOwner:
+    logic: "loggedinUser._id must match property.userId"
+    error: "403 Not Authorized"
+  fieldsValidation:
+    rules:
+      price: "isNullOrInt"
+      equity: "isNullOrInt"
+      possibleMonthlyRepaymentPercent: "isNullOrFloat"
+      archive: "isNullOrBoolean"
+      media: "isNullOrObjectArray"
+
+# Storage Configuration
+storage:
+  db: "MongoDB"
+  transformations:
+    - action: "Delete _id from objects before returning to client (except specific cases)"
+    - action: "Stringify JSON lists (Amortization/Yields) before saving"

@@ -1,0 +1,89 @@
+openapi: 3.0.3
+info:
+  title: Diraleashkaa Phrase API
+  description: API for retrieving localized phrases.
+  version: 1.0.0
+
+servers:
+  - url: /api/phrase
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Phrase:
+      type: object
+      description: Localized phrase key-value pair.
+      properties:
+        key:
+          type: string
+          example: welcome.title
+        value:
+          type: string
+          example: Welcome to Diraleashkaa
+
+paths:
+  /:
+    get:
+      tags:
+        - Phrase
+      summary: Get all phrases
+      description: Returns all phrases translated to the requested language.
+      parameters:
+        - in: query
+          name: lang
+          required: true
+          schema:
+            type: string
+          description: Language code (e.g. en, he)
+          example: en
+      responses:
+        '200':
+          description: List of phrases
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Phrase'
+        '400':
+          description: Couldn't get phrases
+        '500':
+          description: Server error
+
+  /{key}:
+    get:
+      tags:
+        - Phrase
+      summary: Get phrase by key
+      description: Returns a single phrase translated to the requested language.
+      parameters:
+        - in: path
+          name: key
+          required: true
+          schema:
+            type: string
+          description: Phrase key
+          example: welcome.title
+        - in: query
+          name: lang
+          required: true
+          schema:
+            type: string
+          description: Language code (e.g. en, he)
+          example: en
+      responses:
+        '200':
+          description: Phrase found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Phrase'
+        '404':
+          description: Phrase not found
+        '500':
+          description: Server error
