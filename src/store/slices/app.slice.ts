@@ -13,11 +13,13 @@ export interface AppSlice {
   isResultsMode: boolean
   showTour: boolean
   notification: Notification | null
+  lang: string
   setIsLoading: (val: boolean) => void
   setIsResultsMode: (val: boolean) => void
   setShowTour: (val: boolean) => void
   setNotification: (notification: Notification | null) => void
   clearNotification: () => void
+  setLang: (lang: string) => void
 }
 
 export const createAppSlice: StateCreator<RootState, [], [], AppSlice> = (set) => ({
@@ -25,6 +27,7 @@ export const createAppSlice: StateCreator<RootState, [], [], AppSlice> = (set) =
   isResultsMode: false,
   showTour: false,
   notification: null,
+  lang: 'he',
 
   setIsLoading: (val) => set({ isLoading: val }),
 
@@ -35,4 +38,6 @@ export const createAppSlice: StateCreator<RootState, [], [], AppSlice> = (set) =
   setNotification: (notification) => set({ notification }),
 
   clearNotification: () => set({ notification: null }),
+
+  setLang: (lang) => set({ lang }),
 })

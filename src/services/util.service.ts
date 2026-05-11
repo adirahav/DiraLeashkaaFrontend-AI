@@ -5,6 +5,13 @@ export const utilService = {
   saveToStorage,
   getFromStorage,
   deleteFromStorage,
+  saveWithExpiry,
+  getWithExpiry,
+}
+
+interface StoredWithExpiry<T> {
+  data: T
+  expiry: number
 }
 
 export async function saveToStorage(key: string, value: string): Promise<void> {
@@ -30,5 +37,27 @@ export async function deleteFromStorage(key: string): Promise<void> {
   } else {
     localStorage.removeItem(key)
     sessionStorage.removeItem(key)
+  }
+}
+
+export async function saveWithExpiry<T>(key: string, data: T, ttl: number): Promise<void> {
+  const payload: StoredWithExpiry<T> = {
+    data,
+    expiry: Date.now() + ttl,
+  }
+  await saveToStorage(key, JSON.stringify(payload))
+}
+
+export async function getWithExpiry<T>(key: string): Promise<{ data: T; isExpired: boolean } | null> {
+  const raw = await getFromStorage(key)
+  if (!raw) return null
+  try {
+    const parsed = JSON.parse(raw) as StoredWithExpiry<T>
+    return {
+      data: parsed.data,
+      isExpired: Date.now() > parsed.expiry,
+    }
+  } catch {
+    return null
   }
 }

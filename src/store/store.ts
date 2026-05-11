@@ -16,6 +16,7 @@ export const useStore = create<RootState>()(
       partialize: (state) => ({
         loggedinUser: state.loggedinUser,
         token: state.token,
+        lang: state.lang,
       }),
     }
   )
