@@ -1,0 +1,194 @@
+
+@import "tailwindcss";
+
+html {
+  width: 100%;
+  position: relative;
+  box-sizing: border-box;
+}
+
+body {
+  width: 100%;
+  position: relative;
+  box-sizing: border-box;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+/* Accessibility Styles */
+
+/* Font Sizes */
+body.font-size-large {
+  font-size: 1.125rem; /* 18px */
+}
+
+body.font-size-large h1 { font-size: 2.25rem; }
+body.font-size-large h2 { font-size: 1.875rem; }
+body.font-size-large h3 { font-size: 1.5rem; }
+body.font-size-large p { font-size: 1.125rem; }
+
+body.font-size-xlarge {
+  font-size: 1.25rem; /* 20px */
+}
+
+body.font-size-xlarge h1 { font-size: 2.5rem; }
+body.font-size-xlarge h2 { font-size: 2.125rem; }
+body.font-size-xlarge h3 { font-size: 1.75rem; }
+body.font-size-xlarge p { font-size: 1.25rem; }
+
+/* High Contrast */
+body.high-contrast {
+  background-color: #000 !important;
+  color: #fff !important;
+}
+
+body.high-contrast *:not(button):not(a):not(input):not(select):not(textarea) {
+  background-color: #000 !important;
+  color: #fff !important;
+  border-color: #fff !important;
+}
+
+body.high-contrast button, 
+body.high-contrast a {
+  background-color: #ffff00 !important;
+  color: #000 !important;
+  border: 2px solid #000 !important;
+  text-decoration: underline !important;
+}
+
+body.high-contrast input, 
+body.high-contrast select, 
+body.high-contrast textarea {
+  background-color: #fff !important;
+  color: #000 !important;
+  border: 2px solid #ffff00 !important;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f8fafc; /* bg-slate-50 */
+  border-radius: 20px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 20px;
+  border: 2px solid white; /* Creates space around the thumb */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #cbd5e1;
+}
+
+/* Grayscale */
+body.grayscale-mode #app-content {
+  filter: grayscale(100%);
+}
+
+/* Underline Links */
+body.underline-links a,
+body.underline-links button {
+  text-decoration: underline !important;
+  text-underline-offset: 4px !important;
+  text-decoration-thickness: 3px !important;
+}
+
+body.underline-links button:not([aria-label="תפריט נגישות"]):not([aria-label="סגור תפריט נגישות"]) {
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3) !important;
+  border: 2px solid currentColor !important;
+}
+
+/* Readable Font */
+body.readable-font {
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+
+body.readable-font * {
+  font-family: Arial, Helvetica, sans-serif !important;
+  letter-spacing: 0.02em !important;
+  line-height: 1.6 !important;
+}
+
+/* Simulated Landscape for Mobile Results */
+@layer utilities {
+  .simulated-landscape-mobile {
+    @media (max-width: 1023px) {
+      position: fixed !important;
+      top: 0 !important;
+      left: 100% !important;
+      width: 100dvh !important;
+      height: 100dvw !important;
+      transform: rotate(90deg);
+      transform-origin: top left;
+      z-index: 9999;
+      background-color: #f8fafc; /* bg-slate-50 */
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      padding: 0 !important;
+    }
+  }
+
+  @keyframes bounce-subtle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+  .animate-bounce-subtle {
+    animation: bounce-subtle 2s infinite ease-in-out;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Hide accessibility menu in results mode */
+body.is-results-mode .accessibility-menu-container {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+@layer utilities {
+  @keyframes enter {
+    from {
+      opacity: var(--tw-enter-opacity, 1);
+      transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0) scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), 1);
+    }
+  }
+
+  .animate-in {
+    animation-name: enter;
+    animation-duration: 300ms; /* משך הזמן שביקשת בקוד */
+    --tw-enter-opacity: initial;
+    --tw-enter-scale: initial;
+    --tw-enter-translate-x: initial;
+    --tw-enter-translate-y: initial;
+  }
+
+  .fade-in {
+    --tw-enter-opacity: 0;
+  }
+
+  .zoom-in-95 {
+    --tw-enter-scale: 0.95;
+  }
+
+  .slide-in-from-bottom-4 {
+    --tw-enter-translate-y: 1rem;
+  }
+  
+  /* אפשר להוסיף גם slide-in-from-top במידת הצורך */
+  .slide-in-from-top-2 {
+    --tw-enter-translate-y: -0.5rem;
+  }
+}
