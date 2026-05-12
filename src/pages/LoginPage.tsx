@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { Card } from '../components/common/Card'
 import { StringInput, Button, PasswordInput, EmailInput } from '../components/formFields'
-import { Logo } from '../components/animations/Logo'
+import { Logo } from '../components/common/Logo'
 import { useStore } from '../store/store'
 
 export const LoginPage: React.FC = () => {

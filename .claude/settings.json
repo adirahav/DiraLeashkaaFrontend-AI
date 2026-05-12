@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(Remove-Item \"c:\\\\Users\\\\User\\\\ReactProjects\\\\diraleashkaa-ai-frontend\\\\src\\\\index.css\")",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(Remove-Item \"c:\\\\Users\\\\User\\\\ReactProjects\\\\diraleashkaa-ai-frontend\\\\src\\\\components\\\\animations\\\\Logo.tsx\")"
     ]
   }
 }

@@ -23,6 +23,11 @@
 
   /* Design tokens */
   --color-border-subtle: oklch(0.929 0.013 255.5);
+
+  /* Logo brand colors */
+  --color-logo-primary: #1E3A8A;
+  --color-logo-secondary: #2563EB;
+  --color-logo-accent: #3B82F6;
 }
 
 html {
@@ -182,6 +187,24 @@ body.is-results-mode .accessibility-menu-container {
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+}
+
+@layer utilities {
+  .logo-text-primary {
+    font-family: var(--font-sans);
+    font-size: 48px;
+    font-weight: 900;
+    letter-spacing: -1.5px;
+    fill: var(--color-logo-primary);
+  }
+
+  .logo-text-secondary {
+    font-family: var(--font-sans);
+    font-size: 38px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    fill: var(--color-logo-secondary);
   }
 }
 

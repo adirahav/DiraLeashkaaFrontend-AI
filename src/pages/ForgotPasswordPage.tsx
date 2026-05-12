@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card } from '../components/common/Card'
 import { Button, PasswordInput, EmailInput } from '../components/formFields'
-import { Logo } from '../components/animations/Logo'
+import { Logo } from '../components/common/Logo'
 import { ScreenHeader } from '../components/common/ScreenHeader'
 import { Notification } from '../components/common/Notification'
 
