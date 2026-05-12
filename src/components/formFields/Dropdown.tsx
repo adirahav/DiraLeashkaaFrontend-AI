@@ -1,6 +1,7 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
+import { cn } from '../../lib/utils';
+import { useSplash } from '../../hooks/useSplash';
 
 export interface Option {
   value: string;
@@ -26,11 +27,13 @@ export const Dropdown: React.FC<DropdownProps> = ({
   disabled = false,
   error,
   buttonRef,
-  buttonClassName = ''
+  buttonClassName = '',
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const selectedOption = options.find(opt => opt.value === value);
+  const { getPhrase } = useSplash();
+  const placeholder = getPhrase('dropdown_choose', 'Choose...');
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -53,34 +56,38 @@ export const Dropdown: React.FC<DropdownProps> = ({
   };
 
   return (
-    <div className={`flex flex-col gap-1.5 w-full text-right relative ${disabled ? 'opacity-60 grayscale-[0.2]' : ''}`} ref={containerRef}>
+    <div
+      ref={containerRef}
+      className={cn('flex flex-col gap-1.5 w-full text-right relative', disabled && 'opacity-60 grayscale-[0.2]')}
+    >
       {label && (
         <div className="flex items-center gap-1.5 mr-1 h-5">
-          <div className="text-base font-bold text-slate-700">
-            {label}
-          </div>
+          <div className="text-base font-bold text-slate-700">{label}</div>
         </div>
       )}
-      
+
       <button
         ref={buttonRef}
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full h-[54px] px-4 border-2 rounded-xl flex items-center justify-between transition-all duration-200 font-medium ${
-          isOpen 
-            ? 'border-blue-500 ring-4 ring-blue-50 bg-white' 
-            : error 
-              ? 'border-red-400 bg-red-50' 
-              : 'border-[oklch(0.929_0.013_255.50)] bg-white hover:border-slate-300'
-        } ${disabled ? 'cursor-not-allowed bg-slate-50' : 'cursor-pointer'} ${buttonClassName}`}
+        className={cn(
+          'w-full h-[54px] px-4 border-2 rounded-xl flex items-center justify-between transition-all duration-200 font-medium',
+          isOpen
+            ? 'border-blue-500 ring-4 ring-blue-50 bg-white'
+            : error
+              ? 'border-red-400 bg-red-50'
+              : 'border-border-subtle bg-white hover:border-slate-300',
+          disabled ? 'cursor-not-allowed bg-slate-50' : 'cursor-pointer',
+          buttonClassName,
+        )}
       >
-        <span className={selectedOption ? 'text-slate-800' : 'text-slate-400'}>
-          {selectedOption ? selectedOption.label : 'בחר...'}
+        <span className={cn(selectedOption ? 'text-slate-800' : 'text-slate-400')}>
+          {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <ChevronDown 
-          size={20} 
-          className={`text-slate-400 transition-transform duration-300 ${isOpen ? 'rotate-180 text-blue-500' : ''}`} 
+        <ChevronDown
+          size={20}
+          className={cn('text-slate-400 transition-transform duration-300', isOpen && 'rotate-180 text-blue-500')}
         />
       </button>
 
@@ -100,11 +107,12 @@ export const Dropdown: React.FC<DropdownProps> = ({
                   key={option.value}
                   type="button"
                   onClick={() => handleSelect(option.value)}
-                  className={`flex items-center justify-between w-full p-3 rounded-xl text-right transition-all duration-200 ${
-                    isActive 
-                      ? 'bg-blue-50 text-blue-600 font-black' 
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                  }`}
+                  className={cn(
+                    'flex items-center justify-between w-full p-3 rounded-xl text-right transition-all duration-200',
+                    isActive
+                      ? 'bg-blue-50 text-blue-600 font-black'
+                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900',
+                  )}
                 >
                   <span className="text-sm">{option.label}</span>
                   {isActive ? <Check size={18} className="text-blue-600" /> : <div className="w-[18px]" />}

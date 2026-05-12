@@ -1,6 +1,7 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { StringInput } from './StringInput';
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const EmailInput: React.FC<{
   label?: React.ReactNode;
@@ -12,11 +13,39 @@ export const EmailInput: React.FC<{
   tooltip?: string;
   disabled?: boolean;
   id?: string;
-}> = (props) => {
+  onValidationError?: (hasError: boolean) => void;
+}> = ({ onValidationError, error: externalError, onChange, ...props }) => {
+  const [localError, setLocalError] = useState<string | undefined>(undefined);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (localError) {
+      setLocalError(undefined);
+      onValidationError?.(false);
+    }
+    onChange(e);
+  };
+
+  const handleBlur = () => {
+    const trimmed = props.value.trim();
+    if (trimmed && !EMAIL_REGEX.test(trimmed)) {
+      setLocalError('כתובת אימייל לא תקינה');
+      onValidationError?.(true);
+    } else {
+      setLocalError(undefined);
+      onValidationError?.(false);
+    }
+  };
+
   return (
     <StringInput
       {...props}
-      type="text"
+      onChange={handleChange}
+      onBlur={handleBlur}
+      type="email"
+      autoComplete="email"
+      spellCheck={false}
+      dir="ltr"
+      error={externalError ?? localError}
     />
   );
 };

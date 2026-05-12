@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { StringInput } from './StringInput';
 
@@ -14,17 +13,17 @@ export const PasswordInput: React.FC<{
   id?: string;
 }> = (props) => {
   const [showPassword, setShowPassword] = useState(false);
-  
+
   return (
     <StringInput
       {...props}
-      type={showPassword ? "text" : "password"}
+      type={showPassword ? 'text' : 'password'}
     >
       <button
         type="button"
         onClick={() => setShowPassword(!showPassword)}
-        aria-label={showPassword ? "הסתר סיסמה" : "הצג סיסמה"}
-        className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors focus:outline-none rounded-lg"
+        aria-label={showPassword ? 'הסתר סיסמה' : 'הצג סיסמה'}
+        className="absolute inset-inline-end-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg"
       >
         {showPassword ? (
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">

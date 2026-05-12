@@ -1,6 +1,6 @@
-
 import React from 'react';
 import { HelpCircle } from 'lucide-react';
+import { cn } from '../../lib/utils';
 import { Tooltip } from '../common/Tooltip';
 
 export const Textarea: React.FC<{
@@ -15,25 +15,25 @@ export const Textarea: React.FC<{
   required?: boolean;
   id?: string;
   minHeight?: string;
-}> = ({ 
-  label, 
-  value, 
-  onChange, 
-  disabled = false, 
+}> = ({
+  label,
+  value,
+  onChange,
+  disabled = false,
   placeholder,
   className = '',
   error,
   tooltip,
   required,
   id: customId,
-  minHeight = '120px'
+  minHeight = '120px',
 }) => {
   const generatedId = React.useId();
   const id = customId || generatedId;
   const errorId = React.useId();
 
   return (
-    <div className={`flex flex-col gap-1.5 w-full text-right ${disabled ? 'opacity-60 grayscale-[0.2]' : ''} ${className}`}>
+    <div className={cn('flex flex-col gap-1.5 w-full text-right', disabled && 'opacity-60 grayscale-[0.2]', className)}>
       {label && (
         <div className="flex items-center gap-1.5 mr-1 h-5 w-full">
           <label htmlFor={id} className="text-base font-bold text-slate-700">
@@ -46,26 +46,29 @@ export const Textarea: React.FC<{
           )}
         </div>
       )}
-      <textarea 
+      <textarea
         id={id}
-        value={value} 
+        value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
         style={{ minHeight }}
-        className={`w-full p-3.5 border rounded-xl focus:outline-none transition-all text-right font-medium resize-none ${
-          disabled ? 'bg-slate-50 cursor-not-allowed' : 'bg-white'
-        } ${
-          error 
-            ? 'border-red-300 bg-red-50 focus:ring-2 focus:ring-red-100' 
-            : 'border-[oklch(0.929_0.013_255.50)] focus:border-blue-500'
-        }`}
+        className={cn(
+          'w-full p-3.5 border rounded-xl focus:outline-none transition-all text-right font-medium resize-none',
+          disabled ? 'bg-slate-50 cursor-not-allowed' : 'bg-white',
+          error
+            ? 'border-red-300 bg-red-50 focus:ring-2 focus:ring-red-100'
+            : 'border-border-subtle focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10',
+        )}
         placeholder={placeholder}
         aria-required={required}
         aria-invalid={!!error}
         aria-describedby={error ? errorId : undefined}
       />
       {error && (
-        <span id={errorId} className="text-xs font-bold text-red-500 mt-0.5 animate-in fade-in slide-in-from-top-1 duration-200 mr-1">
+        <span
+          id={errorId}
+          className="text-xs font-bold text-red-500 mt-0.5 animate-in fade-in slide-in-from-top-1 duration-200 mr-1"
+        >
           {error}
         </span>
       )}

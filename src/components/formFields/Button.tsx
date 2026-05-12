@@ -1,5 +1,5 @@
-
 import React from 'react';
+import { cn } from '../../lib/utils';
 
 export const Button: React.FC<{
   children?: React.ReactNode;
@@ -11,13 +11,22 @@ export const Button: React.FC<{
   ariaLabel?: string;
   icon?: React.ElementType;
   iconSize?: number;
-}> = ({ children, onClick, type = 'button', variant = 'primary', disabled = false, className = '', ariaLabel, icon: Icon, iconSize = 18 }) => {
-  const baseStyles = "px-6 py-3 rounded-xl font-bold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-center enabled:active:scale-95 focus:ring-4 focus:ring-blue-100 focus:outline-none flex items-center justify-center gap-2";
+}> = ({
+  children,
+  onClick,
+  type = 'button',
+  variant = 'primary',
+  disabled = false,
+  className = '',
+  ariaLabel,
+  icon: Icon,
+  iconSize = 18,
+}) => {
   const variants = {
-    primary: "bg-blue-600 text-white enabled:hover:bg-blue-700 shadow-lg shadow-blue-200",
-    secondary: "bg-teal-600 text-white enabled:hover:bg-teal-700 shadow-lg shadow-teal-200",
-    outline: "border-2 border-slate-200 text-slate-600 enabled:hover:bg-slate-50",
-    success: "bg-emerald-600 text-white enabled:hover:bg-emerald-700 shadow-lg shadow-emerald-200"
+    primary: 'bg-blue-600 text-white enabled:hover:bg-blue-700 shadow-lg shadow-blue-200',
+    secondary: 'bg-teal-600 text-white enabled:hover:bg-teal-700 shadow-lg shadow-teal-200',
+    outline: 'border-2 border-slate-200 text-slate-600 enabled:hover:bg-slate-50',
+    success: 'bg-emerald-600 text-white enabled:hover:bg-emerald-700 shadow-lg shadow-emerald-200',
   };
 
   return (
@@ -26,7 +35,11 @@ export const Button: React.FC<{
       onClick={onClick}
       disabled={disabled}
       aria-label={ariaLabel}
-      className={`${baseStyles} ${variants[variant]} ${className}`}
+      className={cn(
+        'px-6 py-3 rounded-xl font-bold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-center enabled:active:scale-95 focus-visible:ring-4 focus-visible:ring-blue-100 focus:outline-none flex items-center justify-center gap-2',
+        variants[variant],
+        className,
+      )}
     >
       {Icon && <Icon size={iconSize} />}
       {children}

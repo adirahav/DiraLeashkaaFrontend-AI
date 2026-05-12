@@ -19,6 +19,9 @@
 
   /* Font family */
   --font-sans: 'Assistant', sans-serif;
+
+  /* Design tokens */
+  --color-border-subtle: oklch(0.929 0.013 255.5);
 }
 
 html {
@@ -208,6 +211,10 @@ body.is-results-mode .accessibility-menu-container {
 
   .slide-in-from-bottom-4 {
     --tw-enter-translate-y: 1rem;
+  }
+
+  .slide-in-from-top-1 {
+    --tw-enter-translate-y: -0.25rem;
   }
 
   .slide-in-from-top-2 {
