@@ -16,6 +16,7 @@
 
   /* Custom shadows — heavy used for dropdowns and cards */
   --shadow-heavy: 0 20px 50px rgba(0, 0, 0, 0.15);
+  --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.04);
 
   /* Font family */
   --font-sans: 'Assistant', sans-serif;

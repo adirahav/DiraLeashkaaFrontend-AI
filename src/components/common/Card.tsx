@@ -1,7 +1,16 @@
 import React from 'react';
+import { cn } from '../../lib/utils';
 
-export const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
-  <div className={`bg-white p-6 md:p-10 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 ${className}`}>
+interface CardProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export const Card: React.FC<CardProps> = ({ children, className }) => (
+  <div className={cn(
+    'bg-white p-6 md:p-10 rounded-[2rem] shadow-card border border-border-subtle',
+    className
+  )}>
     {children}
   </div>
 );
