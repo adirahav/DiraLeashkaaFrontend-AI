@@ -54,13 +54,19 @@ Refactor the provided ProfilePage logic into a professional, store-connected com
     - Ensure `showAdditionalFunding={true}` is passed to enable the full financial view.
 
 **Step 4: Persistence Workflow (API & Store)**
-- *Update Execution (`handleSave`)*
-    - On click, call `setLoading(true)` via App Slice.
-    - Execute `userService.updateUser(formData)`.
-    - On Success: - Trigger `Notification` with `user_save_success`.
-        - Update the global `loggedinUser` in the store with the new data.
-    - On Failure: - Trigger `Notification` with `dialog_data_error_title`.
-    - Always `setLoading(false)` at the end.
+- *Update Execution (handleSave)*
+    - On click, call setLoading(true) via App Slice.
+    - Execute userService.updateUser(formData).
+    - *On Success:*
+        - Update the global loggedinUser in the store.
+        - Trigger Notification with user_save_success.
+        - Smart Redirect Logic:
+            - Check if the user was incomplete before this save (Onboarding Mode).
+            - If incomplete: Call getNextOnboardingStep(updatedUser) and navigate to the next destination (e.g., from Personal to Financial).
+            -If already completed (Edit Mode): Stay on the current page to allow further edits.
+    - *On Failure:*
+        - Trigger Notification with dialog_data_error_title.
+    - Always setLoading(false) at the end.
 
 **Step 5: Styling & RTL (Tailwind)**
 - *Layout*

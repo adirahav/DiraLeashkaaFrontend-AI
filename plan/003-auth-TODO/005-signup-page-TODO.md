@@ -29,15 +29,10 @@ Refactor raw components from `raw_from_ai_studio` into the following project str
     - Pull `isLoading` from the App Slice to manage button states.
     
 - *Auth Guard & Initialization*
-    - Implement `shouldJumpToStep()` logic on mount:
-        - If `isLoggedinUserCompleted` is true: Navigate to `/`.
-        - Calculate initial step: 
-            - Step 1 (missing basics) 
-            - Step 2 (missing finance) 
-            - Step 3 (missing terms)
-        
-    - Set local `step` state based on this calculation.
-    
+    - On mount, if loggedinUser exists:
+        - Call getNextOnboardingStep(user).
+        - If the returned path is NOT /signup, redirect immediately to that path.
+
 - *Form Data Sync*
     - Initialize local `formData` state from `loggedinUser` if it exists, ensuring consistent data flow between steps.
 

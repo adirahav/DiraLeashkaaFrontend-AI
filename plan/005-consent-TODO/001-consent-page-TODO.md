@@ -19,14 +19,15 @@ Refactor the provided ConsentPage logic into a professional, store-connected com
 ## Implementation Steps
 
 **Step 1: Content & Context Integration**
+- *Mode Detection*
+    - Check `loggedinUser` from `useStore`.
+    - Determine `isActionMode`: `true` if user is logged in but `!user.termsOfUseAccept`.
+
 - *State Selection*
-
     - Pull `phrases` from `useSplash` context.
-
     - Use `utilService.getPhrase` to retrieve `user_terms_of_use_text`.
 
 - *HTML Rendering*
-
     - Since the legal text comes as a formatted string, implement `dangerouslySetInnerHTML` within a protected container to render the HTML tags correctly.
 
 **Step 2: Navigation & UX Hooks**
@@ -38,20 +39,23 @@ Refactor the provided ConsentPage logic into a professional, store-connected com
     - Implement a scroll listener to toggle the `isScrolled` state for the `ScreenHeader`, ensuring the title remains readable as the user scrolls through the long document.
 
 **Step 3: Refactor & Visual Composition**
-- Apply the structure from @terms-of-use-page.md.
+- Apply the structure from @concent-page.md.
 
 - *Header Configuration*
-
     - Use `ScreenHeader` with:
-
         - Title: `user_terms_of_use_title`.
-
         - Subtitle: `user_terms_of_use_subtitle` (e.g., "Last Updated").
 
+- *Dynamic UserConsent Integration*
+    - Pass props based on `isActionMode`:
+        - If `false`: `showCheckbox={false}`, `showButtons={false}`.
+        - If `true`:
+            - `showCheckbox={true}`, `showButtons={true}`.
+            - `onAccept`: Execute `userService.updateUser({ termsOfUseAccept: true })`.
+            - Post-Accept Navigation: Call `getNextOnboardingStep(updatedUser)` to funnel the user to the next station (Personal Info).
+
 - *Component Wrapper*
-
     - Wrap the content in a `Card` for desktop views.
-
     - Pass `showCheckbox={false}` and `showButtons={false}` to the `UserConsent` component to use it in "View Only" mode.
 
 **Step 4: Styling & Typography (Tailwind)**

@@ -30,6 +30,7 @@ export function useSplash() {
     params: context?.fixedParameters ?? {},
     isReady: context?.isReady ?? false,
     isLoading: context?.isLoading ?? false,
+    forceFetchSplash: context?.forceFetchSplash ?? (() => {}),
     getPhrase,
     getParam,
   }

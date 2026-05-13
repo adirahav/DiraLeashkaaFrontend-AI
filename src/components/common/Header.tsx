@@ -83,12 +83,12 @@ export const Header: React.FC = () => {
               </Button>
             </li>
             <li>
-              <Button variant="outline" onClick={() => navigate('/profile/personal')} className="!border-none !shadow-none !text-slate-600 hover:!text-blue-600 !px-2 !py-1" icon={User}>
+              <Button variant="outline" onClick={() => navigate('/personal-info')} className="!border-none !shadow-none !text-slate-600 hover:!text-blue-600 !px-2 !py-1" icon={User}>
                 פרטים אישיים
               </Button>
             </li>
             <li>
-              <Button variant="outline" onClick={() => navigate('/profile/financial')} className="!border-none !shadow-none !text-slate-600 hover:!text-blue-600 !px-2 !py-1" icon={LineChart}>
+              <Button variant="outline" onClick={() => navigate('/financial-details')} className="!border-none !shadow-none !text-slate-600 hover:!text-blue-600 !px-2 !py-1" icon={LineChart}>
                 נתונים כלכליים
               </Button>
             </li>
@@ -138,12 +138,12 @@ export const Header: React.FC = () => {
                   </Button>
                 </li>
                 <li>
-                  <Button variant="outline" onClick={() => onMenuNavigate('/profile/personal')} className="!border-none !shadow-none !text-slate-600 hover:!bg-slate-50 !rounded-xl !px-4 !py-3 !w-full !justify-start" icon={User} iconSize={20}>
+                  <Button variant="outline" onClick={() => onMenuNavigate('/personal-info')} className="!border-none !shadow-none !text-slate-600 hover:!bg-slate-50 !rounded-xl !px-4 !py-3 !w-full !justify-start" icon={User} iconSize={20}>
                     פרטים אישיים
                   </Button>
                 </li>
                 <li>
-                  <Button variant="outline" onClick={() => onMenuNavigate('/profile/financial')} className="!border-none !shadow-none !text-slate-600 hover:!bg-slate-50 !rounded-xl !px-4 !py-3 !w-full !justify-start" icon={LineChart} iconSize={20}>
+                  <Button variant="outline" onClick={() => onMenuNavigate('/financial-details')} className="!border-none !shadow-none !text-slate-600 hover:!bg-slate-50 !rounded-xl !px-4 !py-3 !w-full !justify-start" icon={LineChart} iconSize={20}>
                     נתונים כלכליים
                   </Button>
                 </li>

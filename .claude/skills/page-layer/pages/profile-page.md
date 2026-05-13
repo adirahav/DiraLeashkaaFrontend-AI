@@ -55,7 +55,16 @@ references:
   - Success: Show `user_save_success`. 
   - Error: Show `dialog_data_error_title`.
 
+- *Post-Save Navigation*:
+  - Edit Mode: If isLoggedinUserCompleted was already true before the update, stay on the page and show success feedback.
+  - Onboarding Mode: If isLoggedinUserCompleted was false (incomplete profile), call getNextOnboardingStep(updatedUser) and navigate to the returned path (e.g., from Personal to Financial, or Financial to Home).
+
 # Business Logic Constraints
+- **Navigation Engin**e: Must implement or reference getNextOnboardingStep(user) to determine the flow:
+  - !user.termsOfUseAccept ⮕ /consent
+  - !user.yearOfBirth ⮕ /personal-info
+  - !user.equity ⮕ /financial-details
+  - Default ⮕ /home
 - **Validation**: Re-use internal validation from sub-components. Disable "Save" button if `!isValid` or `!hasChanges`.
 - **RTL Support**: Full Hebrew alignment.
 - **Micro-animations**: Use `animate-in fade-in` for smooth transition when switching modes.

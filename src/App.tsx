@@ -35,8 +35,8 @@ const App = () => {
             <Route path="/home" element={<HomePage />} />
             <Route path="/property/new" element={<PropertyPage />} />
             <Route path="/property/:id" element={<PropertyPage />} />
-            <Route path="/profile/personal" element={<ProfilePage mode="PERSONAL" />} />
-            <Route path="/profile/financial" element={<ProfilePage mode="FINANCIAL" />} />
+            <Route path="/personal-info" element={<ProfilePage mode="PERSONAL" />} />
+            <Route path="/financial-details" element={<ProfilePage mode="FINANCIAL" />} />
             <Route path="/calculators" element={<CalculatorsPage />} />
             <Route path="/calculators/max-price" element={<MaxPriceCalculatorPage />} />
             <Route path="/calculators/compare" element={<CompareCalculatorPage />} />

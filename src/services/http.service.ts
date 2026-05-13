@@ -12,20 +12,20 @@ const axios = Axios.create({
 type ApiData = Record<string, any> | null;
 
 export const httpService = {
-    get<T = any>(endpoint: string, data?: ApiData, token?: string): Promise<T> {
-        return ajax<T>(endpoint, 'GET', data, token)
+    get<T = any>(endpoint: string, data?: ApiData, token?: string, options?: Partial<AxiosRequestConfig>): Promise<T> {
+        return ajax<T>(endpoint, 'GET', data, token, options)
     },
-    post<T = any>(endpoint: string, data?: ApiData, token?: string): Promise<T> {
-        return ajax<T>(endpoint, 'POST', data, token)
+    post<T = any>(endpoint: string, data?: ApiData, token?: string, options?: Partial<AxiosRequestConfig>): Promise<T> {
+        return ajax<T>(endpoint, 'POST', data, token, options)
     },
-    put<T = any>(endpoint: string, data?: ApiData, token?: string): Promise<T> {
-        return ajax<T>(endpoint, 'PUT', data, token)
+    put<T = any>(endpoint: string, data?: ApiData, token?: string, options?: Partial<AxiosRequestConfig>): Promise<T> {
+        return ajax<T>(endpoint, 'PUT', data, token, options)
     },
-    patch<T = any>(endpoint: string, data?: ApiData, token?: string): Promise<T> {
-        return ajax<T>(endpoint, 'PATCH', data, token)
+    patch<T = any>(endpoint: string, data?: ApiData, token?: string, options?: Partial<AxiosRequestConfig>): Promise<T> {
+        return ajax<T>(endpoint, 'PATCH', data, token, options)
     },
-    delete<T = any>(endpoint: string, data?: ApiData, token?: string): Promise<T> {
-        return ajax<T>(endpoint, 'DELETE', data, token)
+    delete<T = any>(endpoint: string, data?: ApiData, token?: string, options?: Partial<AxiosRequestConfig>): Promise<T> {
+        return ajax<T>(endpoint, 'DELETE', data, token, options)
     }
 }
 
@@ -33,7 +33,8 @@ async function ajax<T>(
     endpoint: string,
     method: Method = 'GET',
     data: ApiData = null,
-    token: string | null = null
+    token: string | null = null,
+    options: Partial<AxiosRequestConfig> = {}
 ): Promise<T> {
 
     const platform = Capacitor.isNativePlatform() ? "android" : "web"
@@ -45,6 +46,7 @@ async function ajax<T>(
         params: method === 'GET' ? { ...data, platform } : null,
         data: method !== 'GET' ? { ...data, platform } : null,
         headers: jwtToken ? { Authorization: `Bearer ${jwtToken}` } : {},
+        ...options,
     }
 
     try {

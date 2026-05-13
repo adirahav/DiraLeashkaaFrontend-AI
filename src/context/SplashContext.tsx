@@ -26,6 +26,7 @@ export interface SplashContextValue {
   fixedParameters: Record<string, number>
   isReady: boolean
   isLoading: boolean
+  forceFetchSplash: () => void
 }
 
 export const SplashContext = createContext<SplashContextValue | null>(null)
@@ -35,6 +36,9 @@ export function SplashProvider({ children }: { children: React.ReactNode }) {
   const [splash, setSplash] = useState<SplashData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const backgroundRunning = useRef(false)
+  const [forceFetchTick, setForceFetchTick] = useState(0)
+
+  const forceFetchSplash = () => setForceFetchTick((t) => t + 1)
 
   useEffect(() => {
     let cancelled = false
@@ -62,6 +66,7 @@ export function SplashProvider({ children }: { children: React.ReactNode }) {
       const cachedParams = await getWithExpiry<Record<string, number>>(PARAMS_KEY)
 
       const hasFreshCache =
+        forceFetchTick === 0 &&
         cachedPhrases && !cachedPhrases.isExpired &&
         cachedParams && !cachedParams.isExpired
 
@@ -78,6 +83,7 @@ export function SplashProvider({ children }: { children: React.ReactNode }) {
 
       // Foreground fetch — missing or either expired
       if (activeFetches.has(phrasesKey)) return
+      if (cancelled) return
       activeFetches.add(phrasesKey)
       if (!cancelled) setIsLoading(true)
       try {
@@ -107,8 +113,17 @@ export function SplashProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       cancelled = true
+      activeFetches.delete(phrasesKey)
     }
-  }, [lang])
+  }, [lang, forceFetchTick])
+
+  if (isLoading && splash === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+      </div>
+    )
+  }
 
   return (
     <SplashContext.Provider
@@ -117,6 +132,7 @@ export function SplashProvider({ children }: { children: React.ReactNode }) {
         fixedParameters: splash?.fixedParameters ?? {},
         isReady: splash !== null,
         isLoading,
+        forceFetchSplash,
       }}
     >
       {children}
