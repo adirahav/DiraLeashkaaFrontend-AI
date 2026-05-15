@@ -2,7 +2,6 @@ import { StateCreator } from 'zustand'
 import { RootState } from '../store'
 import { User } from '../../types'
 import { authService } from '../../services/auth.service'
-import { utilService } from '../../services/util.service'
 
 export interface AuthSlice {
   loggedinUser: User | null
@@ -22,8 +21,7 @@ export const createAuthSlice: StateCreator<RootState, [], [], AuthSlice> = (set)
   setToken: (token) => set({ token }),
 
   login: async (email, password) => {
-    const user = await authService.login(email, password)
-    const token = await utilService.getFromStorage('token')
+    const { user, token } = await authService.login(email, password)
     set({ loggedinUser: user, token })
     return user
   },

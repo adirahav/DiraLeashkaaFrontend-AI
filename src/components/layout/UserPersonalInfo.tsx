@@ -1,6 +1,10 @@
 import React from 'react';
 import { StringInput, YearOfBirth, Button, PasswordInput, EmailInput } from '../formFields';
 import { Card } from '../common/Card';
+import { useSplash } from '../../hooks/useSplash';
+import { useStore } from '../../store/store';
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface UserPersonalInfoProps {
   formData: any;
@@ -22,14 +26,15 @@ export const UserPersonalInfo: React.FC<UserPersonalInfoProps> = ({
   isEmailReadOnly = false,
   isPasswordReadOnly = false,
   showNextButton = true,
-  buttonText = "המשך לשלב הבא",
+  buttonText,
   buttonIcon,
   initialData,
-  variant = 'wizard'
+  variant = 'wizard',
 }) => {
+  const { getPhrase } = useSplash();
+  const isLoading = useStore((state) => state.isLoading);
   const currentYear = new Date().getFullYear();
 
-  // Check if any relevant field has changed compared to initialData (if provided)
   const hasChanges = !initialData || (
     formData.fullname !== initialData.fullname ||
     formData.email !== initialData.email ||
@@ -37,102 +42,91 @@ export const UserPersonalInfo: React.FC<UserPersonalInfoProps> = ({
     formData.yearOfBirth !== initialData.yearOfBirth
   );
 
-  // Validation Helpers
-  const getBirthYearError = () => {
+  // Dirty-state errors: only shown when the field has a value
+  const nameError = formData.fullname && formData.fullname.trim().length < 2
+    ? getPhrase('signup_fullname_error', 'Please enter a valid full name')
+    : '';
+
+  const passwordError = formData.password && formData.password.length < 8
+    ? getPhrase('signup_password_error', 'Password must be at least 8 characters')
+    : '';
+
+  const birthYearError = (() => {
     if (!formData.yearOfBirth) return '';
-    if (formData.yearOfBirth.length < 4) return 'נא להזין שנה בת 4 ספרות';
-    const year = parseInt(formData.yearOfBirth);
-    const age = currentYear - year;
-    if (age < 18) return `השירות מיועד למשתמשים מעל גיל 18 (שנת ${currentYear - 18} ומטה)`;
-    if (age > 120) return 'נא להזין שנת לידה הגיונית (עד גיל 120)';
+    if (formData.yearOfBirth.length < 4)
+      return getPhrase('signup_year_of_birth_error', 'Please enter a 4-digit year');
+    const age = currentYear - parseInt(formData.yearOfBirth);
+    if (age < 18) return getPhrase('signup_year_of_birth_error', 'Must be at least 18 years old');
+    if (age > 120) return getPhrase('signup_year_of_birth_error', 'Please enter a valid birth year');
     return '';
-  };
+  })();
 
-  const getPasswordError = () => {
-    if (!formData.password) return '';
-    if (formData.password.length < 8) return 'הסיסמה חייבת להכיל לפחות 8 תווים';
-    return '';
-  };
-
-  const getEmailError = () => {
-    if (!formData.email) return '';
-    if (!formData.email.includes('@') || !formData.email.includes('.')) return 'כתובת אימייל לא תקינה';
-    return '';
-  };
-
-  const getNameError = () => {
-    if (!formData.fullname) return '';
-    if (formData.fullname.trim().length < 2) return 'נא להזין שם מלא תקין';
-    return '';
-  };
-
-  // Internal validation logic
-  const isValid = 
-    formData.fullname?.trim().length >= 2 && 
-    getNameError() === '' &&
-    formData.email?.includes('@') && 
-    (isEmailReadOnly || getEmailError() === '') &&
-    (isPasswordReadOnly || (formData.password?.length >= 8 && getPasswordError() === '')) &&
+  const isFormValid =
+    formData.fullname?.trim().length >= 2 &&
+    (isEmailReadOnly || EMAIL_REGEX.test(formData.email?.trim() ?? '')) &&
+    (isPasswordReadOnly || formData.password?.length >= 8) &&
     formData.yearOfBirth?.length === 4 &&
-    getBirthYearError() === '';
+    !birthYearError;
+
+  const resolvedButtonText = buttonText ?? getPhrase('wizard_next_button', 'Continue to Next Step');
 
   const formFields = (
     <div className="flex flex-col gap-5 text-right">
       <StringInput
-        label="שם מלא"
+        label={getPhrase('signup_fullname_label', 'Full Name')}
         value={formData.fullname}
         onChange={(e) => setFormData({ ...formData, fullname: e.target.value })}
-        placeholder="הכנס שם מלא (למשל: ישראל ישראלי)"
-        error={getNameError()}
+        placeholder={getPhrase('signup_fullname_placeholder', 'Enter your full name')}
+        error={nameError}
         required
       />
 
       <EmailInput
-        label="אימייל"
+        label={getPhrase('signup_email_label', 'Email')}
         value={formData.email}
         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-        placeholder="example@mail.com"
-        error={getEmailError()}
+        placeholder={getPhrase('signup_email_placeholder', 'example@mail.com')}
         required
         disabled={isEmailReadOnly}
       />
 
-      <PasswordInput
-        label="סיסמה (מינימום 8 תווים)"
-        value={formData.password}
-        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-        placeholder="בחר סיסמה מאובטחת"
-        error={getPasswordError()}
-        required
-        disabled={isPasswordReadOnly}
-      />
+      {!isPasswordReadOnly && (
+        <PasswordInput
+          label={getPhrase('signup_password_label', 'Password (minimum 8 characters)')}
+          value={formData.password}
+          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+          placeholder={getPhrase('signup_password_placeholder', 'Choose a secure password')}
+          error={passwordError}
+          required
+        />
+      )}
 
       <YearOfBirth
-        label="שנת לידה"
+        label={getPhrase('signup_year_of_birth_hint', 'Year of Birth')}
         value={formData.yearOfBirth}
         onChange={(val) => setFormData({ ...formData, yearOfBirth: val })}
-        error={getBirthYearError()}
-        tooltip="שנת הלידה משמשת לחישוב אופק המשכנתא המקסימלי (עד גיל 80). המערכת מאפשרת רישום מגיל 18 ועד 120 בלבד."
-        placeholder={`הזן שנת לידה (למשל: ${currentYear - 30})`}
+        error={birthYearError}
+        tooltip={getPhrase('signup_year_of_birth_tooltip', 'Your birth year is used to calculate the maximum mortgage horizon. Registration is available for ages 18 to 120.')}
+        placeholder={getPhrase('signup_year_of_birth_placeholder', `e.g. ${currentYear - 30}`)}
       />
     </div>
   );
 
   const actionButton = showNextButton && onClick && (
-    <Button 
-      onClick={onClick} 
-      disabled={!isValid || !hasChanges} 
-      className={variant === 'profile' ? "px-12 py-4 text-lg shadow-xl shadow-blue-200" : "mt-4 py-4"}
-      icon={buttonIcon} 
+    <Button
+      onClick={onClick}
+      disabled={!isFormValid || !hasChanges || isLoading}
+      className={variant === 'profile' ? 'px-12 py-4 text-lg shadow-xl shadow-blue-200' : 'mt-4 py-4'}
+      icon={buttonIcon}
       iconSize={20}
     >
-      {buttonText}
+      {resolvedButtonText}
     </Button>
   );
 
   if (variant === 'profile') {
     return (
-      <div className="flex flex-col gap-8 animate-in fade-in duration-500">
+      <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
         <Card className="p-6">
           {formFields}
         </Card>
@@ -146,7 +140,7 @@ export const UserPersonalInfo: React.FC<UserPersonalInfoProps> = ({
   }
 
   return (
-    <div className="flex flex-col gap-5 animate-in fade-in duration-500">
+    <div className="flex flex-col gap-5 animate-in fade-in slide-in-from-bottom-2 duration-500">
       {formFields}
       {actionButton}
     </div>

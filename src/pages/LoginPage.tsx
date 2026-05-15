@@ -6,7 +6,7 @@ import { Button, EmailInput, PasswordInput } from '../components/formFields'
 import { Logo } from '../components/common/Logo'
 import { useStore } from '../store/store'
 import { useSplash } from '../hooks/useSplash'
-import { getIsUserCompleted, getNextOnboardingStep } from '../utils/user.utils'
+import { getNextOnboardingStep } from '../utils/user.utils'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const PASSWORD_MIN_LENGTH = 6
@@ -29,7 +29,6 @@ export const LoginPage: React.FC = () => {
   const isLoading = useStore((state) => state.isLoading)
   const setIsLoading = useStore((state) => state.setIsLoading)
   const login = useStore((state) => state.login)
-  const isLoggedinUserCompleted = useStore((state) => getIsUserCompleted(state.loggedinUser))
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -38,12 +37,14 @@ export const LoginPage: React.FC = () => {
   const [serverError, setServerError] = useState('')
   const [isSubmitDisabled, setIsSubmitDisabled] = useState(true)
 
-  // Auth guard — already logged in and completed
+  // Reset any stale loading state left by a previous page
+  useEffect(() => { setIsLoading(false) }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auth guard — already logged in
   useEffect(() => {
-    if (loggedinUser && isLoggedinUserCompleted) {
-      navigate('/home', { replace: true })
-    }
-  }, [loggedinUser, isLoggedinUserCompleted, navigate])
+    if (!loggedinUser) return
+    navigate(getNextOnboardingStep(loggedinUser), { replace: true })
+  }, [loggedinUser, navigate])
 
   // Pre-fill last logged-in email
   useEffect(() => {
@@ -104,6 +105,7 @@ export const LoginPage: React.FC = () => {
       navigate(getNextOnboardingStep(user), { replace: true })
     } catch {
       setServerError(getPhrase('login_credentials_error', 'Invalid credentials, please try again'))
+    } finally {
       setIsLoading(false)
     }
   }

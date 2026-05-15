@@ -1,5 +1,11 @@
 import React from 'react';
 
+export const parseNumber = (val: string | number | undefined): number => {
+  if (val === undefined || val === null || val === '') return 0;
+  const str = typeof val === 'number' ? val.toString() : val;
+  return Number(str.replace(/,/g, '')) || 0;
+};
+
 export const formatNumber = (val: number | string | undefined, hideZero: boolean = false) => {
   if (val === undefined || val === '') return '';
   const num = typeof val === 'string' ? parseFloat(val.replace(/,/g, '')) : val;

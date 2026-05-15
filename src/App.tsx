@@ -4,6 +4,7 @@ import { ProtectedRoute } from './router/ProtectedRoute'
 import { LoginPage } from './pages/LoginPage'
 import { SignupPage } from './pages/SignupPage'
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
+import { ConsentPage } from './pages/ConsentPage'
 import { HomePage } from './pages/HomePage'
 import { PropertyPage } from './pages/PropertyPage'
 import { ProfilePage } from './pages/ProfilePage'
@@ -33,6 +34,7 @@ const App = () => {
           {/* Protected */}
           <Route element={<ProtectedRoute />}>
             <Route path="/home" element={<HomePage />} />
+            <Route path="/consent" element={<ConsentPage />} />
             <Route path="/property/new" element={<PropertyPage />} />
             <Route path="/property/:id" element={<PropertyPage />} />
             <Route path="/personal-info" element={<ProfilePage mode="PERSONAL" />} />

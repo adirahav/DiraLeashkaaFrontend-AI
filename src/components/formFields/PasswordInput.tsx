@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { StringInput } from './StringInput';
+import { useSplash } from '../../hooks/useSplash';
 
 export const PasswordInput: React.FC<{
   label?: React.ReactNode;
@@ -13,6 +14,7 @@ export const PasswordInput: React.FC<{
   id?: string;
 }> = (props) => {
   const [showPassword, setShowPassword] = useState(false);
+  const { getPhrase } = useSplash();
 
   return (
     <StringInput
@@ -22,7 +24,7 @@ export const PasswordInput: React.FC<{
       <button
         type="button"
         onClick={() => setShowPassword(!showPassword)}
-        aria-label={showPassword ? 'הסתר סיסמה' : 'הצג סיסמה'}
+        aria-label={showPassword ? getPhrase('password_hide', 'Hide password') : getPhrase('password_show', 'Show password')}
         className="absolute end-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg"
       >
         {showPassword ? (

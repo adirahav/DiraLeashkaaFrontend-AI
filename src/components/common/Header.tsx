@@ -34,9 +34,11 @@ export const Header: React.FC = () => {
     return () => { document.body.style.overflow = 'unset' }
   }, [isMenuOpen])
 
-  const onLogout = () => {
-    logout()
-    navigate('/login')
+  const onLogout = async () => {
+    await logout()
+    const { authService } = await import('../../services/auth.service')
+    const lastEmail = await authService.getLastLoggedinEmail()
+    navigate(lastEmail ? '/login' : '/signup', { replace: true })
     setIsMenuOpen(false)
   }
 

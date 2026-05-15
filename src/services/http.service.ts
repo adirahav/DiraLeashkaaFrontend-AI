@@ -39,6 +39,7 @@ async function ajax<T>(
 
     const platform = Capacitor.isNativePlatform() ? "android" : "web"
     const jwtToken = token || useStore.getState().token
+    console.debug(`[http] ${method} ${endpoint} | token: ${jwtToken ? jwtToken.slice(0, 20) + '…' : 'NONE'}`)
 
     const config: AxiosRequestConfig = {
         url: `${BASE_URL}${endpoint}`,
@@ -57,10 +58,11 @@ async function ajax<T>(
         console.dir(err)
 
         if (err.response && err.response.status === 401) {
+            useStore.setState({ loggedinUser: null, token: null })
             await utilService.deleteFromStorage("token")
-            const email = await utilService.getFromStorage("email")
+            const email = await utilService.getFromStorage("last_email")
             if (typeof window !== 'undefined') {
-                window.location.assign(email ? '/login' : '/landing')
+                window.location.assign(email ? '/login' : '/signup')
             }
         }
         throw err

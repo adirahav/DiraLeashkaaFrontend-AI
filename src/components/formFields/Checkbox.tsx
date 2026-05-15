@@ -14,11 +14,11 @@ export const Checkbox: React.FC<{
     <label
       htmlFor={id}
       className={cn(
-        'flex items-start gap-3 cursor-pointer group',
+        'flex items-center gap-3 cursor-pointer group',
         disabled && 'opacity-60 grayscale-[0.2] cursor-not-allowed',
       )}
     >
-      <div className="relative flex items-center mt-1">
+      <div className="relative flex items-center">
         <input
           id={id}
           type="checkbox"

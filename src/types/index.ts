@@ -1,3 +1,10 @@
+export interface AdditionalFundingSource {
+  uuid: string
+  source: string
+  amount: number
+  repayment: number
+}
+
 export interface User {
   fullname: string
   email: string
@@ -6,6 +13,7 @@ export interface User {
   incomes: string
   commitments: string
   termsOfUseAccept: string
+  additionalFundingSources?: AdditionalFundingSource[]
 }
 
 export interface Property {

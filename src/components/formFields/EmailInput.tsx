@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { StringInput } from './StringInput';
+import { useSplash } from '../../hooks/useSplash';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -16,6 +17,7 @@ export const EmailInput: React.FC<{
   onValidationError?: (hasError: boolean) => void;
 }> = ({ onValidationError, error: externalError, onChange, ...props }) => {
   const [localError, setLocalError] = useState<string | undefined>(undefined);
+  const { getPhrase } = useSplash();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (localError) {
@@ -28,7 +30,7 @@ export const EmailInput: React.FC<{
   const handleBlur = () => {
     const trimmed = props.value.trim();
     if (trimmed && !EMAIL_REGEX.test(trimmed)) {
-      setLocalError('כתובת אימייל לא תקינה');
+      setLocalError(getPhrase('signup_email_error', 'Invalid email address'));
       onValidationError?.(true);
     } else {
       setLocalError(undefined);

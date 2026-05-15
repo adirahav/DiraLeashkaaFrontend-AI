@@ -18,15 +18,22 @@ export function getIsUserCompleted(user: User | null): boolean {
 
 export function getNextOnboardingStep(user: User | null): string {
     if (!user) return '/login'
-    if (!user.termsOfUseAccept) return '/consent'
     if (!user.yearOfBirth || !user.fullname) return '/personal-info'
 
-    const equity = Number(user.equity)
-    const incomes = Number(user.incomes)
-    const commitments = Number(user.commitments)
+    const equityStr = user.equity?.toString().trim() ?? ''
+    const incomesStr = user.incomes?.toString().trim() ?? ''
+    const commitmentsStr = user.commitments?.toString().trim() ?? ''
+
+    if (equityStr === '' || incomesStr === '' || commitmentsStr === '') return '/financial-details'
+
+    const equity = Number(equityStr)
+    const incomes = Number(incomesStr)
+    const commitments = Number(commitmentsStr)
     if (isNaN(equity) || equity < 0 || isNaN(incomes) || incomes < 0 || isNaN(commitments) || commitments < 0) {
         return '/financial-details'
     }
+
+    if (!user.termsOfUseAccept) return '/consent'
 
     return '/home'
 }
