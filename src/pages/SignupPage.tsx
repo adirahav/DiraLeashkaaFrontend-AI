@@ -178,6 +178,7 @@ export const SignupPage: React.FC = () => {
                 <ScreenHeader
                   title={getPhrase('registration_title', 'Create Investment Account')}
                   subtitle={getPhrase('registration_subtitle', 'Help us get to know you so we can match you with the right properties')}
+                  isAbsolute={false}
                   className="text-center md:text-right"
                 />
                 <motion.div

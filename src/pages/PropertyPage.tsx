@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useScrolled } from '../hooks/useScrolled';
 import { formatCurrency, formatNumber, formatCompact, formatPercent } from '../services/utils';
 import { RollbackButton } from '../components/propertyFields';
 import { Card } from '../components/common/Card';
@@ -256,15 +257,7 @@ export const PropertyPage: React.FC = () => {
   const d = useDebounce(calculationInputs, 500);
 
   // Mobile View State
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const isScrolled = useScrolled();
 
   useEffect(() => {
     // Force scroll to top on view change
@@ -572,11 +565,11 @@ export const PropertyPage: React.FC = () => {
             <div className={`transition-all duration-300 ${isScrolled ? 'py-1' : 'py-4'}`}>
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-8">
                 <div className="flex items-center justify-between w-full lg:w-auto gap-4 shrink-0">
-                  <ScreenHeader 
-                    title="הערכת עלויות ותשואה" 
+                  <ScreenHeader
+                    title="הערכת עלויות ותשואה"
                     subtitle="ניתוח פיננסי מעמיק של הנכס"
                     isScrolled={isScrolled}
-                    className="flex flex-col transition-all duration-300 ease-in-out"
+                    isAbsolute={false}
                   />
                   
                   {viewMode === 'form' && (

@@ -567,9 +567,10 @@ export const CompareCalculatorPage: React.FC = () => {
     <div className="min-h-screen bg-slate-50 text-right pb-20" dir="rtl">
       <main className="max-w-[1600px] mx-auto px-4 py-8">
         <div className="flex flex-row items-center justify-between gap-2 mb-8">
-          <ScreenHeader 
-            title="השוואת נכסים" 
+          <ScreenHeader
+            title="השוואת נכסים"
             subtitle="השוואה חכמה בין נכסים נבחרים"
+            isAbsolute={false}
             className="shrink-0 scale-90 origin-right sm:scale-100 translate-y-[6px]"
           />
 

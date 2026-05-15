@@ -8,6 +8,7 @@ export const EmailInput: React.FC<{
   label?: React.ReactNode;
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   placeholder?: string;
   error?: string;
   required?: boolean;

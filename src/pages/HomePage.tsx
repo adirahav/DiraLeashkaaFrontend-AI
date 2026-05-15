@@ -55,7 +55,7 @@ export const HomePage: React.FC = () => {
             </motion.div>
           ) : (
             <motion.div key="dashboard" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-              <ScreenHeader title="הנכסים שלי" subtitle="ניהול ומעקב אחר תיק השקעות הנדל&quot;ן שלך" className="relative mb-6" />
+              <ScreenHeader title="הנכסים שלי" subtitle="ניהול ומעקב אחר תיק השקעות הנדל&quot;ן שלך" isAbsolute={false} className="relative mb-6" />
               <div className="flex items-center gap-2 -mt-4 mb-8">
                 <span className="bg-blue-100 text-blue-700 text-xs font-black px-2 py-0.5 rounded-full uppercase tracking-wider">תחזית ל-10 שנים</span>
                 <p className="text-slate-500 text-sm font-bold">כל הנתונים הכלכליים מחושבים לפי טווח השקעה זה</p>

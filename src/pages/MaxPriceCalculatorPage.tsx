@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useScrolled } from '../hooks/useScrolled';
 import { formatCurrency, formatNumber } from '../services/utils';
 import { AnimatedNumber, CalcInput, EditableInput, SuggestedNumberInput, MetricCard, SummaryField, AutoFIllInput, AdditionalFundingSources, FinancingStatus, SegmentedControl } from '../components/propertyFields';
 import { Card } from '../components/common/Card';
@@ -81,7 +82,7 @@ export const MaxPriceCalculatorPage: React.FC = () => {
   const graphRef = useRef<HTMLDivElement>(null);
 
   // Mobile View State
-  const [isScrolled, setIsScrolled] = useState(false);
+  const isScrolled = useScrolled();
 
   // Percentages and modifiers
   const [interestPercent, setInterestPercent] = useState<number>(5);
@@ -113,14 +114,6 @@ export const MaxPriceCalculatorPage: React.FC = () => {
   const disposable = incomes - totalCommitments;
   const defaultRepayment = disposable > 0 ? Math.round(disposable * 0.3) : 0;
   const isRepaymentModified = repaymentPercent !== 30 || desiredRepayment !== defaultRepayment;
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   // Simulation of server calculation on change
   useEffect(() => {

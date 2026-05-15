@@ -55,7 +55,7 @@ export const CalculatorsPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 text-right" dir="rtl">
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <ScreenHeader title="מחשבונים שימושיים" subtitle="כל הכלים הדרושים לניתוח השקעת נדל&quot;ן חכמה" className="mb-10" />
+        <ScreenHeader title="מחשבונים שימושיים" subtitle="כל הכלים הדרושים לניתוח השקעת נדל&quot;ן חכמה" isAbsolute={false} className="mb-10" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {calculators.map((calc, idx) => (
             <motion.div

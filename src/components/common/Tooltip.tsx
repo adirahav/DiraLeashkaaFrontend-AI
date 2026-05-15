@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { cn } from '../../lib/utils';
 
 export interface TooltipProps {
   text: string;
@@ -20,39 +21,30 @@ export const Tooltip: React.FC<TooltipProps> = ({ text, children, position = 'to
       const tooltipWidth = 280;
       const padding = 20;
       const screenWidth = window.innerWidth;
-      
-      let centerX = rect.left + window.scrollX + rect.width / 2;
-      let leftPos = centerX;
+
+      const centerX = rect.left + window.scrollX + rect.width / 2;
       let shift = 0;
 
-      // Adjust if overflowing right
       if (centerX + tooltipWidth / 2 > screenWidth - padding) {
         shift = (centerX + tooltipWidth / 2) - (screenWidth - padding);
       }
-      // Adjust if overflowing left
       if (centerX - tooltipWidth / 2 < padding) {
         shift = (centerX - tooltipWidth / 2) - padding;
       }
 
       setCoords({
         top: rect.top + window.scrollY,
-        left: centerX - shift
+        left: centerX - shift,
       });
 
-      // Calculate arrow offset percentage relative to the tooltip box
-      const offset = 43 + (shift / tooltipWidth) * 100;
-      setArrowOffset(offset);
+      setArrowOffset(50 + (shift / tooltipWidth) * 100);
     }
   }, [show]);
 
-  const arrowClasses = position === 'top'
-    ? "top-full border-t-white"
-    : "bottom-full border-b-white";
-
   return (
-    <div className="relative inline-block group" ref={triggerRef}>
-      <div 
-        onMouseEnter={() => setShow(true)} 
+    <div className="inline-block" ref={triggerRef}>
+      <div
+        onMouseEnter={() => setShow(true)}
         onMouseLeave={() => setShow(false)}
         onFocus={() => setShow(true)}
         onBlur={() => setShow(false)}
@@ -64,32 +56,57 @@ export const Tooltip: React.FC<TooltipProps> = ({ text, children, position = 'to
         {children}
       </div>
       {show && createPortal(
-        <div 
+        <div
           id={id}
           role="tooltip"
           onMouseEnter={() => setShow(true)}
           onMouseLeave={() => setShow(false)}
-          className={`absolute z-[10005] w-[280px] max-w-[90vw] p-4 bg-white text-slate-700 text-sm rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 ring-1 ring-black/5 text-right`}
+          className="absolute z-[var(--z-index-tooltip)]"
           style={{
-            top: position === 'top' ? coords.top : coords.top + (triggerRef.current?.offsetHeight || 0),
+            top: position === 'top'
+              ? coords.top
+              : coords.top + (triggerRef.current?.offsetHeight ?? 0),
             left: coords.left,
-            transform: `translateX(-50%) ${position === 'top' ? 'translateY(-100%) translateY(-12px)' : 'translateY(12px)'}`,
+            transform: `translateX(-50%) ${
+              position === 'top'
+                ? 'translateY(-100%) translateY(-12px)'
+                : 'translateY(12px)'
+            }`,
           }}
         >
-          <div className="flex gap-3">
-            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-              </svg>
+          <div className={cn(
+            'relative',
+            'w-[280px] max-w-[90vw] p-4',
+            'bg-white text-slate-700 text-sm text-right',
+            'rounded-2xl border border-slate-100 ring-1 ring-black/5',
+            'shadow-[var(--shadow-tooltip)]',
+            'animate-in fade-in zoom-in-95 duration-200'
+          )}>
+            <div className="flex gap-3">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="flex-1 leading-relaxed font-medium pt-1">
+                {text}
+              </div>
             </div>
-            <div className="flex-1 leading-relaxed font-medium pt-1">
-              {text}
-            </div>
+            {/* Rotated square arrow: card's bg-white covers its top half, only the tip is visible */}
+            <div
+              className={cn(
+                'absolute w-4 h-4 bg-white',
+                position === 'top'
+                  ? 'border-b border-r border-slate-100'
+                  : 'border-t border-l border-slate-100'
+              )}
+              style={{
+                ...(position === 'top' ? { bottom: '-8px' } : { top: '-8px' }),
+                left: `${arrowOffset}%`,
+                transform: 'translateX(-50%) rotate(45deg)',
+              }}
+            />
           </div>
-          <div 
-            className={`absolute ${arrowClasses} border-[10px] border-transparent drop-shadow-sm`}
-            style={{ left: `${arrowOffset}%`, transform: 'translateX(-50%)' }}
-          ></div>
         </div>,
         document.body
       )}

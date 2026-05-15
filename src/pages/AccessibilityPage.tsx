@@ -1,15 +1,10 @@
 import React from 'react'
 import { Card } from '../components/common/Card'
 import { ScreenHeader } from '../components/common/ScreenHeader'
+import { useScrolled } from '../hooks/useScrolled'
 
 export const AccessibilityPage: React.FC = () => {
-  const [isScrolled, setIsScrolled] = React.useState(false)
-
-  React.useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 10)
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  const isScrolled = useScrolled()
 
   return (
     <div className="min-h-screen bg-slate-50 text-right" dir="rtl">
@@ -18,7 +13,8 @@ export const AccessibilityPage: React.FC = () => {
           title="הצהרת נגישות"
           subtitle="עודכן לאחרונה: מרץ 2024"
           isScrolled={isScrolled}
-          className="mb-8 flex flex-col transition-all duration-300 ease-in-out"
+          isAbsolute={false}
+          className="mb-8"
         />
         <Card className="p-8 md:p-12 prose prose-slate max-w-none">
           <div className="space-y-6 text-slate-600 leading-relaxed">
