@@ -1,87 +1,148 @@
-import React, { useState, useEffect } from 'react'
-import { Card } from '../components/common/Card'
-import { SectionHeader } from '../components/common/SectionHeader'
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { jwtDecode } from 'jwt-decode'
 import { User, Wallet, Save } from 'lucide-react'
-import { UserFinancialDetails } from '../components/layout/UserFinancialDetails'
+import { useStore } from '../store/store'
+import { useSplash } from '../hooks/useSplash'
+import { userService } from '../services/user.service'
+import { parseNumber } from '../services/formatUtils.service'
+import { getNextOnboardingStep } from '../utils/user.utils'
+import { SectionHeader } from '../components/common/SectionHeader'
 import { UserPersonalInfo } from '../components/layout/UserPersonalInfo'
-import { Notification } from '../components/common/Notification'
+import { UserFinancialDetails } from '../components/layout/UserFinancialDetails'
+import { User as UserType } from '../types'
 
 interface ProfilePageProps {
   mode?: 'PERSONAL' | 'FINANCIAL'
 }
 
 export const ProfilePage: React.FC<ProfilePageProps> = ({ mode = 'PERSONAL' }) => {
-  const currentYear = new Date().getFullYear()
+  const navigate = useNavigate()
+  const { getPhrase } = useSplash()
 
-  const initialData = {
-    fullname: 'ישראל ישראלי',
-    email: 'israel@example.com',
-    password: '••••••••',
-    yearOfBirth: '1990',
-    equity: '500,000',
-    incomes: '15,000',
-    commitments: '2,000',
-    additionalFundingSources: [] as string[],
-    lastUpdated: '03.04.2026',
-  }
+  const loggedinUser = useStore((state) => state.loggedinUser)
+  const isLoading = useStore((state) => state.isLoading)
+  const setIsLoading = useStore((state) => state.setIsLoading)
+  const setNotification = useStore((state) => state.setNotification)
+  const setLoggedinUser = useStore((state) => state.setLoggedinUser)
+  const setToken = useStore((state) => state.setToken)
 
+  const buildFormSnapshot = () => ({
+    fullname: loggedinUser?.fullname ?? '',
+    email: loggedinUser?.email ?? '',
+    yearOfBirth: loggedinUser?.yearOfBirth ?? '',
+    equity: loggedinUser?.equity ?? '',
+    incomes: loggedinUser?.incomes ?? '',
+    commitments: loggedinUser?.commitments ?? '',
+    additionalFundingSources: (loggedinUser?.additionalFundingSources ?? []).map((s) => ({
+      id: s.uuid,
+      source: s.source,
+      amount: s.amount.toString(),
+      repayment: s.repayment.toString(),
+    })),
+  })
+
+  const [initialData, setInitialData] = useState(buildFormSnapshot)
   const [formData, setFormData] = useState(initialData)
-  const [isSaving, setIsSaving] = useState(false)
-  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
   useEffect(() => {
-    if (notification) {
-      const timer = setTimeout(() => setNotification(null), 5000)
-      return () => clearTimeout(timer)
+    if (!loggedinUser) {
+      navigate('/login', { replace: true })
     }
-  }, [notification])
+  }, [loggedinUser, navigate])
 
-  const getBirthYearError = () => {
-    if (!formData.yearOfBirth) return ''
-    if (formData.yearOfBirth.length < 4) return 'נא להזין שנה בת 4 ספרות'
-    const age = currentYear - parseInt(formData.yearOfBirth)
-    if (age < 18) return `השירות מיועד למשתמשים מעל גיל 18 (שנת ${currentYear - 18} ומטה)`
-    if (age > 120) return 'נא להזין שנת לידה הגיונית (עד גיל 120)'
-    return ''
-  }
+  if (!loggedinUser) return null
 
-  const validate = () => {
-    const birthError = getBirthYearError()
-    const emailError = formData.email && !/\S+@\S+\.\S+/.test(formData.email) ? 'אימייל לא תקין' : ''
-    return !birthError && !emailError
-  }
+  const handleSave = async () => {
+    const wasIncomplete = getNextOnboardingStep(loggedinUser) !== '/home'
 
-  const onSave = () => {
-    if (!validate()) return
-    setIsSaving(true)
-    setNotification(null)
+    setIsLoading(true)
+    try {
+      let payload: Parameters<typeof userService.updateUser>[0]
 
-    setTimeout(() => {
-      const equityValue = formData.equity.toString().replace(/,/g, '')
-      if (equityValue === '999') {
-        setNotification({ type: 'error', message: 'אירעה שגיאה בעת שמירת הנתונים. נא לנסות שוב מאוחר יותר.' })
-        setIsSaving(false)
-        return
+      if (mode === 'PERSONAL') {
+        payload = {
+          fullname: formData.fullname.trim(),
+          yearOfBirth: parseInt(formData.yearOfBirth),
+        }
+      } else {
+        payload = {
+          equity: parseNumber(formData.equity),
+          incomes: parseNumber(formData.incomes),
+          commitments: parseNumber(formData.commitments),
+          additionalFundingSources: formData.additionalFundingSources
+            .filter((s) => s.source.trim() !== '')
+            .map((s) => ({
+              uuid: s.id,
+              source: s.source,
+              amount: parseNumber(s.amount),
+              repayment: parseNumber(s.repayment),
+            })),
+        }
       }
-      const now = new Date()
-      const formattedDate = `${String(now.getDate()).padStart(2, '0')}.${String(now.getMonth() + 1).padStart(2, '0')}.${now.getFullYear()}`
-      setFormData((prev) => ({ ...prev, lastUpdated: formattedDate }))
-      setIsSaving(false)
-      setNotification({ type: 'success', message: 'השינויים נשמרו בהצלחה במערכת!' })
-    }, 1000)
+
+      const newToken = await userService.updateUser(payload)
+      const updatedUser = jwtDecode<UserType>(newToken)
+      setToken(newToken)
+      setLoggedinUser(updatedUser)
+
+      if (wasIncomplete) {
+        const nextStep = getNextOnboardingStep(updatedUser)
+        navigate(nextStep, { replace: true })
+      } else {
+        setInitialData({ ...formData })
+        setNotification({
+          type: 'success',
+          message: getPhrase('user_save_success', 'Changes saved successfully'),
+        })
+      }
+    } catch {
+      setNotification({
+        type: 'error',
+        message: getPhrase('dialog_data_error_title', 'An error occurred while saving your data'),
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
+
+  const headerConfig = mode === 'PERSONAL'
+    ? { icon: <User />, title: getPhrase('user_personal_details', 'Personal Details'), variant: 'blue' as const }
+    : { icon: <Wallet />, title: getPhrase('user_financial_details', 'Financial Details'), variant: 'teal' as const }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-right relative" dir="rtl">
-      <Notification isVisible={!!notification} type={notification?.type || 'success'} message={notification?.message || ''} onClose={() => setNotification(null)} />
+    <div className="min-h-screen bg-slate-50 text-start" dir="rtl">
       <main className="max-w-3xl mx-auto px-4 py-12">
-        <SectionHeader icon={mode === 'PERSONAL' ? <User /> : <Wallet />} title={mode === 'PERSONAL' ? 'פרטים אישיים' : 'נתונים כלכליים'} variant={mode === 'PERSONAL' ? 'blue' : 'teal'} />
-        <div className="space-y-6">
+        <SectionHeader
+          icon={headerConfig.icon}
+          title={headerConfig.title}
+          variant={headerConfig.variant}
+        />
+        <div className="animate-in fade-in duration-500">
           {mode === 'PERSONAL' && (
-            <UserPersonalInfo formData={formData} initialData={initialData} setFormData={setFormData} isEmailReadOnly={true} isPasswordReadOnly={true} onClick={onSave} buttonText={isSaving ? 'שומר...' : 'שמור שינויים'} buttonIcon={Save} variant="profile" />
+            <UserPersonalInfo
+              formData={formData}
+              initialData={initialData}
+              setFormData={setFormData}
+              isEmailReadOnly={true}
+              isPasswordReadOnly={true}
+              onClick={handleSave}
+              buttonText={isLoading ? getPhrase('button_saving', 'Saving...') : getPhrase('button_save', 'Save Changes')}
+              buttonIcon={Save}
+              variant="profile"
+            />
           )}
           {mode === 'FINANCIAL' && (
-            <UserFinancialDetails formData={formData} initialData={initialData} setFormData={setFormData} showAdditionalFunding={true} onNext={onSave} nextButtonText={isSaving ? 'שומר...' : 'שמור שינויים'} buttonIcon={Save} variant="profile" />
+            <UserFinancialDetails
+              formData={formData}
+              initialData={initialData}
+              setFormData={setFormData}
+              showAdditionalFunding={true}
+              onNext={handleSave}
+              nextButtonText={isLoading ? getPhrase('button_saving', 'Saving...') : getPhrase('button_save', 'Save Changes')}
+              buttonIcon={Save}
+              variant="profile"
+            />
           )}
         </div>
       </main>

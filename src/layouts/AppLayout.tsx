@@ -3,9 +3,12 @@ import { useStore } from '../store/store'
 import { Header } from '../components/common/Header'
 import { Footer } from '../components/common/Footer'
 import { AccessibilityMenu } from '../components/common/AccessibilityMenu'
+import { Notification } from '../components/common/Notification'
 
 export const AppLayout = () => {
   const isResultsMode = useStore((state) => state.isResultsMode)
+  const notification = useStore((state) => state.notification)
+  const clearNotification = useStore((state) => state.clearNotification)
 
   return (
     <div className="min-h-screen flex flex-col selection:bg-blue-100 max-w-full">
@@ -17,6 +20,13 @@ export const AppLayout = () => {
       </a>
 
       {!isResultsMode && <Header />}
+
+      <Notification
+        isVisible={!!notification && notification.type !== 'info'}
+        type={(notification?.type as 'success' | 'error') ?? 'success'}
+        message={notification?.message ?? ''}
+        onClose={clearNotification}
+      />
 
       <div id="app-content" className="flex-1 flex flex-col">
         <main id="main-content" className="flex-1" tabIndex={-1}>

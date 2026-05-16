@@ -27,14 +27,13 @@ const App = () => {
         {/* App routes — with header/footer layout */}
         <Route element={<AppLayout />}>
           {/* Public */}
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="/accessibility" element={<AccessibilityPage />} />
-          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/consent" element={<ConsentPage />} />
+          <Route path="/accessibility-statement" element={<AccessibilityPage />} />
+          <Route path="/contact-us" element={<ContactPage />} />
 
           {/* Protected */}
           <Route element={<ProtectedRoute />}>
             <Route path="/home" element={<HomePage />} />
-            <Route path="/consent" element={<ConsentPage />} />
             <Route path="/property/new" element={<PropertyPage />} />
             <Route path="/property/:id" element={<PropertyPage />} />
             <Route path="/personal-info" element={<ProfilePage mode="PERSONAL" />} />

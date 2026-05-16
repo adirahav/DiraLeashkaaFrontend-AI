@@ -14,7 +14,7 @@ references:
 1. **Visibility & Access**:
    - **User State**: Render only if `isLoggedIn` is true or `showForAnonymous` prop is passed.
    - **Conditional Content**: 
-     - On the `/terms-of-use` page: Show ONLY "Terms of Use" and "Accessibility Statement".
+     - On the `/concent` page: Show ONLY "Terms of Use" and "Accessibility Statement".
      - Everywhere else: Show the full menu.
 
 2. **Platform-Aware Logic (Native vs. Web)**:
@@ -22,7 +22,7 @@ references:
 
 3. **Navigation & Action Logic**:
    - *Terms of Use*: 
-      - Route: `/terms-of-use`
+      - Route: `/concent`
       - Phrase: `getPhrase('drawer_terms_of_use', 'Terms of U9se')` 
    - *Contact Us*: 
       - Route: `/contact-us`

@@ -4,9 +4,6 @@ import { NumericInput, Button } from '../formFields';
 import { Card } from '../common/Card';
 import { useSplash } from '../../hooks/useSplash';
 import { useStore } from '../../store/store';
-import { userService } from '../../services/user.service';
-import { parseNumber } from '../../services/formatUtils.service';
-import { AdditionalFundingSource } from '../../types';
 
 interface FundingSourceFormItem {
   id: string;
@@ -50,28 +47,24 @@ export const UserFinancialDetails: React.FC<UserFinancialDetailsProps> = ({
 }) => {
   const { getPhrase } = useSplash();
   const isLoading = useStore((state) => state.isLoading);
-  const setIsLoading = useStore((state) => state.setIsLoading);
-  const setNotification = useStore((state) => state.setNotification);
-  const loggedinUser = useStore((state) => state.loggedinUser);
-  const setLoggedinUser = useStore((state) => state.setLoggedinUser);
 
   const getEquityError = () => {
     if (formData.equity === undefined || formData.equity === null || formData.equity === '') return '';
-    const val = parseNumber(formData.equity);
+    const val = Number(formData.equity.toString().replace(/,/g, ''));
     if (isNaN(val) || val < 0) return getPhrase('signup_equity_error', 'Please enter a valid amount');
     return '';
   };
 
   const getIncomesError = () => {
     if (formData.incomes === undefined || formData.incomes === null || formData.incomes === '') return '';
-    const val = parseNumber(formData.incomes);
+    const val = Number(formData.incomes.toString().replace(/,/g, ''));
     if (isNaN(val) || val < 0) return getPhrase('signup_incomes_error', 'Please enter a valid amount');
     return '';
   };
 
   const getCommitmentsError = () => {
     if (formData.commitments === undefined || formData.commitments === null || formData.commitments === '') return '';
-    const val = parseNumber(formData.commitments);
+    const val = Number(formData.commitments.toString().replace(/,/g, ''));
     if (isNaN(val) || val < 0) return getPhrase('signup_commitments_error', 'Please enter a valid amount');
     return '';
   };
@@ -90,55 +83,6 @@ export const UserFinancialDetails: React.FC<UserFinancialDetailsProps> = ({
     formData.commitments !== initialData.commitments ||
     JSON.stringify(formData.additionalFundingSources) !== JSON.stringify(initialData.additionalFundingSources)
   );
-
-  const buildPayload = () => {
-    const mappedSources: AdditionalFundingSource[] = (formData.additionalFundingSources ?? []).map((s) => ({
-      uuid: s.id,
-      source: s.source,
-      amount: parseNumber(s.amount),
-      repayment: parseNumber(s.repayment),
-    }));
-
-    return {
-      equity: parseNumber(formData.equity),
-      incomes: parseNumber(formData.incomes),
-      commitments: parseNumber(formData.commitments),
-      additionalFundingSources: mappedSources,
-    };
-  };
-
-  const handleSubmit = async () => {
-    if (variant === 'profile') {
-      setIsLoading(true);
-      try {
-        const payload = buildPayload();
-        await userService.updateUser(payload);
-        if (loggedinUser) {
-          setLoggedinUser({
-            ...loggedinUser,
-            equity: formData.equity,
-            incomes: formData.incomes,
-            commitments: formData.commitments,
-            additionalFundingSources: payload.additionalFundingSources,
-          });
-        }
-        setNotification({
-          message: getPhrase('user_save_success', 'Changes saved successfully'),
-          type: 'success',
-        });
-        onNext?.();
-      } catch {
-        setNotification({
-          message: getPhrase('dialog_data_error_title', 'An error occurred while saving your data'),
-          type: 'error',
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
-      onNext?.();
-    }
-  };
 
   const resolvedNextText = nextButtonText ?? getPhrase('wizard_next_button', 'Continue');
   const resolvedPrevText = prevButtonText ?? getPhrase('wizard_prev_button', 'Back');
@@ -190,15 +134,15 @@ export const UserFinancialDetails: React.FC<UserFinancialDetailsProps> = ({
   if (variant === 'profile') {
     return (
       <div className="flex flex-col gap-8 animate-in fade-in duration-500">
-        <Card className="p-6">
+        <Card className="p-6 md:p-10">
           {formFields}
         </Card>
         {onNext && (
           <div className="flex justify-center">
             <Button
-              onClick={handleSubmit}
+              onClick={onNext}
               disabled={!isStepValid || !hasChanges || isLoading}
-              className="px-12 py-4 text-lg shadow-xl shadow-blue-200"
+              className="px-12 py-4 text-lg shadow-xl shadow-blue-200/50 hover:scale-[1.02] transition-transform"
               icon={buttonIcon}
               iconSize={20}
             >
@@ -217,13 +161,13 @@ export const UserFinancialDetails: React.FC<UserFinancialDetailsProps> = ({
           {resolvedPrevText}
         </Button>
         {onNext && (
-          <Button onClick={handleSubmit} disabled={!isStepValid || isLoading} className="py-4">
+          <Button onClick={onNext} disabled={!isStepValid || isLoading} className="py-4">
             {resolvedNextText}
           </Button>
         )}
       </div>
     ) : (
-      <Button onClick={handleSubmit} disabled={!isStepValid || isLoading} className="mt-6 py-4 w-full">
+      <Button onClick={onNext} disabled={!isStepValid || isLoading} className="mt-6 py-4 w-full">
         {resolvedNextText}
       </Button>
     )

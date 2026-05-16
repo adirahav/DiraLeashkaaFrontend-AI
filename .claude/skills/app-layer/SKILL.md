@@ -20,7 +20,7 @@ references:
    - Manage the visibility state of global Modals (e.g., Session Expired).
 
 3. **Routing Strategy (The Funnel Guard):**
-   - **Public Routes:** `/login`, `/signup`, `/terms-of-use`.
+   - **Public Routes:** `/login`, `/signup`, `/concent`.
    - **Private Routes:** `/`, `/home`, `/property`, `/calculators`, `/max-price-calculator`, `/compare-calculator`, `/personal-info`, `/financial-details`, `/accessibility-statement`. 
    - Guard Logic: 
       - Auth Check: If `!loggedinUser` and route is private ⮕ Redirect to `/login`.
