@@ -328,7 +328,7 @@ export const Header: React.FC = () => {
                     icon={FileText}
                     iconSize={16}
                   >
-                    {getPhrase('drawer_terms_of_use', 'תנאי שימוש')}
+                    {getPhrase('drawer_terms_of_use', 'Terms of Use')}
                   </Button>
                 </li>
               </ul>
