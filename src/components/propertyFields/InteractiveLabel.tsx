@@ -1,6 +1,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { formatPercent } from '../../services/utils';
+import { cn } from '../../lib/utils';
+import { formatPercent } from '../../services/formatUtils.service';
+import { useSplash } from '../../hooks/useSplash';
 
 export interface InteractiveLabelProps {
   label: string;
@@ -17,17 +19,20 @@ export interface InteractiveLabelProps {
   disposable?: number;
 }
 
-export const InteractiveLabel: React.FC<InteractiveLabelProps> = ({ 
+export const InteractiveLabel: React.FC<InteractiveLabelProps> = ({
   label, percent, min, max, step, onPercentChange, disabled = false,
   showPercent, defaultPercent = 30, defaultValue, currentValue, disposable
 }) => {
+  const { getPhrase } = useSplash();
+  const changePercentageTitle = getPhrase('interactive_label_change_percentage', 'Click to change percentage');
+
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const id = React.useId();
 
-  const isManualOverride = disposable !== undefined && currentValue !== undefined && 
+  const isManualOverride = disposable !== undefined && currentValue !== undefined &&
     currentValue !== Math.round(disposable * (percent / 100));
-  
+
   const shouldShowPercent = showPercent !== undefined ? showPercent : !isManualOverride;
 
   useEffect(() => {
@@ -46,24 +51,30 @@ export const InteractiveLabel: React.FC<InteractiveLabelProps> = ({
   }, [isOpen]);
 
   return (
-    <div className={`flex items-center gap-2 h-5 flex-1 min-w-0 relative ${disabled ? 'opacity-60 grayscale-[0.2]' : ''}`} ref={containerRef}>
+    <div
+      className={cn(
+        "flex items-center gap-2 h-5 flex-1 min-w-0 relative",
+        disabled && "opacity-60 grayscale-[0.2]"
+      )}
+      ref={containerRef}
+    >
       <div className="text-base font-bold text-slate-700 truncate flex-shrink">
         {label}
       </div>
-      
+
       {isOpen && !disabled ? (
         <div className="flex items-center gap-2 flex-1 min-w-0 h-5 animate-in fade-in slide-in-from-left-2 duration-300" dir="ltr">
           <span className="text-[9px] font-black text-slate-400 shrink-0">{formatPercent(min)}</span>
-          <input 
+          <input
             id={`${id}-range`}
-            type="range" 
-            min={min} 
-            max={max} 
-            step={step} 
-            value={percent} 
+            type="range"
+            min={min}
+            max={max}
+            step={step}
+            value={percent}
             onChange={(e) => onPercentChange(Number(e.target.value))}
             disabled={disabled}
-            className="flex-1 min-w-0 h-1 bg-slate-200 rounded-lg cursor-pointer accent-blue-600 appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-600 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-blue-600 [&::-moz-range-thumb]:border-none"
+            className="flex-1 min-w-0 h-1 bg-slate-200 rounded-lg cursor-pointer accent-blue-600 appearance-none focus:outline-none focus-visible:outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-600 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-blue-600 [&::-moz-range-thumb]:border-none"
             style={{ direction: 'ltr' }}
           />
           <span className="text-[9px] font-black text-slate-400 shrink-0">{formatPercent(max)}</span>
@@ -73,13 +84,16 @@ export const InteractiveLabel: React.FC<InteractiveLabelProps> = ({
         </div>
       ) : (
         shouldShowPercent && (
-          <button 
+          <button
             id={`${id}-trigger`}
             type="button"
             onClick={() => !disabled && setIsOpen(true)}
             disabled={disabled}
-            className={`text-blue-600 hover:text-blue-700 underline underline-offset-4 cursor-pointer transition-colors px-1 rounded hover:bg-blue-50 text-sm font-bold animate-in fade-in duration-300 ${disabled ? 'cursor-not-allowed no-underline' : ''}`}
-            title={disabled ? "" : "לחץ לשינוי אחוז"}
+            className={cn(
+              "text-blue-600 hover:text-blue-700 underline underline-offset-4 cursor-pointer transition-colors px-1 rounded hover:bg-blue-50 text-sm font-bold animate-in fade-in duration-300",
+              disabled && "cursor-not-allowed no-underline"
+            )}
+            title={disabled ? "" : changePercentageTitle}
           >
             {formatPercent(percent)}
           </button>

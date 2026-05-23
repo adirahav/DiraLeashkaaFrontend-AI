@@ -2,6 +2,7 @@
 import React from 'react';
 import { MetricCard } from '../propertyFields';
 import { formatPercent, formatCurrency } from '../../services/utils';
+import { useSplash } from '../../hooks/useSplash';
 
 interface PropertyMetricsProps {
   totalYield10y: number;
@@ -18,41 +19,39 @@ export const PropertyMetrics: React.FC<PropertyMetricsProps> = ({
   actualFinancingPercent,
   maxFinancingPercent,
   monthlyMortgageRepayment,
-  isScrolled
+  isScrolled,
 }) => {
+  const { getPhrase } = useSplash();
+
   return (
-    <div className={`grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4 transition-all duration-300 ease-in-out flex-1 w-full`}>
-      <MetricCard 
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4 transition-all duration-300 ease-in-out flex-1 w-full">
+      <MetricCard
         value={totalYield10y}
-        label="תשואה (10 שנים)"
+        label={getPhrase('property_yield_label', 'Yield (10yr)')}
         isScrolled={isScrolled}
         formatter={formatPercent}
         variant="emerald"
-        compact
       />
-      <MetricCard 
+      <MetricCard
         value={mortgageAmount}
-        label="משכנתא נדרשת"
+        label={getPhrase('property_mortgage_required_label', 'Required Mortgage')}
         isScrolled={isScrolled}
         formatter={formatCurrency}
         variant="indigo"
-        compact
       />
-      <MetricCard 
+      <MetricCard
         value={actualFinancingPercent}
-        label="אחוז מימון"
+        label={getPhrase('property_financing_percentage_label', 'Financing %')}
         isScrolled={isScrolled}
         formatter={formatPercent}
         variant={actualFinancingPercent > maxFinancingPercent ? 'rose' : 'slate'}
-        compact
       />
-      <MetricCard 
+      <MetricCard
         value={monthlyMortgageRepayment}
-        label="החזר חודשי"
+        label={getPhrase('property_monthly_repayment_label', 'Monthly Repayment')}
         isScrolled={isScrolled}
         formatter={formatCurrency}
         variant="amber"
-        compact
       />
     </div>
   );

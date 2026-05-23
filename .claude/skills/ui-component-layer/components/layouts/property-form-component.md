@@ -94,7 +94,7 @@ references:
                     - New Property: `loggedinUser.commitments`
                 - Read Only: `property.calcAdditionalFunding.totalAmount >  0` 
         - *Additional funding sources (@additional-funding-sources-component.md)*:
-            - Label: `property_additional_funding_sources_label`. Tooltip: `property_additional_funding_sources_tooltip`.
+            - Label: `property_additional_funding_sources_label`. Tooltip: `property_additional_funding_sources_subtitle`.
             - Validation: Required. 
             - Source / Logic: `loggedinUser.additionalFundingSources`.
         - *Disposable income (@calc-component.md)*:

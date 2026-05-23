@@ -2,7 +2,7 @@
 import React from 'react';
 import { StringInput } from '../formFields';
 import { RollbackButton } from './RollbackButton';
-import { formatNumber } from '../../services/utils';
+import { formatNumber } from '../../services/formatUtils.service';
 
 export const SuggestedNumberInput: React.FC<{
   label: string;
@@ -53,7 +53,7 @@ export const SuggestedNumberInput: React.FC<{
       )}
       {showRollback && (
         <div className="absolute left-3 top-1/2 -translate-y-1/2">
-          <RollbackButton 
+          <RollbackButton
             onClick={() => onChange(defaultValue!)}
             disabled={disabled}
           />

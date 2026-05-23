@@ -1,6 +1,7 @@
 import { Capacitor } from '@capacitor/core'
 import Axios, { AxiosRequestConfig, AxiosResponse, Method } from 'axios'
 import { utilService } from './util.service'
+import { pendingActionService } from './pending-action.service'
 import { useStore } from '../store/store'
 
 const BASE_URL: string = import.meta.env.VITE_API_URL
@@ -58,11 +59,17 @@ async function ajax<T>(
         console.dir(err)
 
         if (err.response && err.response.status === 401) {
-            useStore.setState({ loggedinUser: null, token: null })
-            await utilService.deleteFromStorage("token")
-            const email = await utilService.getFromStorage("last_email")
             if (typeof window !== 'undefined') {
-                window.location.assign(email ? '/login' : '/signup')
+                const returnPath = window.location.pathname + window.location.search
+                await pendingActionService.save({
+                    returnPath,
+                    ...(method !== 'GET' && data ? { apiCall: { method: method as string, endpoint, data } } : {}),
+                })
+            }
+            useStore.setState({ loggedinUser: null, token: null })
+            await utilService.deleteFromStorage('token')
+            if (typeof window !== 'undefined') {
+                window.location.assign('/login')
             }
         }
         throw err

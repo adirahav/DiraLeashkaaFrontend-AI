@@ -1,8 +1,11 @@
 
 import React from 'react';
+import { cn } from '../../lib/utils';
 import { Info } from 'lucide-react';
 import { Checkbox } from '../formFields';
 import { Tooltip } from '../common/Tooltip';
+import { formatNumber } from '../../services/formatUtils.service';
+import { useSplash } from '../../hooks/useSplash';
 
 export interface FundingSource {
   id: string;
@@ -21,13 +24,20 @@ export interface AdditionalFundingSourcesProps {
 }
 
 export const AdditionalFundingSources: React.FC<AdditionalFundingSourcesProps> = ({
-  sources,
-  selectedIds,
+  sources = [],
+  selectedIds = [],
   onChange,
   disabled = false,
-  label = "מקורות מימון נוספים",
-  tooltip = "בחר מקורות מימון נוספים שהוגדרו בפרופיל"
+  label,
+  tooltip,
 }) => {
+  const { getPhrase } = useSplash();
+  const resolvedLabel = label ?? getPhrase('property_additional_funding_sources_label', 'Additional Funding Sources');
+  const resolvedTooltip = tooltip ?? getPhrase('property_additional_funding_sources_tooltip', 'Select additional funding sources defined in your profile');
+  const noDeclarationTooltip = getPhrase('property_additional_funding_sources_no_declaration', 'No additional funding sources defined. To define them, go to the "Financial Details" screen.');
+  const emptyText = getPhrase('property_additional_funding_sources_empty', 'No funding sources defined');
+  const returnLabel = getPhrase('property_additional_funding_sources_return_label', 'החזר');
+
   const handleToggle = (id: string, checked: boolean) => {
     if (checked) {
       onChange([...selectedIds, id]);
@@ -39,25 +49,30 @@ export const AdditionalFundingSources: React.FC<AdditionalFundingSourcesProps> =
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center gap-2 mr-1 h-5">
-        <label className="text-sm font-bold text-slate-700">{label}</label>
-        <Tooltip text={sources.length === 0 ? "לא הוגדרו אמצעי מימון נוספים. לצורך הגדרה, יש לעבור למסך “נתונים כלכליים”." : tooltip}>
+        <label className="text-sm font-bold text-slate-700">{resolvedLabel}</label>
+        <Tooltip text={sources.length === 0 ? noDeclarationTooltip : resolvedTooltip}>
           <Info size={14} className="text-slate-400" />
         </Tooltip>
       </div>
-      <div className={`space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-100 max-h-[160px] overflow-y-auto custom-scrollbar ${disabled ? 'opacity-60' : ''}`}>
+      <div
+        className={cn(
+          "space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-100 max-h-[160px] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200",
+          disabled && "opacity-60"
+        )}
+      >
         {sources.length > 0 ? (
           sources.map(source => (
-            <Checkbox 
+            <Checkbox
               key={source.id}
               label={source.name}
               checked={selectedIds.includes(source.id)}
               onChange={(checked) => handleToggle(source.id, checked)}
               disabled={disabled}
-              description={`${source.amount.toLocaleString()} ₪ | החזר: ${source.monthlyRepayment} ₪`}
+              description={`${formatNumber(source.amount)} ₪ | ${returnLabel}: ${formatNumber(source.monthlyRepayment)} ₪`}
             />
           ))
         ) : (
-          <span className="text-sm text-slate-400 italic">לא הוגדרו מקורות מימון</span>
+          <span className="text-sm text-slate-400 italic">{emptyText}</span>
         )}
       </div>
     </div>

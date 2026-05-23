@@ -3,41 +3,57 @@ import React, { forwardRef } from 'react';
 import { TrendingUp } from 'lucide-react';
 import { SectionHeader } from '../common/SectionHeader';
 import { Card } from '../common/Card';
-import { ResponsiveContainer } from 'recharts';
 import { YieldChart } from '../common/YieldChart';
+import { useSplash } from '../../hooks/useSplash';
+import { cn } from '../../lib/utils';
 
 interface PropertyChartProps {
+  yieldForecast: any[];
   activeResultTab: string;
-  viewMode: string;
-  graphData: any[];
-  forecastData: any[];
+  isCalculating: boolean;
 }
 
-export const PropertyChart = forwardRef<HTMLDivElement, PropertyChartProps>(({ 
-  activeResultTab, 
-  viewMode, 
-  graphData, 
-  forecastData 
-}, ref) => {
-  return (
-    <section ref={ref} className={`pt-0 lg:pt-4 ${activeResultTab === 'graph' ? 'block' : 'hidden lg:block'}`}>
-      <div className="hidden lg:block">
-        <SectionHeader 
-          icon={<TrendingUp />} 
-          title="תצוגת גרף - תחזית תשואה" 
-          variant="blue" 
-        />
-      </div>
-      
-      <Card className="!p-0 lg:p-8 h-[calc(100dvw-40px)] lg:h-[500px] overflow-visible rounded-none lg:rounded-[2rem] border-0 lg:border shadow-none lg:shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-        <div className="w-full h-full min-h-[300px]">
-          <ResponsiveContainer width="100%" height="100%" minHeight={300} key={`graph-${activeResultTab}-${viewMode}-${graphData.length}-${forecastData.length}`}>
-            <YieldChart data={graphData} />
-          </ResponsiveContainer>
+export const PropertyChart = forwardRef<HTMLDivElement, PropertyChartProps>(
+  ({ yieldForecast, activeResultTab, isCalculating }, ref) => {
+    const { getPhrase } = useSplash();
+
+    if (!Array.isArray(yieldForecast) || yieldForecast.length === 0) return null;
+
+    return (
+      <section
+        ref={ref}
+        className={cn(
+          'pt-0 lg:pt-4 hidden lg:block',
+          activeResultTab === 'graph' && 'block'
+        )}
+      >
+        <div className="hidden lg:block">
+          <SectionHeader
+            icon={<TrendingUp />}
+            title={getPhrase('property_yield_forecast_graph_view_header', 'Graph View - Yield Forecast')}
+            variant="blue"
+          />
         </div>
-      </Card>
-    </section>
-  );
-});
+
+        <Card className={cn(
+          'relative overflow-hidden !p-0',
+          'h-[calc(100dvw-40px)] lg:h-[500px]',
+          'rounded-none border-0 shadow-none lg:rounded-[2rem] lg:border lg:shadow-[0_8px_30px_rgb(0,0,0,0.04)]'
+        )}>
+          <div className="w-full h-full min-h-[300px]">
+            <YieldChart data={yieldForecast} activeResultTab={activeResultTab} />
+          </div>
+
+          {isCalculating && (
+            <div className={cn(
+              'absolute inset-0 z-50 bg-white/30 backdrop-blur-[1px] cursor-wait transition-all duration-200',
+              'rounded-none lg:rounded-[2rem]'
+            )} />
+          )}
+        </Card>
+      </section>
+    );
+  }
+);
 
 PropertyChart.displayName = 'PropertyChart';

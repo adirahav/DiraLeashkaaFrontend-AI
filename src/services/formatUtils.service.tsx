@@ -6,8 +6,8 @@ export const parseNumber = (val: string | number | undefined): number => {
   return Number(str.replace(/,/g, '')) || 0;
 };
 
-export const formatNumber = (val: number | string | undefined, hideZero: boolean = false) => {
-  if (val === undefined || val === '') return '';
+export const formatNumber = (val: number | string | undefined | null, hideZero: boolean = false) => {
+  if (val === undefined || val === null || val === '') return '';
   const num = typeof val === 'string' ? parseFloat(val.replace(/,/g, '')) : val;
   if (isNaN(num)) return '';
   if (hideZero && num === 0) return '';

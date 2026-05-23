@@ -87,7 +87,7 @@ export const StringInput: React.FC<{
         />
         {children}
       </div>
-      {error && (
+      {error?.trim() && (
         <span
           id={errorId}
           className="text-xs font-bold text-red-500 mt-0.5 animate-in fade-in slide-in-from-top-1 duration-200 mr-1"

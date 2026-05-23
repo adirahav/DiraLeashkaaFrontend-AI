@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { RotateCcw } from 'lucide-react';
 import { StringInput } from '../formFields';
-import { formatNumber } from '../../services/utils';
+import { RollbackButton } from './RollbackButton';
+import { formatNumber } from '../../services/formatUtils.service';
 
 export interface AutoFIllInputProps {
   label: string;
@@ -59,15 +59,10 @@ export const AutoFIllInput: React.FC<AutoFIllInputProps> = ({
     >
       {isModified && (
         <div className="absolute left-3 top-1/2 -translate-y-1/2">
-          <button 
-            type="button"
+          <RollbackButton
             onClick={() => onChange(defaultValue)}
             disabled={disabled}
-            className={`p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all ${disabled ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}
-            title="חזור לערך המקורי"
-          >
-            <RotateCcw size={14} />
-          </button>
+          />
         </div>
       )}
     </StringInput>

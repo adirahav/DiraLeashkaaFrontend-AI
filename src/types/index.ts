@@ -16,6 +16,17 @@ export interface User {
   additionalFundingSources?: AdditionalFundingSource[]
 }
 
+export interface PendingApiCall {
+  method: string
+  endpoint: string
+  data?: Record<string, any> | null
+}
+
+export interface PendingAction {
+  returnPath: string
+  apiCall?: PendingApiCall
+}
+
 export interface Property {
   id: string
   city: string

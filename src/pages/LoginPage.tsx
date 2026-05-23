@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { Card } from '../components/common/Card'
@@ -7,6 +7,8 @@ import { Logo } from '../components/common/Logo'
 import { useStore } from '../store/store'
 import { useSplash } from '../hooks/useSplash'
 import { getNextOnboardingStep } from '../utils/user.utils'
+import { pendingActionService } from '../services/pending-action.service'
+import { httpService } from '../services/http.service'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const PASSWORD_MIN_LENGTH = 6
@@ -36,13 +38,14 @@ export const LoginPage: React.FC = () => {
   const [passwordError, setPasswordError] = useState('')
   const [serverError, setServerError] = useState('')
   const [isSubmitDisabled, setIsSubmitDisabled] = useState(true)
+  const isLoggingIn = useRef(false)
 
   // Reset any stale loading state left by a previous page
   useEffect(() => { setIsLoading(false) }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auth guard — already logged in
+  // Auth guard — redirect already-logged-in users, but skip if handleSubmit owns navigation
   useEffect(() => {
-    if (!loggedinUser) return
+    if (!loggedinUser || isLoggingIn.current) return
     navigate(getNextOnboardingStep(loggedinUser), { replace: true })
   }, [loggedinUser, navigate])
 
@@ -98,12 +101,40 @@ export const LoginPage: React.FC = () => {
 
     setIsLoading(true)
     setServerError('')
+    isLoggingIn.current = true
 
     try {
       const user = await login(email, password)
       forceFetchSplash()
-      navigate(getNextOnboardingStep(user), { replace: true })
+
+      const pending = await pendingActionService.get()
+      if (pending) {
+        let returnPath = pending.returnPath
+        if (pending.apiCall) {
+          const { method, endpoint, data } = pending.apiCall
+          try {
+            let response: Record<string, any> | null = null
+            if (method === 'POST') response = await httpService.post(endpoint, data)
+            else if (method === 'PUT') response = await httpService.put(endpoint, data)
+            else if (method === 'PATCH') response = await httpService.patch(endpoint, data)
+            else if (method === 'DELETE') await httpService.delete(endpoint, data)
+
+            // POST created a new resource — navigate to its canonical URL
+            const resourceId = response?.id ?? response?.uuid ?? response?._id
+            if (resourceId && returnPath.endsWith('/new')) {
+              returnPath = returnPath.slice(0, -3) + resourceId
+            }
+          } catch {
+            // Replay failed — user lands on the page and can retry manually
+          }
+        }
+        await pendingActionService.clear()
+        navigate(returnPath, { replace: true })
+      } else {
+        navigate(getNextOnboardingStep(user), { replace: true })
+      }
     } catch {
+      isLoggingIn.current = false
       setServerError(getPhrase('login_credentials_error', 'Invalid credentials, please try again'))
     } finally {
       setIsLoading(false)

@@ -78,7 +78,7 @@ export const ConsentPage: React.FC = () => {
               content={getPhrase('signup_terms_of_use_text', '')}
               showCheckbox={false}
               showButtons={false}
-              contentClassName="bg-white border-0 shadow-none rounded-none max-h-[none] overflow-visible p-0 text-slate-700 [&_h3]:text-lg [&_h3]:font-bold [&_h3]:mb-3 [&_p]:mb-4 [&_section]:mb-6 [&>hr:last-of-type]:hidden [&>p:last-of-type]:hidden"
+              contentClassName="bg-white border-0 shadow-none rounded-none max-h-[none] overflow-visible p-0 text-slate-700 [&_h3]:text-lg [&_h3]:font-bold [&_h3]:mb-3 [&_p]:mb-4 [&_section]:mb-6"
             />
           </Card>
         </main>

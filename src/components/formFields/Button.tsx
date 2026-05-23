@@ -11,6 +11,7 @@ export const Button: React.FC<{
   ariaLabel?: string;
   icon?: React.ElementType;
   iconSize?: number;
+  tabIndex?: number;
 }> = ({
   children,
   onClick,
@@ -21,6 +22,7 @@ export const Button: React.FC<{
   ariaLabel,
   icon: Icon,
   iconSize = 18,
+  tabIndex,
 }) => {
   const variants = {
     primary: 'bg-blue-600 text-white enabled:hover:bg-blue-700 shadow-lg shadow-blue-200',
@@ -35,6 +37,7 @@ export const Button: React.FC<{
       onClick={onClick}
       disabled={disabled}
       aria-label={ariaLabel}
+      tabIndex={tabIndex}
       className={cn(
         'px-6 py-3 rounded-xl font-bold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-center enabled:active:scale-95 focus-visible:ring-4 focus-visible:ring-blue-100 focus:outline-none flex items-center justify-center gap-2',
         variants[variant],
