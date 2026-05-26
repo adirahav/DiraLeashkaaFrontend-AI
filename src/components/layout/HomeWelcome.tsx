@@ -1,31 +1,35 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Button } from '../formFields'
 import { Plus, Sparkles } from 'lucide-react'
 import { motion } from 'motion/react'
 import { WelcomeTour } from '../tour/WelcomeTour'
 import { AnimatedHouse } from '../animations/AnimatedHouse'
 import { AnimatedTrendingUp } from '../animations/AnimatedTrendingUp'
+import { useStore } from '../../store/store'
+import { useSplash } from '../../hooks/useSplash'
 
 interface HomeWelcomeProps {
   onAddPropertyPress: () => void
-  showTour: boolean
-  setShowTour: (show: boolean) => void
+  canStartTour: boolean
 }
 
-export const HomeWelcome: React.FC<HomeWelcomeProps> = ({ onAddPropertyPress, showTour, setShowTour }) => {
+export const HomeWelcome: React.FC<HomeWelcomeProps> = ({ onAddPropertyPress, canStartTour }) => {
   const buttonRef = useRef<HTMLDivElement>(null)
-
-  const [_initialized, setInitialized] = useState(false)
+  const { getPhrase } = useSplash()
+  const [isTourActive, setIsTourActive] = useState(false)
 
   useEffect(() => {
-    if (!showTour) {
-      const timer = setTimeout(() => {
-        buttonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-        setTimeout(() => { setShowTour(true); setInitialized(true) }, 1800)
-      }, 2000)
-      return () => clearTimeout(timer)
-    }
-  }, [showTour, setShowTour])
+    if (!canStartTour) return
+    if (isTourActive) return
+
+    const scrollTimer = setTimeout(() => {
+      buttonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      const activateTimer = setTimeout(() => setIsTourActive(true), 1800)
+      return () => clearTimeout(activateTimer)
+    }, 2000)
+
+    return () => clearTimeout(scrollTimer)
+  }, [canStartTour, isTourActive])
 
   const containerVariants = {
     hidden: { opacity: 0, scale: 0.95 },
@@ -43,7 +47,7 @@ export const HomeWelcome: React.FC<HomeWelcomeProps> = ({ onAddPropertyPress, sh
 
   return (
     <div className="w-full flex flex-col items-center justify-center py-12 text-right relative overflow-hidden" dir="rtl">
-      <WelcomeTour showTour={showTour} setShowTour={setShowTour} buttonRef={buttonRef} />
+      <WelcomeTour showTour={isTourActive} setShowTour={setIsTourActive} buttonRef={buttonRef} />
 
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
@@ -88,39 +92,41 @@ export const HomeWelcome: React.FC<HomeWelcomeProps> = ({ onAddPropertyPress, sh
             className="absolute top-6 left-6 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm border border-white/50 flex items-center gap-2"
           >
             <Sparkles size={16} className="text-amber-500" />
-            <span className="text-xs font-black text-slate-700">התחלה חדשה</span>
+            <span className="text-xs font-black text-slate-700">
+              {getPhrase('home_welcome_new_start', 'New Start')}
+            </span>
           </motion.div>
         </div>
 
         <div className="p-10 text-center -mt-16 relative z-10">
           <AnimatedTrendingUp variants={itemVariants} />
           <motion.h1 variants={itemVariants} className="text-4xl font-black text-slate-800 mb-4 tracking-tight">
-            ברוך הבא!
+            {getPhrase('home_welcome_title', 'Welcome!')}
           </motion.h1>
           <motion.p variants={itemVariants} className="text-slate-600 text-xl font-bold mb-10 leading-relaxed max-w-md mx-auto">
-            אנחנו שמחים שהצטרפת אלינו. כדי להתחיל לנהל את ההשקעות שלך בצורה חכמה, בוא נזין את הנכס הראשון שלך במערכת.
+            {getPhrase('home_welcome_text', "We're glad you joined us. To start managing your investments smartly, let's add your first property to the system.")}
           </motion.p>
 
           <div className="flex justify-center">
             <motion.div
               ref={buttonRef}
               variants={itemVariants}
-              className={`w-fit transition-all duration-500 ${showTour ? 'relative z-[110]' : ''}`}
+              className={`w-fit transition-all duration-500 ${isTourActive ? 'relative z-[110]' : ''}`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               <Button
                 variant="primary"
                 onClick={onAddPropertyPress}
-                className={`px-10 py-5 text-xl shadow-2xl shadow-blue-200 flex items-center justify-center gap-3 rounded-2xl transition-all duration-300 ${showTour ? 'ring-4 ring-blue-500 bg-blue-600 text-white' : ''}`}
+                className={`px-10 py-5 text-xl shadow-2xl shadow-blue-200 flex items-center justify-center gap-3 rounded-2xl transition-all duration-300 ${isTourActive ? 'ring-4 ring-blue-500 bg-blue-600 text-white' : ''}`}
               >
                 <motion.div
-                  animate={showTour ? { scale: [1, 1.05, 1] } : {}}
+                  animate={isTourActive ? { scale: [1, 1.05, 1] } : {}}
                   transition={{ duration: 2, repeat: Infinity }}
                   className="flex items-center gap-3"
                 >
                   <Plus size={24} />
-                  הוסף נכס ראשון
+                  {getPhrase('home_welcome_add_btn', 'Add First Property')}
                 </motion.div>
               </Button>
             </motion.div>
@@ -135,7 +141,7 @@ export const HomeWelcome: React.FC<HomeWelcomeProps> = ({ onAddPropertyPress, sh
         className="mt-10 text-slate-400 text-base font-bold flex items-center gap-2"
       >
         <div className="w-8 h-[2px] bg-slate-200" />
-        דירה להשקעה - הדרך שלך לחופש כלכלי
+        {getPhrase('home_welcome_slogan', "Dira L'Hashkaa - Your Path to Financial Freedom")}
         <div className="w-8 h-[2px] bg-slate-200" />
       </motion.div>
     </div>

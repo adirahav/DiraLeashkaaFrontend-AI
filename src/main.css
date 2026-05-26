@@ -20,6 +20,7 @@
   --shadow-tooltip: var(--shadow-heavy);
 
   /* Z-index scale — centralized to prevent stacking-context conflicts */
+  --z-index-modal: 100;
   --z-index-tooltip: 10005;
 
   /* Font family */

@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { TourSpotlight } from './TourSpotlight';
+import { useStore } from '../../store/store';
 
 interface WelcomeTourProps {
   showTour: boolean;
@@ -8,16 +9,17 @@ interface WelcomeTourProps {
   buttonRef: React.RefObject<HTMLDivElement | null>;
 }
 
-export const WelcomeTour: React.FC<WelcomeTourProps> = ({ 
-  showTour, 
-  setShowTour, 
-  buttonRef 
+export const WelcomeTour: React.FC<WelcomeTourProps> = ({
+  showTour,
+  setShowTour,
+  buttonRef
 }) => {
+  const completeTour = useStore((state) => state.completeTour)
   const [buttonRect, setButtonRect] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
 
   useEffect(() => {
     let animationFrameId: number;
-    
+
     const updateRect = () => {
       if (showTour && buttonRef.current) {
         const rect = buttonRef.current.getBoundingClientRect();
@@ -55,13 +57,18 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
     };
   }, [showTour]);
 
+  const handleClose = () => {
+    completeTour()
+    setShowTour(false)
+  }
+
   return (
-    <TourSpotlight 
+    <TourSpotlight
       isOpen={showTour}
       targetRect={buttonRect}
-      onClose={() => setShowTour(false)}
-      title="בוא נתחיל!"
-      description="כדי לראות את הקסם קורה, לחץ על הכפתור המודגש כדי להוסיף את הנכס הראשון שלך."
+      onClose={handleClose}
+      title="Let's start!"
+      description="To see the magic happen, click the highlighted button to add your first property."
     />
   );
 };

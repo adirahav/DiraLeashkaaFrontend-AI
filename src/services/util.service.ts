@@ -7,6 +7,18 @@ export const utilService = {
   deleteFromStorage,
   saveWithExpiry,
   getWithExpiry,
+  percentFormat,
+  priceFormat,
+}
+
+export function percentFormat(value: number, decimals = 1): string {
+  return `${value.toFixed(decimals)}%`
+}
+
+export function priceFormat(value: number): string {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M ₪`
+  if (value >= 1_000) return `${Math.floor(value / 1_000)}k ₪`
+  return `${value.toLocaleString('he-IL')} ₪`
 }
 
 interface StoredWithExpiry<T> {

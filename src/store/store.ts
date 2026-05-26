@@ -3,8 +3,10 @@ import { persist } from 'zustand/middleware'
 import { createAuthSlice, AuthSlice } from './slices/auth.slice'
 import { createAppSlice, AppSlice } from './slices/app.slice'
 import { createPropertySlice, PropertySlice } from './slices/property.slice'
+import { createUserSlice, UserSlice } from './slices/user.slice'
+import { createHomeSlice, HomeSlice } from './slices/home.slice'
 
-export type RootState = AuthSlice & AppSlice & PropertySlice
+export type RootState = AuthSlice & AppSlice & PropertySlice & UserSlice & HomeSlice
 
 export const useStore = create<RootState>()(
   persist(
@@ -12,6 +14,8 @@ export const useStore = create<RootState>()(
       ...createAuthSlice(...a),
       ...createAppSlice(...a),
       ...createPropertySlice(...a),
+      ...createUserSlice(...a),
+      ...createHomeSlice(...a),
     }),
     {
       name: 'diraleashkaa-store',

@@ -189,7 +189,7 @@ export const PropertyPage: React.FC = () => {
           if (err?.response?.status === 403) {
             logout().then(() => navigate('/login'));
           } else {
-            navigate('/');
+            navigate('/home');
           }
         });
     } else {

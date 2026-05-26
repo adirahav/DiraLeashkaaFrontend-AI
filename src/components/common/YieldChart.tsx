@@ -13,7 +13,7 @@ interface YieldChartProps {
   activeResultTab?: string;
 }
 
-const MARGIN = { top: 44, right: 24, bottom: 36, left: 56 };
+const MARGIN = { top: 44, right: 24, bottom: 36, left: 40 };
 
 const COLOR_TOTAL = '#2563eb';
 const COLOR_ROE = '#0d9488';

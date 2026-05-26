@@ -14,6 +14,7 @@ export interface User {
   commitments: string
   termsOfUseAccept: string
   additionalFundingSources?: AdditionalFundingSource[]
+  tourCompletedTime: string | null
 }
 
 export interface PendingApiCall {
@@ -28,15 +29,23 @@ export interface PendingAction {
 }
 
 export interface Property {
-  id: string
-  city: string
-  address: string
-  info: string
-  images: string[]
+  uuid: string
+  city?: string
+  cityElse?: string
+  address?: string
+  info?: string
+  images?: string[]
   calcYields?: {
     averageReturn: number
     averageReturnOnEquity: number
     profit: number
     profitNpv: number
+    yieldForecast?: string
   } | null
+}
+
+export interface HomeResponse {
+  properties: Property[]
+  bestYields?: Property[]
+  fullData: boolean
 }

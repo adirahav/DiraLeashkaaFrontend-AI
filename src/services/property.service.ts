@@ -6,6 +6,7 @@ export const propertyService = {
   getById,
   create,
   save,
+  archive,
 }
 
 // Maps frontend PropertyData field names → backend API field names
@@ -81,4 +82,8 @@ async function create(fieldName: string, fieldValue: any, defaults?: Record<stri
 async function save(uuid: string, fieldName: string, fieldValue: any): Promise<PropertyData> {
   const backendName = toBackendField(fieldName)
   return httpService.put<PropertyData>('/property', { propertyUUID: uuid, fieldName: backendName, fieldValue: toServerValue(backendName, fieldValue) }, token())
+}
+
+async function archive(uuid: string): Promise<void> {
+  return httpService.patch(`/property/${uuid}/archive`, null, token())
 }

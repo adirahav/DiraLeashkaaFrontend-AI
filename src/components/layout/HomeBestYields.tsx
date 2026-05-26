@@ -1,84 +1,115 @@
-import React from 'react';
-import { ResponsiveContainer } from 'recharts';
-import { Trophy } from 'lucide-react';
-import { Card } from '../common/Card';
-import { Property } from '../../types';
-import { YieldChart } from '../common/YieldChart';
-import { SectionHeader } from '../common/SectionHeader';
-import { MetricTile } from '../common/MetricTile';
+import React, { useMemo } from 'react'
+import { motion } from 'motion/react'
+import { Trophy } from 'lucide-react'
+import { Card } from '../common/Card'
+import { Property } from '../../types'
+import { YieldChart } from '../common/YieldChart'
+import { SectionHeader } from '../common/SectionHeader'
+import { MetricTile } from '../common/MetricTile'
+import { useSplash } from '../../hooks/useSplash'
+import { percentFormat, priceFormat } from '../../services/util.service'
 
 interface HomeBestYieldsProps {
-  bestProperty: Property | null;
+  bestProperty: Property | null | undefined
+  isLoading?: boolean
 }
 
-export const HomeBestYields: React.FC<HomeBestYieldsProps> = ({ bestProperty }) => {
-  if (!bestProperty || !bestProperty.calcYields) return null;
+const HomeBestYieldsSkeleton: React.FC = () => (
+  <div className="mt-12 animate-pulse" dir="rtl">
+    <div className="h-10 bg-slate-200 rounded-xl w-52 mb-6" />
+    <div className="rounded-2xl border-2 border-amber-100 bg-white overflow-hidden p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+        <div className="flex flex-col gap-4">
+          <div className="h-9 bg-slate-200 rounded w-3/4" />
+          <div className="h-5 bg-slate-200 rounded w-full" />
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-[72px] bg-slate-200 rounded-xl" />
+            ))}
+          </div>
+        </div>
+        <div className="w-full h-[300px] lg:h-full min-h-[320px] bg-slate-200 rounded-xl" />
+      </div>
+    </div>
+  </div>
+)
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS', maximumFractionDigits: 0 }).format(value);
-  };
+export const HomeBestYields: React.FC<HomeBestYieldsProps> = ({ bestProperty, isLoading = false }) => {
+  const { getPhrase } = useSplash()
 
-  const formatPercent = (value: number) => {
-    return `${value.toFixed(1)}%`;
-  };
+  const cityLabel = useMemo(() => {
+    const city = bestProperty?.city?.trim()
+    if (!city) return ''
+    if (city === 'אחר' && bestProperty?.cityElse?.trim()) return bestProperty.cityElse.trim()
+    return city
+  }, [bestProperty?.city, bestProperty?.cityElse])
 
-  const chartData = Array.from({ length: 10 }, (_, i) => {
-    const year = i + 1;
-    const totalReturn = Math.pow(1 + (bestProperty.calcYields?.averageReturn || 0) / 100, year) - 1;
-    const equityReturn = Math.pow(1 + (bestProperty.calcYields?.averageReturnOnEquity || 0) / 100, year) - 1;
-    
-    return {
-      month: `שנה ${year}`,
-      totalYield: Number((totalReturn * 100).toFixed(1)),
-      yieldOnEquity: Number((equityReturn * 100).toFixed(1)),
-    };
-  });
+  const forecastData = useMemo(() => {
+    const raw = bestProperty?.calcYields?.yieldForecast
+    if (!raw) return []
+    try {
+      return JSON.parse(raw)
+    } catch {
+      return []
+    }
+  }, [bestProperty?.calcYields?.yieldForecast])
+
+  if (isLoading) return <HomeBestYieldsSkeleton />
+  if (!bestProperty || !bestProperty.calcYields) return null
+
+  const { calcYields } = bestProperty
 
   return (
-    <div className="mt-12" dir="rtl">
-      <SectionHeader 
-        icon={<Trophy />} 
-        title="הנכס המשתלם ביותר" 
-        variant="amber" 
+    <motion.div
+      className="mt-12"
+      dir="rtl"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <SectionHeader
+        icon={<Trophy />}
+        title={getPhrase('home_best_yield_header', 'Best Performing Property')}
+        variant="amber"
       />
-      
+
       <Card className="overflow-hidden border-2 border-amber-100">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
           <div>
-            <h3 className="text-3xl font-black text-slate-800 mb-2">{bestProperty.address}, {bestProperty.city}</h3>
+            <h3 className="text-3xl font-black text-slate-800 mb-2">
+              {[bestProperty.address, cityLabel].filter(Boolean).join(', ')}
+            </h3>
             <p className="text-slate-500 mb-8">{bestProperty.info}</p>
-            
+
             <div className="grid grid-cols-2 gap-4">
-              <MetricTile 
-                label="תשואה ממוצעת" 
-                value={formatPercent(bestProperty.calcYields.averageReturn)} 
-                variant="blue"
+              <MetricTile
+                label={getPhrase('home_best_yield_average_return', 'Average Return')}
+                value={percentFormat(calcYields.averageReturn)}
+                variant="amber"
               />
-              <MetricTile 
-                label="תשואה ממוצעת על ההון" 
-                value={formatPercent(bestProperty.calcYields.averageReturnOnEquity)} 
+              <MetricTile
+                label={getPhrase('home_best_yield_average_return_on_equity', 'Return on Equity')}
+                value={percentFormat(calcYields.averageReturnOnEquity)}
                 variant="teal"
               />
-              <MetricTile 
-                label="רווח כולל" 
-                value={formatCurrency(bestProperty.calcYields.profit)} 
+              <MetricTile
+                label={getPhrase('home_best_yield_total_profit', 'Total Profit')}
+                value={priceFormat(calcYields.profit)}
                 variant="slate"
               />
-              <MetricTile 
-                label="רווח מהוון (NPV)" 
-                value={formatCurrency(bestProperty.calcYields.profitNpv)} 
+              <MetricTile
+                label={getPhrase('home_best_yield_total_profit_npv', 'NPV Profit')}
+                value={priceFormat(calcYields.profitNpv)}
                 variant="slate"
               />
             </div>
           </div>
-          
-          <div className="h-full bg-white rounded-xl border border-slate-100">
-            <ResponsiveContainer width="100%" height="100%">
-              <YieldChart data={chartData} />
-            </ResponsiveContainer>
+
+          <div className="w-full h-[300px] lg:h-full min-h-[320px] bg-white rounded-xl border border-slate-100 overflow-hidden">
+            <YieldChart data={forecastData} />
           </div>
         </div>
       </Card>
-    </div>
-  );
-};
+    </motion.div>
+  )
+}

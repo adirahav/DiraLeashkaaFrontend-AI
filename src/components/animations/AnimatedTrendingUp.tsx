@@ -1,56 +1,69 @@
-
-import React from 'react';
-import { TrendingUp } from 'lucide-react';
-import { motion } from 'motion/react';
+import React from 'react'
+import { TrendingUp } from 'lucide-react'
+import { motion, Variants } from 'motion/react'
+import { cn } from '../../lib/utils'
 
 interface AnimatedTrendingUpProps {
-  variants?: any;
+  variants?: Variants
+  className?: string
+  size?: number
+  bgColor?: string
+  symbol?: string
 }
 
-export const AnimatedTrendingUp: React.FC<AnimatedTrendingUpProps> = ({ variants }) => {
+export const AnimatedTrendingUp: React.FC<AnimatedTrendingUpProps> = ({
+  variants,
+  className,
+  size = 48,
+  bgColor = 'bg-blue-600',
+  symbol = '₪',
+}) => {
   return (
-    <motion.div 
+    <motion.div
       variants={variants}
       whileHover={{ scale: 1.1 }}
-      className="w-24 h-24 bg-blue-600 text-white rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-xl shadow-blue-200 border-8 border-white cursor-pointer relative"
+      className={cn(
+        'w-24 h-24 text-white rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-xl shadow-blue-200 border-8 border-white cursor-pointer relative',
+        bgColor,
+        className
+      )}
     >
       <motion.div
-        animate={{ 
+        animate={{
           scale: [1, 1.1, 1],
-          rotate: [0, 5, -5, 0]
+          rotate: [0, 5, -5, 0],
         }}
-        transition={{ 
+        transition={{
           duration: 5,
           repeat: Infinity,
-          ease: "easeInOut"
+          ease: 'easeInOut',
         }}
       >
-        <TrendingUp size={48} />
+        <TrendingUp size={size} />
       </motion.div>
-      
-      {/* Animated coins/growth elements */}
+
       <motion.div
-        animate={{ 
+        animate={{
           y: [-20, -40],
           opacity: [0, 1, 0],
-          x: [-10, 10]
+          x: [-10, 10],
         }}
         transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
         className="absolute text-emerald-400 font-black text-xl"
       >
-        ₪
+        {symbol}
       </motion.div>
       <motion.div
-        animate={{ 
+        animate={{
           y: [-10, -30],
           opacity: [0, 1, 0],
-          x: [20, 0]
+          x: [20, 0],
         }}
         transition={{ duration: 2.5, repeat: Infinity, delay: 1.2 }}
         className="absolute text-emerald-400 font-black text-lg"
       >
-        ₪
+        {symbol}
       </motion.div>
     </motion.div>
-  );
-};
+  )
+}

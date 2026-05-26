@@ -1,8 +1,10 @@
 import React, { createContext, useEffect, useRef, useState } from 'react'
+import { motion } from 'motion/react'
 import { SplashApiResponse, SplashData } from '../types/splash'
 import { userService } from '../services/user.service'
 import { saveWithExpiry, getWithExpiry } from '../services/util.service'
 import { useStore } from '../store/store'
+import { Logo } from '../components/common/Logo'
 
 const PHRASES_KEY = 'app_splash_phrases'
 const PARAMS_KEY = 'app_splash_params'
@@ -35,10 +37,14 @@ export function SplashProvider({ children }: { children: React.ReactNode }) {
   const lang = useStore((s) => s.lang) ?? 'he'
   const [splash, setSplash] = useState<SplashData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isForceRefreshing, setIsForceRefreshing] = useState(false)
   const backgroundRunning = useRef(false)
   const [forceFetchTick, setForceFetchTick] = useState(0)
 
-  const forceFetchSplash = () => setForceFetchTick((t) => t + 1)
+  const forceFetchSplash = () => {
+    setIsForceRefreshing(true)
+    setForceFetchTick((t) => t + 1)
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -105,7 +111,10 @@ export function SplashProvider({ children }: { children: React.ReactNode }) {
         }
       } finally {
         activeFetches.delete(phrasesKey)
-        if (!cancelled) setIsLoading(false)
+        if (!cancelled) {
+          setIsLoading(false)
+          if (forceFetchTick > 0) setIsForceRefreshing(false)
+        }
       }
     }
 
@@ -117,10 +126,39 @@ export function SplashProvider({ children }: { children: React.ReactNode }) {
     }
   }, [lang, forceFetchTick])
 
-  if (isLoading && splash === null) {
+  if (isLoading && (splash === null || isForceRefreshing)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white relative overflow-hidden">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 0.12, scale: 1 }}
+          transition={{ duration: 2.5, repeat: Infinity, repeatType: 'reverse' }}
+          className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-blue-400 rounded-full blur-[100px] pointer-events-none"
+        />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 0.08, scale: 1 }}
+          transition={{ duration: 3, repeat: Infinity, repeatType: 'reverse', delay: 1 }}
+          className="absolute -bottom-32 -right-32 w-[400px] h-[400px] bg-indigo-400 rounded-full blur-[80px] pointer-events-none"
+        />
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="flex flex-col items-center gap-8 z-10"
+        >
+          <Logo size={80} showText={true} />
+          <div className="flex gap-1.5">
+            {[0, 1, 2].map((i) => (
+              <motion.div
+                key={i}
+                className="w-2 h-2 bg-blue-500 rounded-full"
+                animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.2, 0.8] }}
+                transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
+              />
+            ))}
+          </div>
+        </motion.div>
       </div>
     )
   }
