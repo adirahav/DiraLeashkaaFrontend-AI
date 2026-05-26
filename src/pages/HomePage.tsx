@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react'
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
 import { Loader2 } from 'lucide-react'
@@ -14,7 +14,7 @@ import { useSplash } from '../hooks/useSplash'
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate()
-  const { getPhrase } = useSplash()
+  const { getPhrase, params } = useSplash()
 
   const loggedinUser = useStore((state) => state.loggedinUser)
   const isLoading = useStore((state) => state.isLoading)
@@ -57,14 +57,25 @@ export const HomePage: React.FC = () => {
     load()
   }, [loggedinUser, setIsLoading])
 
-  // Resolve display city: cityElse overrides when city === "אחר", missing city falls back to "אחר"
+  // key → Hebrew label lookup built from fixedParameters.cities
+  const cityLabelMap = useMemo<Record<string, string>>(() => {
+    try {
+      const raw = (params as Record<string, unknown>)['cities']
+      if (!raw) return {}
+      const arr: { key: string; value: string }[] =
+        typeof raw === 'string' ? JSON.parse(raw) : (raw as { key: string; value: string }[])
+      return Object.fromEntries(arr.map((c) => [c.key, c.value]))
+    } catch { return {} }
+  }, [params])
+
+  // Resolve display city: normalise keys → Hebrew labels, handle "else"/"אחר" sentinel
   const OTHER_CITY = 'אחר'
-  const cityOf = (p: { city?: string; cityElse?: string }) => {
+  const cityOf = useCallback((p: { city?: string; cityElse?: string }) => {
     const city = p.city?.trim()
     if (!city) return OTHER_CITY
-    if (city === OTHER_CITY && p.cityElse?.trim()) return p.cityElse.trim()
-    return city
-  }
+    if (city === 'else' || city === OTHER_CITY) return p.cityElse?.trim() || OTHER_CITY
+    return cityLabelMap[city] ?? city
+  }, [cityLabelMap])
 
   // Derived city list — sorted alphabetically, "אחר" always last
   const cities = Array.from(new Set(properties.map(cityOf))).sort((a, b) => {

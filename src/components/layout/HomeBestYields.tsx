@@ -35,14 +35,24 @@ const HomeBestYieldsSkeleton: React.FC = () => (
 )
 
 export const HomeBestYields: React.FC<HomeBestYieldsProps> = ({ bestProperty, isLoading = false }) => {
-  const { getPhrase } = useSplash()
+  const { getPhrase, params } = useSplash()
+
+  const cityLabelMap = useMemo<Record<string, string>>(() => {
+    try {
+      const raw = (params as Record<string, unknown>)['cities']
+      if (!raw) return {}
+      const arr: { key: string; value: string }[] =
+        typeof raw === 'string' ? JSON.parse(raw) : (raw as { key: string; value: string }[])
+      return Object.fromEntries(arr.map((c) => [c.key, c.value]))
+    } catch { return {} }
+  }, [params])
 
   const cityLabel = useMemo(() => {
     const city = bestProperty?.city?.trim()
     if (!city) return ''
-    if (city === 'אחר' && bestProperty?.cityElse?.trim()) return bestProperty.cityElse.trim()
-    return city
-  }, [bestProperty?.city, bestProperty?.cityElse])
+    if (city === 'else' || city === 'אחר') return bestProperty?.cityElse?.trim() || ''
+    return cityLabelMap[city] ?? city
+  }, [bestProperty?.city, bestProperty?.cityElse, cityLabelMap])
 
   const forecastData = useMemo(() => {
     const raw = bestProperty?.calcYields?.yieldForecast

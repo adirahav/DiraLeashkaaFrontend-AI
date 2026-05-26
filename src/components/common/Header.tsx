@@ -134,7 +134,7 @@ export const Header: React.FC = () => {
             <ul className="hidden md:flex items-center gap-6 list-none p-0 m-0">
               <li>
                 <Button onClick={handleAddProperty} className="!px-4 !py-2 !rounded-lg" icon={Building2}>
-                  {getPhrase('home_add_property', 'הוסף נכס חדש +')}
+                  {getPhrase('home_add_property', 'Add New Property +')}
                 </Button>
               </li>
               <li>
@@ -144,7 +144,7 @@ export const Header: React.FC = () => {
                   className="!border-none !shadow-none !text-slate-600 hover:!text-blue-600 !px-2 !py-1"
                   icon={Calculator}
                 >
-                  {getPhrase('drawer_calculators', 'מחשבונים')}
+                  {getPhrase('drawer_calculators', 'Calculators')}
                 </Button>
               </li>
               <li>
@@ -154,7 +154,7 @@ export const Header: React.FC = () => {
                   className="!border-none !shadow-none !text-slate-600 hover:!text-blue-600 !px-2 !py-1"
                   icon={User}
                 >
-                  {getPhrase('drawer_personal_details', 'פרטים אישיים')}
+                  {getPhrase('drawer_personal_details', 'Personal Details')}
                 </Button>
               </li>
               <li>
@@ -164,7 +164,7 @@ export const Header: React.FC = () => {
                   className="!border-none !shadow-none !text-slate-600 hover:!text-blue-600 !px-2 !py-1"
                   icon={LineChart}
                 >
-                  {getPhrase('drawer_financial_details', 'נתונים כלכליים')}
+                  {getPhrase('drawer_financial_details', 'Financial Details')}
                 </Button>
               </li>
             </ul>
@@ -183,7 +183,7 @@ export const Header: React.FC = () => {
                     icon={LogOut}
                     iconSize={16}
                   >
-                    {getPhrase('drawer_logout', 'התנתקות')}
+                    {getPhrase('drawer_logout', 'Logout')}
                   </Button>
                 </li>
                 <li className="md:hidden flex items-center">
@@ -234,7 +234,7 @@ export const Header: React.FC = () => {
                       icon={Building2}
                       iconSize={20}
                     >
-                      {getPhrase('home_add_property', 'הוסף נכס חדש +')}
+                      {getPhrase('home_add_property', 'Add New Property +')}
                     </Button>
                   </li>
                   <li>
@@ -245,7 +245,7 @@ export const Header: React.FC = () => {
                       icon={Calculator}
                       iconSize={20}
                     >
-                      {getPhrase('drawer_calculators', 'מחשבונים')}
+                      {getPhrase('drawer_calculators', 'Calculators')}
                     </Button>
                   </li>
                   <li>
@@ -256,7 +256,7 @@ export const Header: React.FC = () => {
                       icon={User}
                       iconSize={20}
                     >
-                      {getPhrase('drawer_personal_details', 'פרטים אישיים')}
+                      {getPhrase('drawer_personal_details', 'Personal Details')}
                     </Button>
                   </li>
                   <li>
@@ -267,7 +267,7 @@ export const Header: React.FC = () => {
                       icon={LineChart}
                       iconSize={20}
                     >
-                      {getPhrase('drawer_financial_details', 'נתונים כלכליים')}
+                      {getPhrase('drawer_financial_details', 'Financial Details')}
                     </Button>
                   </li>
                 </ul>
@@ -284,7 +284,7 @@ export const Header: React.FC = () => {
                     icon={Mail}
                     iconSize={16}
                   >
-                    {getPhrase('drawer_contact_us', 'צור קשר')}
+                    {getPhrase('drawer_contact_us', 'Contact Us')}
                   </Button>
                 </li>
                 <li>
@@ -295,7 +295,7 @@ export const Header: React.FC = () => {
                     icon={Share2}
                     iconSize={16}
                   >
-                    {getPhrase('drawer_share', 'שתף')}
+                    {getPhrase('drawer_share', 'Share')}
                   </Button>
                 </li>
                 <li>
@@ -317,7 +317,7 @@ export const Header: React.FC = () => {
                     icon={Accessibility}
                     iconSize={16}
                   >
-                    {getPhrase('drawer_accessibility_statement', 'נגישות')}
+                    {getPhrase('drawer_accessibility_statement', 'Accessibility')}
                   </Button>
                 </li>
                 <li>
@@ -342,7 +342,7 @@ export const Header: React.FC = () => {
                   icon={LogOut}
                   iconSize={16}
                 >
-                  {getPhrase('drawer_logout', 'התנתקות')}
+                  {getPhrase('drawer_logout', 'Logout')}
                 </Button>
               </div>
 

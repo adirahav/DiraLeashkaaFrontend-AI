@@ -36,7 +36,7 @@ export const AdditionalFundingSources: React.FC<AdditionalFundingSourcesProps> =
   const resolvedTooltip = tooltip ?? getPhrase('property_additional_funding_sources_tooltip', 'Select additional funding sources defined in your profile');
   const noDeclarationTooltip = getPhrase('property_additional_funding_sources_no_declaration', 'No additional funding sources defined. To define them, go to the "Financial Details" screen.');
   const emptyText = getPhrase('property_additional_funding_sources_empty', 'No funding sources defined');
-  const returnLabel = getPhrase('property_additional_funding_sources_return_label', 'החזר');
+  const returnLabel = getPhrase('property_additional_funding_sources_return_label', 'Repayment');
 
   const handleToggle = (id: string, checked: boolean) => {
     if (checked) {

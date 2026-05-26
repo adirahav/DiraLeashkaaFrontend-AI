@@ -11,6 +11,17 @@ export interface HomeSlice {
   restoreProperty: (property: Property, index: number) => void
 }
 
+// Normalise a raw API property: extract image URLs from media[] when images[] is absent
+function normalizeProperty(raw: any): Property {
+  const mediaUrls: string[] = (raw.media ?? [])
+    .filter((m: any) => m.type === 'image')
+    .map((m: any) => m.url as string)
+  return {
+    ...raw,
+    images: raw.images?.length ? raw.images : mediaUrls,
+  }
+}
+
 export const createHomeSlice: StateCreator<RootState, [], [], HomeSlice> = (set) => ({
   properties: [],
   bestYields: null,
@@ -22,17 +33,17 @@ export const createHomeSlice: StateCreator<RootState, [], [], HomeSlice> = (set)
         // Phase 2: merge calculated fields into existing Phase 1 properties by uuid
         const mergedProperties = state.properties.map((existing) => {
           const updated = data.properties.find((p) => p.uuid === existing.uuid)
-          return updated ?? existing
+          return updated ? normalizeProperty(updated) : existing
         })
         return {
           properties: mergedProperties,
-          bestYields: data.bestYields ?? state.bestYields,
+          bestYields: data.bestYields?.map(normalizeProperty) ?? state.bestYields,
           fullData: true,
         }
       }
       // Phase 1: populate basic list
       return {
-        properties: data.properties,
+        properties: data.properties.map(normalizeProperty),
         fullData: false,
       }
     }),

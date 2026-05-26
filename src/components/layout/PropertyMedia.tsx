@@ -6,6 +6,7 @@ import { cn } from '../../lib/utils'
 import { useSplash } from '../../hooks/useSplash'
 import { mediaService } from '../../services/media.service'
 import { CloudinaryMediaNode } from '../../types/property.types'
+import { Notification } from '../common/Notification'
 
 const MAX_MEDIA_COUNT = 4
 
@@ -42,7 +43,12 @@ export const PropertyMedia: React.FC<PropertyMediaProps> = ({
     setError(null)
     setIsUploading(true)
     try {
-      const batch = Array.from(files).slice(0, remaining)
+      const allFiles = Array.from(files)
+      if (allFiles.some(f => !f.type.startsWith('image/'))) {
+        setError(getPhrase('property_media_images_only', 'Only image files are allowed (JPG, PNG, WEBP, etc.)'))
+        return
+      }
+      const batch = allFiles.slice(0, remaining)
       for (const file of batch) {
         const node = await mediaService.upload(file)
         onUpload(node)
@@ -70,7 +76,7 @@ export const PropertyMedia: React.FC<PropertyMediaProps> = ({
 
   return (
     <section
-      className="mt-12"
+      className="mt-12 outline-none focus:outline-none focus-within:outline-none"
       onDrop={handleDrop}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -112,8 +118,9 @@ export const PropertyMedia: React.FC<PropertyMediaProps> = ({
 
         {canUpload && (
           <label
+            tabIndex={-1}
             className={cn(
-              'aspect-square border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center text-slate-400 transition-all gap-2',
+              'aspect-square border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center text-slate-400 transition-all gap-2 outline-none focus:outline-none',
               isUploading
                 ? 'opacity-60 cursor-not-allowed'
                 : 'hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50 cursor-pointer',
@@ -132,6 +139,7 @@ export const PropertyMedia: React.FC<PropertyMediaProps> = ({
             <input
               ref={inputRef}
               type="file"
+              tabIndex={-1}
               className="hidden"
               accept="image/*"
               multiple
@@ -142,9 +150,12 @@ export const PropertyMedia: React.FC<PropertyMediaProps> = ({
         )}
       </Card>
 
-      {error && (
-        <p className="mt-2 text-sm text-red-500">{error}</p>
-      )}
+      <Notification
+        type="error"
+        message={error ?? ''}
+        isVisible={error !== null}
+        onClose={() => setError(null)}
+      />
     </section>
   )
 }

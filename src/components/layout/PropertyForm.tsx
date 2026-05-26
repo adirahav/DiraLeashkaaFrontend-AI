@@ -78,7 +78,7 @@ function extractCityOptions(
       typeof raw === 'string' ? JSON.parse(raw) : (raw as { key: string; value: string }[]);
     const options = arr
       .filter((c) => c.key !== 'choose')
-      .map((c) => ({ value: c.value, label: c.value }));
+      .map((c) => ({ value: c.key, label: c.value }));
     return options.length > 0 ? options : fallback;
   } catch {
     return fallback;
@@ -216,10 +216,12 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
     };
   }, [params]);
 
-  const cityOptions = useMemo(
+  const allCityOptions = useMemo(
     () => extractCityOptions(params as Record<string, unknown>, CITY_OPTIONS ?? []),
     [params, CITY_OPTIONS],
   );
+  const cityOptions = useMemo(() => allCityOptions.filter((o) => o.value !== 'else'), [allCityOptions]);
+  const cityPinnedOptions = useMemo(() => allCityOptions.filter((o) => o.value === 'else'), [allCityOptions]);
 
   const apartmentTypeOptions = useMemo(
     () => extractApartmentTypeOptions(params as Record<string, unknown>, APARTMENT_TYPES),
@@ -314,12 +316,13 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                     handleTourStep('CITY', 'PRICE');
                   }}
                   options={cityOptions}
+                  pinnedOptions={cityPinnedOptions}
                   searchable
                   disabled={isCalculating}
                 />
               </div>
 
-              {property.city === 'אחר' && (
+              {property.city === 'else' && (
                 <StringInput
                   label={getPhrase('property_city_else_label', 'Settlement Name')}
                   value={property.cityElse ?? ''}

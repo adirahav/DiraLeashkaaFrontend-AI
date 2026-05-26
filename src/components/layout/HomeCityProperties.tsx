@@ -127,7 +127,7 @@ const PropertyCard = React.forwardRef<HTMLElement, PropertyCardProps>(({
   onCancelDelete,
   onDeleteConfirm,
 }, ref) => {
-  const { getPhrase } = useSplash()
+  const { getPhrase, params } = useSplash()
   const [isDeleting, setIsDeleting] = useState(false)
   const isMounted = useRef(true)
 
@@ -144,10 +144,17 @@ const PropertyCard = React.forwardRef<HTMLElement, PropertyCardProps>(({
     }
   }
 
-  const cityDisplayName =
-    property.city === 'אחר' && property.cityElse?.trim()
-      ? property.cityElse.trim()
-      : property.city ?? ''
+  const cityDisplayName = (() => {
+    const city = property.city?.trim()
+    if (!city) return ''
+    if (city === 'else' || city === 'אחר') return property.cityElse?.trim() || ''
+    try {
+      const raw = (params as Record<string, unknown>)['cities']
+      if (!raw) return city
+      const arr: { key: string; value: string }[] = typeof raw === 'string' ? JSON.parse(raw) : (raw as { key: string; value: string }[])
+      return arr.find((c) => c.key === city)?.value ?? city
+    } catch { return city }
+  })()
 
   const isBestYield = fullData && bestYieldUuid === property.uuid
 
@@ -283,7 +290,7 @@ const PropertyCard = React.forwardRef<HTMLElement, PropertyCardProps>(({
           <Button
             onClick={() => onEditPress(property.uuid)}
             variant="outline"
-            className="flex-1 bg-blue-50 text-blue-600 border-none hover:bg-blue-100 py-2 h-auto"
+            className="px-6 py-3 rounded-xl font-bold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-center enabled:active:scale-95 focus:ring-4 focus:ring-blue-100 focus:outline-none flex items-center justify-center gap-2 border-2 border-slate-200 text-slate-600 enabled:hover:bg-slate-50 flex-1 bg-blue-50 border-none py-2 h-auto"
             icon={Edit}
             iconSize={16}
           >
@@ -292,9 +299,9 @@ const PropertyCard = React.forwardRef<HTMLElement, PropertyCardProps>(({
           <Button
             onClick={onDeleteRequest}
             variant="outline"
-            className="p-2 bg-red-50 text-red-600 border-none hover:bg-red-100 h-auto min-w-0"
+            className="px-6 py-3 rounded-xl font-bold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-center enabled:active:scale-95 focus:ring-4 focus:ring-blue-100 focus:outline-none flex items-center justify-center gap-2 border-2 border-slate-200 text-slate-600 enabled:hover:bg-slate-50 p-3 bg-red-50 text-red-600 border-none hover:bg-red-100 h-auto min-w-0"
             icon={Trash2}
-            iconSize={16}
+            iconSize={20}
             ariaLabel={getPhrase('home_property_delete_aria', 'Delete property')}
           />
         </div>

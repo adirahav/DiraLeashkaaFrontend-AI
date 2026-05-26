@@ -18,6 +18,7 @@ export interface DropdownProps {
   buttonRef?: React.RefObject<HTMLButtonElement>;
   buttonClassName?: string;
   searchable?: boolean;
+  pinnedOptions?: Option[];
 }
 
 export const Dropdown: React.FC<DropdownProps> = ({
@@ -30,12 +31,13 @@ export const Dropdown: React.FC<DropdownProps> = ({
   buttonRef,
   buttonClassName = '',
   searchable = false,
+  pinnedOptions = [],
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const searchRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const selectedOption = options.find(opt => opt.value === value);
+  const selectedOption = options.find(opt => opt.value === value) ?? pinnedOptions.find(opt => opt.value === value);
   const { getPhrase } = useSplash();
   const placeholder = getPhrase('dropdown_choose', 'Choose...');
 
@@ -143,28 +145,54 @@ export const Dropdown: React.FC<DropdownProps> = ({
             </div>
           )}
           <div className="p-1.5 flex flex-col gap-1 max-h-[260px] overflow-y-auto custom-scrollbar">
-            {filteredOptions.length === 0 ? (
+            {filteredOptions.length === 0 && pinnedOptions.length === 0 ? (
               <div className="p-3 text-sm text-slate-400 text-center">לא נמצאו תוצאות</div>
             ) : (
-              filteredOptions.map((option) => {
-                const isActive = value === option.value;
-                return (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => handleSelect(option.value)}
-                    className={cn(
-                      'flex items-center justify-between w-full p-3 rounded-xl text-right transition-all duration-200',
-                      isActive
-                        ? 'bg-blue-50 text-blue-600 font-black'
-                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900',
-                    )}
-                  >
-                    <span className="text-sm">{highlightMatch(option.label)}</span>
-                    {isActive ? <Check size={18} className="text-blue-600" /> : <div className="w-[18px]" />}
-                  </button>
-                );
-              })
+              <>
+                {filteredOptions.map((option) => {
+                  const isActive = value === option.value;
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => handleSelect(option.value)}
+                      className={cn(
+                        'flex items-center justify-between w-full p-3 rounded-xl text-right transition-all duration-200',
+                        isActive
+                          ? 'bg-blue-50 text-blue-600 font-black'
+                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900',
+                      )}
+                    >
+                      <span className="text-sm">{highlightMatch(option.label)}</span>
+                      {isActive ? <Check size={18} className="text-blue-600" /> : <div className="w-[18px]" />}
+                    </button>
+                  );
+                })}
+                {pinnedOptions.length > 0 && (
+                  <>
+                    {filteredOptions.length > 0 && <div className="mx-2 border-t border-slate-100" />}
+                    {pinnedOptions.map((option) => {
+                      const isActive = value === option.value;
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => handleSelect(option.value)}
+                          className={cn(
+                            'flex items-center justify-between w-full p-3 rounded-xl text-right transition-all duration-200',
+                            isActive
+                              ? 'bg-blue-50 text-blue-600 font-black'
+                              : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900',
+                          )}
+                        >
+                          <span className="text-sm">{option.label}</span>
+                          {isActive ? <Check size={18} className="text-blue-600" /> : <div className="w-[18px]" />}
+                        </button>
+                      );
+                    })}
+                  </>
+                )}
+              </>
             )}
           </div>
         </div>
