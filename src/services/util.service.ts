@@ -16,11 +16,13 @@ export function getAppEnv(): string {
   return (import.meta.env.VITE_APP_ENV as string | undefined) ?? import.meta.env.MODE ?? 'development'
 }
 
-export function percentFormat(value: number, decimals = 1): string {
+export function percentFormat(value: number | null | undefined, decimals = 1): string {
+  if (value == null) return '-'
   return `${value.toFixed(decimals)}%`
 }
 
-export function priceFormat(value: number): string {
+export function priceFormat(value: number | null | undefined): string {
+  if (value == null) return '-'
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M ₪`
   if (value >= 1_000) return `${Math.floor(value / 1_000)}k ₪`
   return `${value.toLocaleString('he-IL')} ₪`

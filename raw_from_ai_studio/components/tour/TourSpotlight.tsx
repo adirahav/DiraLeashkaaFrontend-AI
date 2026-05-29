@@ -7,6 +7,7 @@ interface TourSpotlightProps {
   isOpen: boolean;
   targetRect: { top: number; left: number; width: number; height: number } | null;
   onClose: () => void;
+  onSkip?: () => void;
   title: string;
   description: string;
   children?: React.ReactNode;
@@ -16,6 +17,7 @@ export const TourSpotlight: React.FC<TourSpotlightProps> = ({
   isOpen, 
   targetRect, 
   onClose, 
+  onSkip,
   title, 
   description,
   children
@@ -44,7 +46,7 @@ export const TourSpotlight: React.FC<TourSpotlightProps> = ({
                 100% 0%
               )` : 'none'
             }}
-            onClick={onClose}
+            onClick={onSkip || onClose}
           />
           
           {/* Tour Content - Positioned relative to the target */}
@@ -70,6 +72,15 @@ export const TourSpotlight: React.FC<TourSpotlightProps> = ({
                   {description}
                 </p>
                 {children}
+
+                {onSkip && (
+                  <button
+                    onClick={onSkip}
+                    className="text-[11px] text-slate-400/60 hover:text-slate-500 hover:underline transition-colors mt-1 cursor-pointer font-medium"
+                  >
+                    דלג על הסיור
+                  </button>
+                )}
               </div>
             </div>
           </motion.div>

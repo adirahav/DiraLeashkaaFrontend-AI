@@ -129,19 +129,12 @@ const PropertyCard = React.forwardRef<HTMLElement, PropertyCardProps>(({
 }, ref) => {
   const { getPhrase, params } = useSplash()
   const [isDeleting, setIsDeleting] = useState(false)
-  const isMounted = useRef(true)
-
-  useEffect(() => {
-    return () => { isMounted.current = false }
-  }, [])
 
   const handleDelete = async () => {
-    onCancelDelete() // release the parent's confirming lock before async work
+    onCancelDelete()
     setIsDeleting(true)
     await new Promise<void>((resolve) => setTimeout(resolve, 350))
-    if (isMounted.current) {
-      await Promise.resolve(onDeleteConfirm(property.uuid))
-    }
+    await Promise.resolve(onDeleteConfirm(property.uuid))
   }
 
   const cityDisplayName = (() => {

@@ -1,19 +1,24 @@
 
 import React, { useEffect, useState } from 'react';
 import { TourSpotlight } from './TourSpotlight';
+import { cn } from '@/lib/utils';
+import { useSplash } from '../../hooks/useSplash';
+import { useStore } from '../../store/store';
+
+type TourStep = 'CITY' | 'PRICE' | 'EQUITY' | 'TYPE' | 'INCOME' | 'COMMITMENTS';
 
 interface PropertyTourProps {
   showTour: boolean;
   setShowTour: (val: boolean) => void;
-  tourStep: 'CITY' | 'PRICE' | 'EQUITY' | 'TYPE' | 'INCOME' | 'COMMITMENTS';
-  setTourStep: (step: 'CITY' | 'PRICE' | 'EQUITY' | 'TYPE' | 'INCOME' | 'COMMITMENTS') => void;
-  pendingTourStep: 'CITY' | 'PRICE' | 'EQUITY' | 'TYPE' | 'INCOME' | 'COMMITMENTS' | null;
-  setPendingTourStep: (step: 'CITY' | 'PRICE' | 'EQUITY' | 'TYPE' | 'INCOME' | 'COMMITMENTS' | null) => void;
+  tourStep: TourStep;
+  setTourStep: (step: TourStep) => void;
+  pendingTourStep: TourStep | null;
+  setPendingTourStep: (step: TourStep | null) => void;
   isCalculating: boolean;
   setIsCalculating: (val: boolean) => void;
   setIsTourEnding: (val: boolean) => void;
-  setViewMode: (val: 'form' | 'results') => void;
-  setActiveResultTab: (val: 'yield' | 'amortization' | 'graph') => void;
+  onStepSave: () => void;
+  canAdvance: boolean;
   cityRef: React.RefObject<HTMLDivElement | null>;
   priceRef: React.RefObject<HTMLDivElement | null>;
   equityRef: React.RefObject<HTMLDivElement | null>;
@@ -22,6 +27,14 @@ interface PropertyTourProps {
   commitmentsRef: React.RefObject<HTMLDivElement | null>;
   graphRef: React.RefObject<HTMLDivElement | null>;
 }
+
+const NEXT_STEP: Partial<Record<TourStep, TourStep>> = {
+  CITY: 'PRICE',
+  PRICE: 'EQUITY',
+  EQUITY: 'TYPE',
+  TYPE: 'INCOME',
+  INCOME: 'COMMITMENTS',
+};
 
 export const PropertyTour: React.FC<PropertyTourProps> = ({
   showTour,
@@ -33,119 +46,135 @@ export const PropertyTour: React.FC<PropertyTourProps> = ({
   isCalculating,
   setIsCalculating,
   setIsTourEnding,
-  setViewMode,
-  setActiveResultTab,
+  onStepSave,
+  canAdvance,
   cityRef,
   priceRef,
   equityRef,
   typeRef,
   incomeRef,
   commitmentsRef,
-  graphRef
+  graphRef,
 }) => {
+  const { getPhrase } = useSplash();
+  const completeTour = useStore((state) => state.completeTour);
   const [activeRect, setActiveRect] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
 
-  // Handle step transitions with smooth scroll
+  const isFinalStep = tourStep === 'COMMITMENTS';
+
+  const stepContent: Record<TourStep, { title: string; description: string }> = {
+    CITY: {
+      title: getPhrase('tour_city_title', 'City Selection'),
+      description: getPhrase('tour_city_text', 'Select the city where the property is located. This helps us calculate taxes and yields accurately.'),
+    },
+    PRICE: {
+      title: getPhrase('tour_price_title', 'Property Price'),
+      description: getPhrase('tour_price_text', 'Enter the purchase price of the property. The price has critical implications for taxation and financing.'),
+    },
+    EQUITY: {
+      title: getPhrase('tour_equity_title', 'Down Payment'),
+      description: getPhrase('tour_equity_text', 'Enter the amount of equity available to you. This is the initial sum you are investing in the deal.'),
+    },
+    TYPE: {
+      title: getPhrase('tour_type_title', 'Property Type'),
+      description: getPhrase('tour_type_text', 'Choose the property type. Each type has different tax and rental potential implications.'),
+    },
+    INCOME: {
+      title: getPhrase('tour_income_title', 'Monthly Income'),
+      description: getPhrase('tour_income_text', 'Enter your monthly income. This helps us calculate your repayment capacity and economic viability.'),
+    },
+    COMMITMENTS: {
+      title: getPhrase('tour_commitments_title', 'Monthly Commitments'),
+      description: getPhrase('tour_commitments_text', 'Enter your monthly loans and commitments. This data directly affects the maximum financing percentage you can receive.'),
+    },
+  };
+
+  // Body lock while tour is active
+  useEffect(() => {
+    if (showTour) {
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+      document.documentElement.style.overflow = 'unset';
+    };
+  }, [showTour]);
+
+  // Scroll to pending step, then activate it after scroll settles
   useEffect(() => {
     if (!isCalculating && pendingTourStep) {
-      const targetRef = 
-        pendingTourStep === 'CITY' ? cityRef : 
-        pendingTourStep === 'PRICE' ? priceRef : 
-        pendingTourStep === 'EQUITY' ? equityRef : 
-        pendingTourStep === 'TYPE' ? typeRef : 
+      const targetRef =
+        pendingTourStep === 'CITY' ? cityRef :
+        pendingTourStep === 'PRICE' ? priceRef :
+        pendingTourStep === 'EQUITY' ? equityRef :
+        pendingTourStep === 'TYPE' ? typeRef :
         pendingTourStep === 'INCOME' ? incomeRef :
         commitmentsRef;
       targetRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      
       const timer = setTimeout(() => {
         setTourStep(pendingTourStep);
         setPendingTourStep(null);
       }, 1000);
-      
       return () => clearTimeout(timer);
     }
   }, [isCalculating, pendingTourStep, cityRef, priceRef, equityRef, typeRef, incomeRef, commitmentsRef, setTourStep, setPendingTourStep]);
 
-  // Update spotlight position
+  // Track active element rect via rAF for smooth spotlight follow.
+  // activeRect is intentionally NOT in deps — the loop updates it every frame
+  // without needing to re-run the effect. Adding it would cause the effect to
+  // restart every frame, re-triggering scrollIntoView and causing the popover
+  // to oscillate between above/below positions.
   useEffect(() => {
     let animationFrameId: number;
-    
-    const updateRect = () => {
-      if (showTour && !isCalculating && !pendingTourStep) {
-        let targetRef;
-        if (tourStep === 'CITY') targetRef = cityRef;
-        else if (tourStep === 'PRICE') targetRef = priceRef;
-        else if (tourStep === 'EQUITY') targetRef = equityRef;
-        else if (tourStep === 'TYPE') targetRef = typeRef;
-        else if (tourStep === 'INCOME') targetRef = incomeRef;
-        else targetRef = commitmentsRef;
+    let cancelled = false;
 
-        if (targetRef.current) {
-          const rect = targetRef.current.getBoundingClientRect();
-          setActiveRect({
-            top: rect.top,
-            left: rect.left,
-            width: rect.width,
-            height: rect.height
-          });
-        }
-        animationFrameId = requestAnimationFrame(updateRect);
+    const updateRect = () => {
+      if (cancelled) return;
+      const targetRef =
+        tourStep === 'CITY' ? cityRef :
+        tourStep === 'PRICE' ? priceRef :
+        tourStep === 'EQUITY' ? equityRef :
+        tourStep === 'TYPE' ? typeRef :
+        tourStep === 'INCOME' ? incomeRef :
+        commitmentsRef;
+      if (targetRef.current) {
+        const rect = targetRef.current.getBoundingClientRect();
+        setActiveRect({ top: rect.top, left: rect.left, width: rect.width, height: rect.height });
       }
+      animationFrameId = requestAnimationFrame(updateRect);
     };
 
-    if (showTour) {
-      if (isCalculating) {
-        setActiveRect(null);
-      } else {
-        const targetRef = 
-          tourStep === 'CITY' ? cityRef : 
-          tourStep === 'PRICE' ? priceRef : 
-          tourStep === 'EQUITY' ? equityRef : 
-          tourStep === 'TYPE' ? typeRef : 
-          tourStep === 'INCOME' ? incomeRef :
-          commitmentsRef;
-        const currentRect = targetRef.current?.getBoundingClientRect();
-        
-        if (activeRect && currentRect && Math.abs(activeRect.top - currentRect.top) > 50) {
-           setActiveRect(null);
-        }
-
-        updateRect();
-        
-        if (tourStep === 'CITY' && !pendingTourStep) {
-          cityRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }
+    if (showTour && !isCalculating && !pendingTourStep) {
+      updateRect();
     } else {
       setActiveRect(null);
     }
 
     return () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-      }
+      cancelled = true;
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
-  }, [showTour, tourStep, isCalculating, pendingTourStep, activeRect, cityRef, priceRef, equityRef, typeRef, incomeRef, commitmentsRef]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showTour, tourStep, isCalculating, pendingTourStep, cityRef, priceRef, equityRef, typeRef, incomeRef, commitmentsRef]);
 
-  // Focus management
+  // Auto-focus the relevant input after step transition
   useEffect(() => {
     if (showTour && !isCalculating) {
-      const stepToId: Record<string, string> = {
-        'PRICE': 'price-input',
-        'EQUITY': 'equity-input',
-        'TYPE': 'type-input',
-        'INCOME': 'income-input',
-        'COMMITMENTS': 'commitments-input'
+      const stepToId: Partial<Record<TourStep, string>> = {
+        PRICE: 'price-input',
+        EQUITY: 'equity-input',
+        TYPE: 'type-input',
+        INCOME: 'income-input',
+        COMMITMENTS: 'commitments-input',
       };
-      
       const id = stepToId[tourStep];
       if (id) {
         const el = document.getElementById(id);
         if (el) {
           setTimeout(() => {
             if (el.tagName === 'DIV') {
-              const firstButton = el.querySelector('button');
-              firstButton?.focus();
+              el.querySelector('button')?.focus();
             } else {
               el.focus();
               if (el instanceof HTMLInputElement) {
@@ -159,107 +188,55 @@ export const PropertyTour: React.FC<PropertyTourProps> = ({
     }
   }, [showTour, tourStep, isCalculating]);
 
+  const handleSkip = () => {
+    completeTour();
+    setShowTour(false);
+  };
+
+  const handleNext = () => {
+    onStepSave();
+    setIsCalculating(true);
+    setTimeout(() => {
+      setIsCalculating(false);
+      if (isFinalStep) {
+        completeTour();
+        setIsTourEnding(true);
+        setShowTour(false);
+        setTimeout(() => {
+          graphRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          setTimeout(() => setIsTourEnding(false), 2000);
+        }, 800);
+      } else {
+        setPendingTourStep(NEXT_STEP[tourStep]!);
+      }
+    }, 1200);
+  };
+
   return (
-    <TourSpotlight 
+    <TourSpotlight
       isOpen={showTour && activeRect !== null}
       targetRect={activeRect}
       onClose={() => setShowTour(false)}
-      title={tourStep === 'CITY' ? 'בחירת עיר' : tourStep === 'PRICE' ? 'מחיר הנכס' : tourStep === 'EQUITY' ? 'הון עצמי' : tourStep === 'TYPE' ? 'סוג הנכס' : tourStep === 'INCOME' ? 'הכנסות' : 'התחייבויות'}
-      description={
-        tourStep === 'CITY' 
-          ? 'בחר את העיר שבה נמצא הנכס שלך. זה יעזור לנו לחשב את המיסים והתשואות בצורה מדויקת.'
-          : tourStep === 'PRICE'
-            ? 'הזן את מחיר הרכישה של הנכס. למחיר הנכס יש משמעות קריטית מבחינת מיסוי ומימון.'
-            : tourStep === 'EQUITY'
-              ? 'הזן את סכום ההון העצמי העומד לרשותך. זהו הסכום הראשוני שאתה משקיע בעסקה.'
-              : tourStep === 'TYPE'
-                ? 'בחר את סוג הנכס. לכל סוג נכס יש משמעויות שונות מבחינת מיסוי ופוטנציאל השכרה.'
-                : tourStep === 'INCOME'
-                  ? 'הזן את ההכנסות החודשיות שלך. זה יעזור לנו לחשב את יכולת ההחזר והכדאיות הכלכלית.'
-                  : 'הזן את ההלוואות וההתחייבויות החודשיות שלך. נתון זה משפיע ישירות על אחוז המימון המקסימלי שתוכל לקבל.'
-      }
+      onSkip={handleSkip}
+      title={stepContent[tourStep].title}
+      description={stepContent[tourStep].description}
     >
-      {tourStep === 'PRICE' && (
-        <button
-          onClick={() => {
-            setIsCalculating(true);
-            setTimeout(() => {
-              setIsCalculating(false);
-              setPendingTourStep('EQUITY');
-            }, 1200);
-          }}
-          className="mt-2 px-6 py-2 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200"
-        >
-          המשך לשלב הבא
-        </button>
-      )}
-
-      {tourStep === 'EQUITY' && (
-        <button
-          onClick={() => {
-            setIsCalculating(true);
-            setTimeout(() => {
-              setIsCalculating(false);
-              setPendingTourStep('TYPE');
-            }, 1200);
-          }}
-          className="mt-2 px-6 py-2 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200"
-        >
-          המשך לשלב הבא
-        </button>
-      )}
-
-      {tourStep === 'TYPE' && (
-        <button
-          onClick={() => {
-            setIsCalculating(true);
-            setTimeout(() => {
-              setIsCalculating(false);
-              setPendingTourStep('INCOME');
-            }, 1200);
-          }}
-          className="mt-2 px-6 py-2 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200"
-        >
-          המשך לשלב הבא
-        </button>
-      )}
-
-      {tourStep === 'INCOME' && (
-        <button
-          onClick={() => {
-            setIsCalculating(true);
-            setTimeout(() => {
-              setIsCalculating(false);
-              setPendingTourStep('COMMITMENTS');
-            }, 1200);
-          }}
-          className="mt-2 px-6 py-2 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200"
-        >
-          המשך לשלב הבא
-        </button>
-      )}
-
-      {tourStep === 'COMMITMENTS' && (
-        <button
-          onClick={() => {
-            setIsCalculating(true);
-            setTimeout(() => {
-              setIsCalculating(false);
-              setIsTourEnding(true);
-              setShowTour(false);
-              setViewMode('results');
-              setActiveResultTab('graph');
-              setTimeout(() => {
-                graphRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                setTimeout(() => setIsTourEnding(false), 2000);
-              }, 800);
-            }, 1200);
-          }}
-          className="mt-2 px-6 py-2 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 transition-colors shadow-lg shadow-green-200"
-        >
-          סיום הסיור
-        </button>
-      )}
+      <button
+        onClick={handleNext}
+        disabled={!canAdvance}
+        className={cn(
+          'mt-2 px-6 py-2 text-white font-bold rounded-xl transition-colors shadow-lg',
+          canAdvance
+            ? isFinalStep
+              ? 'bg-green-600 hover:bg-green-700 shadow-green-200'
+              : 'bg-blue-600 hover:bg-blue-700 shadow-blue-200'
+            : 'bg-slate-400 cursor-not-allowed shadow-none'
+        )}
+      >
+        {isFinalStep
+          ? getPhrase('tour_button_finish', 'Finish Tour')
+          : getPhrase('tour_button_next', 'Next Step')}
+      </button>
     </TourSpotlight>
   );
 };

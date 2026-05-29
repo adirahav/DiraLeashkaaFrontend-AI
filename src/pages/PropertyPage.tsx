@@ -135,6 +135,7 @@ export const PropertyPage: React.FC = () => {
   const graphRef = useRef<HTMLDivElement>(null);
   const lastFocusedId = useRef<string | null>(null);
   const isInitialLoad = useRef(true);
+  const showTourRef = useRef(showTour);
 
   const isScrolled = useScrolled();
 
@@ -202,12 +203,17 @@ export const PropertyPage: React.FC = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [propertyUUID, splashReady]);
 
+  // Keep showTourRef in sync so the auto-save can check tour state without
+  // adding showTour to the effect's deps (which would cause spurious re-runs).
+  useEffect(() => { showTourRef.current = showTour; }, [showTour]);
+
   // --- Auto-save (debounced) ---
   const debouncedProperty = useDebounce(currentProperty, 1000);
 
   useEffect(() => {
     if (isInitialLoad.current) return;
     if (!debouncedProperty?.updatedByField) return;
+    if (showTourRef.current) return; // during tour, saves are triggered by the Next Step button
 
     let cancelled = false;
 
@@ -313,6 +319,34 @@ export const PropertyPage: React.FC = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showTour]);
 
+  // --- Tour save: fires on Next Step button press instead of debounce ---
+  // Does NOT call setCalculating — PropertyTour's handleNext manages that state.
+  const handleTourSave = useCallback(() => {
+    if (isInitialLoad.current) return;
+    const prop = useStore.getState().currentProperty;
+    if (!prop?.updatedByField) return;
+    const { uuid, updatedByField } = prop;
+    const fieldValue = (prop as Record<string, any>)[updatedByField];
+    const doSave = uuid
+      ? propertyService.save(uuid, updatedByField, fieldValue)
+      : propertyService.create(updatedByField, fieldValue, {
+          apartmentType: prop.apartmentType || defaultApartmentType,
+        });
+    doSave.then((updated) => {
+      const local = useStore.getState().currentProperty;
+      const userSources = local?.additionalFundingSources ?? buildDefaultProperty(loggedinUser, params as Record<string, unknown>).additionalFundingSources;
+      setCurrentProperty({
+        ...normalizePropertyResponse(updated, userSources),
+        apartmentType: updated.apartmentType || local?.apartmentType || '',
+        loggedinUserCalcAge,
+        updatedByField: undefined,
+      });
+      if (!uuid && updated.uuid) {
+        navigate(`/property/${updated.uuid}`, { replace: true });
+      }
+    }).catch(() => {});
+  }, [defaultApartmentType, loggedinUser, loggedinUserCalcAge, params, navigate, setCurrentProperty]);
+
   // --- Field update handler (thin wrapper for multi-field rollback cases) ---
   const handleFieldUpdate = useCallback(
     (field: string, value: any) => {
@@ -380,6 +414,19 @@ export const PropertyPage: React.FC = () => {
     [currentProperty],
   );
 
+  const canAdvanceTour = useMemo(() => {
+    if (!currentProperty) return false;
+    switch (tourStep) {
+      case 'CITY':   return !!currentProperty.city;
+      case 'PRICE':  return !!currentProperty.price && Number(currentProperty.price) > 0;
+      case 'EQUITY': return Number(currentProperty.calcEquity) > 0;
+      case 'TYPE':   return !!currentProperty.apartmentType;
+      case 'INCOME': return Number(currentProperty.defaultIncomes) > 0;
+      case 'COMMITMENTS': return true; // commitments can legitimately be 0
+      default: return true;
+    }
+  }, [tourStep, currentProperty]);
+
   // totalYield10y from server-computed forecast (index 119 = end of year 10)
   const totalYield10y = useMemo(() => {
     const forecast = currentProperty?.calcYieldForecast;
@@ -424,8 +471,8 @@ export const PropertyPage: React.FC = () => {
         isCalculating={isCalculating}
         setIsCalculating={setCalculating}
         setIsTourEnding={setIsTourEnding}
-        setViewMode={setViewMode}
-        setActiveResultTab={setActiveResultTab}
+        onStepSave={handleTourSave}
+        canAdvance={canAdvanceTour}
         cityRef={cityRef}
         priceRef={priceRef}
         equityRef={equityRef}
@@ -498,21 +545,14 @@ export const PropertyPage: React.FC = () => {
               property={property}
               onUpdate={handleFieldUpdate}
               isCalculating={isCalculating}
-              setIsCalculating={setCalculating}
               showTour={showTour}
-              setShowTour={setShowTour}
               tourStep={tourStep}
-              setPendingTourStep={setPendingTourStep}
-              setIsTourEnding={setIsTourEnding}
-              setViewMode={setViewMode}
-              setActiveResultTab={setActiveResultTab}
               cityRef={cityRef}
               priceRef={priceRef}
               equityRef={equityRef}
               typeRef={typeRef}
               incomeRef={incomeRef}
               commitmentsRef={commitmentsRef}
-              graphRef={graphRef}
             />
 
             {property.showMortgagePrepayment && property.uuid && (

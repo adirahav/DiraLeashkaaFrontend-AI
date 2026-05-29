@@ -19,6 +19,7 @@ export const HomePage: React.FC = () => {
   const loggedinUser = useStore((state) => state.loggedinUser)
   const isLoading = useStore((state) => state.isLoading)
   const setIsLoading = useStore((state) => state.setIsLoading)
+  const setShowTour = useStore((state) => state.setShowTour)
   const properties = useStore((state) => state.properties)
   const bestYields = useStore((state) => state.bestYields)
   const fullData = useStore((state) => state.fullData)
@@ -129,11 +130,13 @@ export const HomePage: React.FC = () => {
   // Phase 2 is in progress when properties are loaded but full data hasn't arrived yet
   const isFullDataLoading = !isLoading && !fullData && properties.length > 0
 
-  // Optimistic delete: remove from store immediately, archive on server, roll back on error
+  // Optimistic delete: remove from store immediately, archive on server, roll back on error.
+  // Reads properties from the store at call time to avoid stale-closure false negatives.
   const handleDeleteProperty = useCallback(
     async (uuid: string) => {
-      const index = properties.findIndex((p) => p.uuid === uuid)
-      const property = properties[index]
+      const current = useStore.getState().properties
+      const index = current.findIndex((p) => p.uuid === uuid)
+      const property = current[index]
       if (!property) return
 
       removeProperty(uuid)
@@ -141,10 +144,10 @@ export const HomePage: React.FC = () => {
       try {
         await propertyService.archive(uuid)
       } catch {
-        if (index !== -1) restoreProperty(property, index)
+        restoreProperty(property, index)
       }
     },
-    [properties, removeProperty, restoreProperty],
+    [removeProperty, restoreProperty],
   )
 
   const canStartTour = !loggedinUser?.tourCompletedTime
@@ -203,7 +206,10 @@ export const HomePage: React.FC = () => {
               className="w-full"
             >
               <HomeWelcome
-                onAddPropertyPress={() => navigate('/property/new')}
+                onAddPropertyPress={() => {
+                  if (canStartTour) setShowTour(true)
+                  navigate('/property/new')
+                }}
                 canStartTour={canStartTour}
               />
             </motion.div>

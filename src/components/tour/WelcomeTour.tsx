@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { TourSpotlight } from './TourSpotlight';
 import { useStore } from '../../store/store';
+import { useSplash } from '../../hooks/useSplash';
 
 interface WelcomeTourProps {
   showTour: boolean;
@@ -15,6 +16,7 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
   buttonRef
 }) => {
   const completeTour = useStore((state) => state.completeTour)
+  const { getPhrase } = useSplash()
   const [buttonRect, setButtonRect] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
 
   useEffect(() => {
@@ -67,8 +69,9 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
       isOpen={showTour}
       targetRect={buttonRect}
       onClose={handleClose}
-      title="Let's start!"
-      description="To see the magic happen, click the highlighted button to add your first property."
+      onSkip={handleClose}
+      title={getPhrase('tour_start_button_title', "Let's get started!")}
+      description={getPhrase('tour_start_button_text', 'To see the magic happen, click the highlighted button to add your first property.')}
     />
   );
 };

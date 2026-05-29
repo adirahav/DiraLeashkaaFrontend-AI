@@ -1,5 +1,9 @@
 import { StateCreator } from 'zustand'
 import { RootState } from '../store'
+import { userService } from '../../services/user.service'
+import { utilService } from '../../services/util.service'
+
+const TOUR_COMPLETED_KEY = 'tour_completed_time'
 
 export interface UserSlice {
   completeTour: () => void
@@ -9,6 +13,11 @@ export const createUserSlice: StateCreator<RootState, [], [], UserSlice> = (set,
   completeTour: () => {
     const user = get().loggedinUser
     if (!user) return
-    set({ loggedinUser: { ...user, tourCompletedTime: new Date().toISOString() } })
+    const tourTime = new Date().toISOString()
+    set({ loggedinUser: { ...user, tourCompletedTime: tourTime } })
+    utilService.saveToStorage(TOUR_COMPLETED_KEY, tourTime)
+    userService.completeTour().catch((err) => console.error('Tour completion sync failed:', err))
   },
 })
+
+export { TOUR_COMPLETED_KEY }

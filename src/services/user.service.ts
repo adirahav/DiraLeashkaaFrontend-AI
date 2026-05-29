@@ -21,6 +21,7 @@ export const userService = {
   fetchSplash,
   updateUser,
   getHome,
+  completeTour,
 }
 
 async function fetchSplash(lang: string): Promise<SplashApiResponse> {
@@ -38,4 +39,9 @@ async function getHome(fullData: boolean): Promise<HomeResponse> {
   const data = await httpService.get<HomeResponse>('/user/home', { fullData }, currentToken)
   useStore.getState().setHome(data)
   return data
+}
+
+async function completeTour(): Promise<void> {
+  const currentToken = useStore.getState().token?.replace(/^"|"$/g, '') ?? undefined
+  await httpService.patch<void>('/user/tourCompleted', {}, currentToken)
 }

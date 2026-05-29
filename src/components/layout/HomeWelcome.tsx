@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { cn } from '@/lib/utils'
 import { Button } from '../formFields'
 import { Plus, Sparkles } from 'lucide-react'
 import { motion } from 'motion/react'
@@ -111,14 +112,17 @@ export const HomeWelcome: React.FC<HomeWelcomeProps> = ({ onAddPropertyPress, ca
             <motion.div
               ref={buttonRef}
               variants={itemVariants}
-              className={`w-fit transition-all duration-500 ${isTourActive ? 'relative z-[110]' : ''}`}
+              className={cn('w-fit transition-all duration-500', isTourActive && 'relative z-[110]')}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               <Button
                 variant="primary"
                 onClick={onAddPropertyPress}
-                className={`px-10 py-5 text-xl shadow-2xl shadow-blue-200 flex items-center justify-center gap-3 rounded-2xl transition-all duration-300 ${isTourActive ? 'ring-4 ring-blue-500 bg-blue-600 text-white' : ''}`}
+                className={cn(
+                  'px-10 py-5 text-xl shadow-2xl shadow-blue-200 flex items-center justify-center gap-3 rounded-2xl transition-all duration-300',
+                  isTourActive && 'ring-4 ring-blue-500 bg-blue-600 text-white'
+                )}
               >
                 <motion.div
                   animate={isTourActive ? { scale: [1, 1.05, 1] } : {}}

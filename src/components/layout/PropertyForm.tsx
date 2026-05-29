@@ -125,7 +125,6 @@ export interface PropertyFormProps {
   property: PropertyData;
   onUpdate: (field: string, value: any) => void;
   isCalculating: boolean;
-  setIsCalculating: (val: boolean) => void;
 
   // Layout controls
   isCompact?: boolean;
@@ -140,10 +139,7 @@ export interface PropertyFormProps {
 
   // Tour
   showTour: boolean;
-  setShowTour: (val: boolean) => void;
   tourStep: string;
-  setPendingTourStep: (step: any) => void;
-  setIsTourEnding: (val: boolean) => void;
 
   // Refs
   cityRef: React.RefObject<HTMLDivElement | null>;
@@ -152,11 +148,6 @@ export interface PropertyFormProps {
   typeRef: React.RefObject<HTMLDivElement | null>;
   incomeRef: React.RefObject<HTMLDivElement | null>;
   commitmentsRef: React.RefObject<HTMLDivElement | null>;
-  graphRef: React.RefObject<HTMLDivElement | null>;
-
-  // Actions
-  setViewMode: (mode: 'form' | 'results') => void;
-  setActiveResultTab: (tab: 'yield' | 'amortization' | 'graph') => void;
 
   // Constants — all optional, fall back to fixedParameters or static defaults
   CITY_OPTIONS?: { value: string; label: string }[];
@@ -171,7 +162,6 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
   property,
   onUpdate,
   isCalculating,
-  setIsCalculating,
   isCompact = false,
   hideLocationFields = false,
   hidePropertyPrice = false,
@@ -182,19 +172,13 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
   forceColumnLayout = false,
   section1GridClassName = 'lg:grid-cols-3',
   showTour,
-  setShowTour,
   tourStep,
-  setPendingTourStep,
-  setIsTourEnding,
   cityRef,
   priceRef,
   equityRef,
   typeRef,
   incomeRef,
   commitmentsRef,
-  graphRef,
-  setViewMode,
-  setActiveResultTab,
   CITY_OPTIONS,
   APARTMENT_TYPES = DEFAULT_APARTMENT_TYPES,
   MORTGAGE_PERIODS = DEFAULT_MORTGAGE_PERIODS,
@@ -255,31 +239,6 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
     ? 'bg-transparent shadow-none border-none !p-0 !md:p-0'
     : '';
 
-  // Tour interception helper — fires after the field's onUpdate call
-  const handleTourStep = (
-    step: string,
-    nextStep: string | null,
-    isLastStep = false,
-  ) => {
-    if (!showTour || tourStep !== step) return;
-    setIsCalculating(true);
-    setTimeout(() => {
-      setIsCalculating(false);
-      if (isLastStep) {
-        setIsTourEnding(true);
-        setShowTour(false);
-        setViewMode('results');
-        setActiveResultTab('graph');
-        setTimeout(() => {
-          graphRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          setTimeout(() => setIsTourEnding(false), 2000);
-        }, 800);
-      } else if (nextStep) {
-        setPendingTourStep(nextStep);
-      }
-    }, 1200);
-  };
-
   const colOverride = forceColumnLayout ? 'lg:grid-cols-1' : '';
 
   // Calculation overlay shared between sections
@@ -317,10 +276,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                 <Dropdown
                   label={getPhrase('property_city_label', 'City')}
                   value={property.city}
-                  onChange={(val) => {
-                    onUpdate('city', val);
-                    handleTourStep('CITY', 'PRICE');
-                  }}
+                  onChange={(val) => onUpdate('city', val)}
                   options={cityOptions}
                   pinnedOptions={cityPinnedOptions}
                   searchable
@@ -353,10 +309,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                   id="type-input"
                   label={getPhrase('property_apartment_type_label', 'Apartment Type')}
                   value={property.apartmentType}
-                  onChange={(val) => {
-                    onUpdate('apartmentType', val);
-                    handleTourStep('TYPE', 'INCOME');
-                  }}
+                  onChange={(val) => onUpdate('apartmentType', val)}
                   options={apartmentTypeOptions}
                   required
                   error={!property.apartmentType ? ' ' : undefined}
@@ -387,10 +340,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                   id="price-input"
                   label={getPhrase('property_price_label', 'Property Price (₪)')}
                   value={property.price as number}
-                  onChange={(val) => {
-                    onUpdate('price', val);
-                    handleTourStep('PRICE', 'EQUITY');
-                  }}
+                  onChange={(val) => onUpdate('price', val)}
                   required
                   error={!property.price ? ' ' : undefined}
                   disabled={isCalculating}
@@ -406,10 +356,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                   label={getPhrase('property_equity_label', 'Equity (₪)')}
                   value={property.calcEquity}
                   defaultValue={property.defaultEquity}
-                  onChange={(val) => {
-                    onUpdate('calcEquity', val);
-                    handleTourStep('EQUITY', 'TYPE');
-                  }}
+                  onChange={(val) => onUpdate('calcEquity', val)}
                   required
                   error={
                     property.calcEquity === 0
@@ -507,10 +454,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                 label={getPhrase('property_incomes_label', 'Income (₪)')}
                 value={property.defaultIncomes}
                 defaultValue={property.calcIncomes}
-                onChange={(val) => {
-                  onUpdate('defaultIncomes', val);
-                  handleTourStep('INCOME', 'COMMITMENTS');
-                }}
+                onChange={(val) => onUpdate('defaultIncomes', val)}
                 required
                 error={
                   property.defaultIncomes === 0
@@ -530,10 +474,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                 label={getPhrase('property_commitments_label', 'Loans and Commitments (₪)')}
                 value={property.defaultCommitments}
                 defaultValue={property.calcCommitments}
-                onChange={(val) => {
-                  onUpdate('defaultCommitments', val);
-                  handleTourStep('COMMITMENTS', null, true);
-                }}
+                onChange={(val) => onUpdate('defaultCommitments', val)}
                 required
                 disabled={isCalculating || isCommitmentsReadOnly}
                 tooltip={isCommitmentsReadOnly ? commitmentsReadOnlyTooltip : undefined}
