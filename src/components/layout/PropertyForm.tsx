@@ -132,6 +132,9 @@ export interface PropertyFormProps {
   hideLocationFields?: boolean;
   hidePropertyPrice?: boolean;
   hideAdditionalInfo?: boolean;
+  hideAncillaryExpenses?: boolean;
+  hideRentalIncome?: boolean;
+  hideFirstSectionHeader?: boolean;
   forceColumnLayout?: boolean;
   section1GridClassName?: string;
 
@@ -173,6 +176,9 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
   hideLocationFields = false,
   hidePropertyPrice = false,
   hideAdditionalInfo = false,
+  hideAncillaryExpenses = false,
+  hideRentalIncome = false,
+  hideFirstSectionHeader = false,
   forceColumnLayout = false,
   section1GridClassName = 'lg:grid-cols-3',
   showTour,
@@ -285,10 +291,10 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
   // Render
   // ---------------------------------------------------------------------------
   return (
-    <>
+    <div className="space-y-8">
       {/* ── Section 1: Property Details & Equity ─────────────────────────── */}
       <section>
-        {!isCompact && (
+        {!isCompact && !hideFirstSectionHeader && (
           <SectionHeader
             icon={<Building2 />}
             title={getPhrase('property_details_and_equity_header', 'Property Details and Equity')}
@@ -620,7 +626,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
       )}
 
       {/* ── Section 4: Ancillary Expenses ────────────────────────────────── */}
-      <section>
+      {!hideAncillaryExpenses && (<section>
         {!isCompact && (
           <SectionHeader
             icon={<Plus />}
@@ -736,10 +742,10 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
             />
           </div>
         </Card>
-      </section>
+      </section>)}
 
       {/* ── Section 5: Expected Rental Income ───────────────────────────── */}
-      <section>
+      {!hideRentalIncome && (<section>
         {!isCompact && (
           <SectionHeader
             icon={<TrendingUp />}
@@ -822,7 +828,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
             />
           </div>
         </Card>
-      </section>
+      </section>)}
 
       {/* ── Section 6: Mortgage Payment (conditional) ────────────────────── */}
       {property.showMortgagePrepayment && (
@@ -890,6 +896,6 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
           </Card>
         </section>
       )}
-    </>
+    </div>
   );
 };

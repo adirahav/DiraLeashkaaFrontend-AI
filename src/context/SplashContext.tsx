@@ -126,7 +126,7 @@ export function SplashProvider({ children }: { children: React.ReactNode }) {
     }
   }, [lang, forceFetchTick])
 
-  if (isLoading && (splash === null || isForceRefreshing)) {
+  if (isLoading && splash === null) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white relative overflow-hidden">
         <motion.div

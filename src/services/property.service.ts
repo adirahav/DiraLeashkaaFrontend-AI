@@ -70,8 +70,9 @@ function token() {
   return useStore.getState().token?.replace(/^"|"$/g, '') ?? undefined
 }
 
-async function getById(uuid: string): Promise<PropertyData> {
-  return httpService.get<PropertyData>(`/property/${uuid}`, null, token())
+async function getById(uuid: string, options?: { calcYields?: boolean }): Promise<PropertyData> {
+  const params = options?.calcYields ? { calcYields: true } : null
+  return httpService.get<PropertyData>(`/property/${uuid}`, params, token())
 }
 
 async function create(fieldName: string, fieldValue: any, defaults?: Record<string, any>): Promise<PropertyData> {

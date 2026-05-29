@@ -29,7 +29,7 @@ export const Checkbox: React.FC<{
         />
         <div
           className={cn(
-            'w-6 h-6 border-2 border-slate-200 rounded-lg bg-white transition-all peer-checked:bg-blue-600 peer-checked:border-blue-600',
+            'w-6 h-6 border-2 border-slate-300 rounded-lg bg-white transition-all peer-checked:bg-blue-600 peer-checked:border-blue-600',
             !disabled && 'group-hover:border-blue-400',
           )}
         />

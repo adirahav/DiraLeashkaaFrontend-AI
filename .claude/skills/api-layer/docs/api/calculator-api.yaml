@@ -86,7 +86,7 @@ paths:
               properties:
                 platform:
                   type: string
-                propertiesIds:
+                propertiesExternalIds:
                   type: array
                   items:
                     type: string

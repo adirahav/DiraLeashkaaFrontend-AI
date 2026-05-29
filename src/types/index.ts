@@ -49,3 +49,11 @@ export interface HomeResponse {
   bestYields?: Property[]
   fullData: boolean
 }
+
+export interface CalculatorItem {
+  uuid: string
+  type: string
+  isLock: boolean
+  isComingSoon: boolean
+  image?: string | null
+}
