@@ -11,7 +11,8 @@
       "Bash(dir \"c:\\\\Users\\\\User\\\\ReactProjects\\\\diraleashkaa-ai-frontend\\\\raw_from_ai_studio\")",
       "Bash(findstr /R \"[א-ת]\")",
       "Bash(Select-String -Path \"src\\\\**\\\\*.tsx\" -Pattern \"getPhrase\\\\\\([^\\)]*[א-ת]\" -Encoding UTF8)",
-      "Bash(Select-Object Filename, LineNumber, Line)"
+      "Bash(Select-Object Filename, LineNumber, Line)",
+      "Bash(Remove-Item \"c:\\\\Users\\\\User\\\\ReactProjects\\\\diraleashkaa-ai-frontend\\\\src\\\\pages\\\\ContactPage.tsx\")"
     ]
   }
 }

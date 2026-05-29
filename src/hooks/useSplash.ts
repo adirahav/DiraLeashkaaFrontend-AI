@@ -27,7 +27,7 @@ export function useSplash() {
 
   return {
     phrases: context?.phrases ?? {},
-    params: context?.fixedParameters ?? {},
+    params: (context?.fixedParameters ?? {}) as Record<string, unknown>,
     isReady: context?.isReady ?? false,
     isLoading: context?.isLoading ?? false,
     forceFetchSplash: context?.forceFetchSplash ?? (() => {}),

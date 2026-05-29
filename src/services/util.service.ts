@@ -9,6 +9,11 @@ export const utilService = {
   getWithExpiry,
   percentFormat,
   priceFormat,
+  getAppEnv,
+}
+
+export function getAppEnv(): string {
+  return (import.meta.env.VITE_APP_ENV as string | undefined) ?? import.meta.env.MODE ?? 'development'
 }
 
 export function percentFormat(value: number, decimals = 1): string {

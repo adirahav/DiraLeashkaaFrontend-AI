@@ -10,7 +10,7 @@ import { PropertyPage } from './pages/PropertyPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { TermsPage } from './pages/TermsPage'
 import { AccessibilityPage } from './pages/AccessibilityPage'
-import { ContactPage } from './pages/ContactPage'
+import { ContactUsPage } from './pages/ContactUsPage'
 import { CalculatorsPage } from './pages/CalculatorsPage'
 import { MaxPriceCalculatorPage } from './pages/MaxPriceCalculatorPage'
 import { CompareCalculatorPage } from './pages/CompareCalculatorPage'
@@ -29,10 +29,10 @@ const App = () => {
           {/* Public */}
           <Route path="/consent" element={<ConsentPage />} />
           <Route path="/accessibility-statement" element={<AccessibilityPage />} />
-          <Route path="/contact-us" element={<ContactPage />} />
 
           {/* Protected */}
           <Route element={<ProtectedRoute />}>
+            <Route path="/contact-us" element={<ContactUsPage />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/property/new" element={<PropertyPage />} />
             <Route path="/property/:id" element={<PropertyPage />} />

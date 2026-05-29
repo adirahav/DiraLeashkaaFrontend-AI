@@ -11,7 +11,7 @@ export interface FixedParameter {
 
 export interface SplashApiResponse {
   phrases: Phrase[]
-  fixedParameters: Record<string, number>
+  fixedParameters: Record<string, unknown>
   user: unknown
   announcements: unknown
   newVersionAvailable: boolean
@@ -19,6 +19,6 @@ export interface SplashApiResponse {
 
 export interface SplashData {
   phrases: Record<string, string>
-  fixedParameters: Record<string, number>
+  fixedParameters: Record<string, unknown>
   timestamp: number
 }

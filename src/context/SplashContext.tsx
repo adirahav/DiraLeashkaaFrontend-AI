@@ -25,7 +25,7 @@ function normalize(response: SplashApiResponse): SplashData {
 
 export interface SplashContextValue {
   phrases: Record<string, string>
-  fixedParameters: Record<string, number>
+  fixedParameters: Record<string, unknown>
   isReady: boolean
   isLoading: boolean
   forceFetchSplash: () => void
