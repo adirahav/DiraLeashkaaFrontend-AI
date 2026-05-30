@@ -100,9 +100,13 @@ body.high-contrast textarea {
   border: 2px solid #ffff00 !important;
 }
 
-/* Grayscale */
-body.grayscale-mode #app-content {
-  filter: grayscale(100%);
+/* Grayscale — applied to #root, not body, so position:fixed elements
+   (e.g. AccessibilityMenu portaled to body) are not affected by the
+   stacking-context side-effect of filter on a parent element.
+   The menu container gets its own grayscale rule so it also desaturates. */
+body.grayscale-mode #root,
+body.grayscale-mode .accessibility-menu-container {
+  filter: grayscale(100%) !important;
 }
 
 /* Underline Links */

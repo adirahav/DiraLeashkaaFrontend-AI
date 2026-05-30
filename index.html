@@ -9,6 +9,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@200..800&display=swap" rel="stylesheet" />
   </head>
   <body class="bg-slate-50 text-slate-900">
+    <!-- FOUC prevention: apply saved accessibility classes before React mounts -->
+    <script>
+      (function () {
+        try {
+          var s = JSON.parse(localStorage.getItem('accessibility_settings') || 'null');
+          if (s) {
+            var b = document.body;
+            if (s.fontSize === 'large')  b.classList.add('font-size-large');
+            if (s.fontSize === 'xlarge') b.classList.add('font-size-xlarge');
+            if (s.highContrast)   b.classList.add('high-contrast');
+            if (s.grayscale)      b.classList.add('grayscale-mode');
+            if (s.underlineLinks) b.classList.add('underline-links');
+            if (s.readableFont)   b.classList.add('readable-font');
+          }
+        } catch (e) {}
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

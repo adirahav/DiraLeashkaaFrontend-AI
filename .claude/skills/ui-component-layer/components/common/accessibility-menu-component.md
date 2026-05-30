@@ -3,6 +3,7 @@ name: accessibility-menu-component
 description: A global floating accessibility controller. Manages font sizes, high contrast modes, and readability settings by injecting utility classes into the document body and persisting state via localStorage.
 allowed_model: [gemini-3-flash]
 references:
+  - @accessibility-layer/SKILL.md  
   - @ui-component-layer/SKILL.md  
   - @css-layer/SKILL.md
 examples:                                                           

@@ -1,197 +1,263 @@
 
-import React, { useState, useEffect } from 'react';
-import { Accessibility, X, Type, Contrast, MousePointer2, Underline, Sun, Moon } from 'lucide-react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
+import { Accessibility, X, Type, Contrast, MousePointer2, Underline, Sun } from 'lucide-react';
+import { cn } from '../../lib/utils';
+import { useSplash } from '../../hooks/useSplash';
+
+interface AccessibilitySettings {
+  fontSize: 'normal' | 'large' | 'xlarge';
+  highContrast: boolean;
+  grayscale: boolean;
+  underlineLinks: boolean;
+  readableFont: boolean;
+}
+
+const DEFAULT_SETTINGS: AccessibilitySettings = {
+  fontSize: 'normal',
+  highContrast: false,
+  grayscale: false,
+  underlineLinks: false,
+  readableFont: false,
+};
+
+function loadSettings(): AccessibilitySettings {
+  try {
+    const saved = localStorage.getItem('accessibility_settings');
+    if (saved) return { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
+  } catch {}
+  return DEFAULT_SETTINGS;
+}
+
+// Read once at module load so initial state is always the saved values,
+// preventing the persist effect from overwriting with defaults on first render.
+const initialSettings = loadSettings();
 
 export const AccessibilityMenu: React.FC = () => {
+  const { getPhrase } = useSplash();
   const [isOpen, setIsOpen] = useState(false);
-  const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xlarge'>('normal');
-  const [highContrast, setHighContrast] = useState(false);
-  const [grayscale, setGrayscale] = useState(false);
-  const [underlineLinks, setUnderlineLinks] = useState(false);
-  const [readableFont, setReadableFont] = useState(false);
+  const [settings, setSettings] = useState<AccessibilitySettings>(initialSettings);
+  const fabRef = useRef<HTMLButtonElement>(null);
 
-  // Load settings from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem('accessibility_settings');
-    if (saved) {
-      const settings = JSON.parse(saved);
-      setFontSize(settings.fontSize || 'normal');
-      setHighContrast(settings.highContrast || false);
-      setGrayscale(settings.grayscale || false);
-      setUnderlineLinks(settings.underlineLinks || false);
-      setReadableFont(settings.readableFont || false);
-    }
-  }, []);
+  const { fontSize, highContrast, grayscale, underlineLinks, readableFont } = settings;
 
-  // Apply settings to body
-  useEffect(() => {
+  // useLayoutEffect fires before paint — eliminates any residual FOUC from
+  // the inline index.html script being overridden by React's first commit.
+  useLayoutEffect(() => {
     const body = document.body;
-    
-    // Font size
     body.classList.remove('font-size-large', 'font-size-xlarge');
-    if (fontSize === 'large') body.classList.add('font-size-large');
+    if (fontSize === 'large')  body.classList.add('font-size-large');
     if (fontSize === 'xlarge') body.classList.add('font-size-xlarge');
-
-    // High contrast
-    if (highContrast) body.classList.add('high-contrast');
-    else body.classList.remove('high-contrast');
-
-    // Grayscale
-    if (grayscale) body.classList.add('grayscale-mode');
-    else body.classList.remove('grayscale-mode');
-
-    // Underline links
-    if (underlineLinks) body.classList.add('underline-links');
-    else body.classList.remove('underline-links');
-
-    // Readable font
-    if (readableFont) body.classList.add('readable-font');
-    else body.classList.remove('readable-font');
-
-    // Save to localStorage
-    localStorage.setItem('accessibility_settings', JSON.stringify({
-      fontSize,
-      highContrast,
-      grayscale,
-      underlineLinks,
-      readableFont
-    }));
+    body.classList.toggle('high-contrast', highContrast);
+    body.classList.toggle('grayscale-mode', grayscale);
+    body.classList.toggle('underline-links', underlineLinks);
+    body.classList.toggle('readable-font', readableFont);
   }, [fontSize, highContrast, grayscale, underlineLinks, readableFont]);
 
-  const resetSettings = () => {
-    setFontSize('normal');
-    setHighContrast(false);
-    setGrayscale(false);
-    setUnderlineLinks(false);
-    setReadableFont(false);
-  };
+  // Persist the full settings object whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('accessibility_settings', JSON.stringify(settings));
+    } catch {}
+  }, [settings]);
 
-  return (
-    <div className="accessibility-menu-container fixed bottom-6 right-6 md:bottom-8 md:right-8 z-[9999] flex flex-col items-end">
-      {/* Menu Content */}
+  // Close panel on Escape and return focus to FAB
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+        fabRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
+
+  const update = useCallback(
+    <K extends keyof AccessibilitySettings>(key: K, value: AccessibilitySettings[K]) => {
+      setSettings(prev => ({ ...prev, [key]: value }));
+    },
+    []
+  );
+
+  const resetSettings = useCallback(() => setSettings(DEFAULT_SETTINGS), []);
+
+  const closePanel = useCallback(() => {
+    setIsOpen(false);
+    fabRef.current?.focus();
+  }, []);
+
+  const fontSizeOptions: { key: AccessibilitySettings['fontSize']; phrase: string; fallback: string }[] = [
+    { key: 'normal', phrase: 'acc_font_normal', fallback: 'רגיל' },
+    { key: 'large',  phrase: 'acc_font_large',  fallback: 'גדול' },
+    { key: 'xlarge', phrase: 'acc_font_xlarge',  fallback: 'ענק'  },
+  ];
+
+  const toggleRows: {
+    key: Exclude<keyof AccessibilitySettings, 'fontSize'>;
+    icon: React.ReactNode;
+    label: string;
+    ariaLabel: string;
+  }[] = [
+    {
+      key: 'highContrast',
+      icon: <Contrast size={18} aria-hidden="true" />,
+      label: getPhrase('acc_high_contrast', 'ניגודיות גבוהה'),
+      ariaLabel: getPhrase('acc_toggle_high_contrast', 'הפעל ניגודיות גבוהה'),
+    },
+    {
+      key: 'grayscale',
+      icon: <Sun size={18} aria-hidden="true" />,
+      label: getPhrase('acc_grayscale', 'גווני אפור'),
+      ariaLabel: getPhrase('acc_toggle_grayscale', 'הפעל גווני אפור'),
+    },
+    {
+      key: 'underlineLinks',
+      icon: <Underline size={18} aria-hidden="true" />,
+      label: getPhrase('acc_underline_links', 'הדגשת קישורים'),
+      ariaLabel: getPhrase('acc_toggle_underline_links', 'הפעל הדגשת קישורים'),
+    },
+    {
+      key: 'readableFont',
+      icon: <MousePointer2 size={18} aria-hidden="true" />,
+      label: getPhrase('acc_readable_font', 'פונט קריא'),
+      ariaLabel: getPhrase('acc_toggle_readable_font', 'הפעל פונט קריא'),
+    },
+  ];
+
+  // Portal into document.body (outside #root) so position:fixed is always
+  // relative to the viewport, even when #root has filter:grayscale applied.
+  return createPortal(
+    <div className="accessibility-menu-container fixed bottom-6 end-6 md:bottom-8 md:end-8 z-[9999] flex flex-col items-end">
+
+      {/* Settings Panel */}
       {isOpen && (
-        <div className="mb-4 w-72 sm:w-80 bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300 max-h-[calc(100dvh-140px)] flex flex-col overscroll-contain">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="accessibility-panel-title"
+          className="mb-4 w-80 bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300 max-h-[calc(100dvh-140px)] flex flex-col overscroll-contain"
+        >
+          {/* Fixed header */}
           <div className="bg-blue-600 p-4 text-white flex justify-between items-center flex-shrink-0">
             <div className="flex items-center gap-2">
-              <Accessibility size={20} />
-              <h2 className="font-black text-lg">תפריט נגישות</h2>
+              <Accessibility size={20} aria-hidden="true" />
+              <h2 id="accessibility-panel-title" className="font-black text-lg">
+                {getPhrase('acc_menu_title', 'תפריט נגישות')}
+              </h2>
             </div>
-            <button 
-              onClick={() => setIsOpen(false)}
-              className="p-1 hover:bg-white/20 rounded-full transition-colors"
-              aria-label="סגור תפריט נגישות"
+            <button
+              onClick={closePanel}
+              aria-label={getPhrase('acc_close', 'סגור תפריט נגישות')}
+              className="p-1 rounded-full transition-colors hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1 focus-visible:ring-offset-blue-600"
             >
-              <X size={20} />
+              <X size={20} aria-hidden="true" />
             </button>
           </div>
 
+          {/* Scrollable body */}
           <div className="p-4 space-y-4 overflow-y-auto custom-scrollbar">
-            {/* Font Size */}
+
+            {/* Font size selector */}
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-slate-700 font-bold text-sm">
-                <Type size={16} />
-                <span>גודל טקסט</span>
+                <Type size={16} aria-hidden="true" />
+                <span>{getPhrase('acc_font_size', 'גודל טקסט')}</span>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                <button 
-                  onClick={() => setFontSize('normal')}
-                  className={`py-2 text-xs font-bold rounded-xl border-2 transition-all ${fontSize === 'normal' ? 'border-blue-600 bg-blue-50 text-blue-600' : 'border-slate-100 text-slate-500 hover:border-slate-200'}`}
-                >
-                  רגיל
-                </button>
-                <button 
-                  onClick={() => setFontSize('large')}
-                  className={`py-2 text-xs font-bold rounded-xl border-2 transition-all ${fontSize === 'large' ? 'border-blue-600 bg-blue-50 text-blue-600' : 'border-slate-100 text-slate-500 hover:border-slate-200'}`}
-                >
-                  גדול
-                </button>
-                <button 
-                  onClick={() => setFontSize('xlarge')}
-                  className={`py-2 text-xs font-bold rounded-xl border-2 transition-all ${fontSize === 'xlarge' ? 'border-blue-600 bg-blue-50 text-blue-600' : 'border-slate-100 text-slate-500 hover:border-slate-200'}`}
-                >
-                  ענק
-                </button>
+                {fontSizeOptions.map(({ key, phrase, fallback }) => (
+                  <button
+                    key={key}
+                    onClick={() => update('fontSize', key)}
+                    aria-pressed={fontSize === key}
+                    className={cn(
+                      'py-2 text-xs font-bold rounded-xl border-2 transition-all',
+                      'focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
+                      fontSize === key
+                        ? 'border-blue-600 bg-blue-50 text-blue-600'
+                        : 'border-slate-100 text-slate-500 hover:border-slate-200'
+                    )}
+                  >
+                    {getPhrase(phrase, fallback)}
+                  </button>
+                ))}
               </div>
             </div>
 
             <hr className="border-slate-100" />
 
-            {/* Toggles */}
+            {/* Toggle settings */}
             <div className="space-y-3">
-              <button 
-                onClick={() => setHighContrast(!highContrast)}
-                className={`w-full flex items-center justify-between p-3 rounded-2xl border-2 transition-all ${highContrast ? 'border-blue-600 bg-blue-50 text-blue-600' : 'border-slate-100 text-slate-600 hover:border-slate-200'}`}
-              >
-                <div className="flex items-center gap-3">
-                  <Contrast size={18} />
-                  <span className="font-bold text-sm">ניגודיות גבוהה</span>
-                </div>
-                <div className={`w-10 h-5 rounded-full relative transition-colors ${highContrast ? 'bg-blue-600' : 'bg-slate-200'}`}>
-                  <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${highContrast ? 'right-6' : 'right-1'}`} />
-                </div>
-              </button>
-
-              <button 
-                onClick={() => setGrayscale(!grayscale)}
-                className={`w-full flex items-center justify-between p-3 rounded-2xl border-2 transition-all ${grayscale ? 'border-blue-600 bg-blue-50 text-blue-600' : 'border-slate-100 text-slate-600 hover:border-slate-200'}`}
-              >
-                <div className="flex items-center gap-3">
-                  <Sun size={18} />
-                  <span className="font-bold text-sm">גווני אפור</span>
-                </div>
-                <div className={`w-10 h-5 rounded-full relative transition-colors ${grayscale ? 'bg-blue-600' : 'bg-slate-200'}`}>
-                  <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${grayscale ? 'right-6' : 'right-1'}`} />
-                </div>
-              </button>
-
-              <button 
-                onClick={() => setUnderlineLinks(!underlineLinks)}
-                className={`w-full flex items-center justify-between p-3 rounded-2xl border-2 transition-all ${underlineLinks ? 'border-blue-600 bg-blue-50 text-blue-600' : 'border-slate-100 text-slate-600 hover:border-slate-200'}`}
-              >
-                <div className="flex items-center gap-3">
-                  <Underline size={18} />
-                  <span className="font-bold text-sm">הדגשת קישורים</span>
-                </div>
-                <div className={`w-10 h-5 rounded-full relative transition-colors ${underlineLinks ? 'bg-blue-600' : 'bg-slate-200'}`}>
-                  <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${underlineLinks ? 'right-6' : 'right-1'}`} />
-                </div>
-              </button>
-
-              <button 
-                onClick={() => setReadableFont(!readableFont)}
-                className={`w-full flex items-center justify-between p-3 rounded-2xl border-2 transition-all ${readableFont ? 'border-blue-600 bg-blue-50 text-blue-600' : 'border-slate-100 text-slate-600 hover:border-slate-200'}`}
-              >
-                <div className="flex items-center gap-3">
-                  <MousePointer2 size={18} />
-                  <span className="font-bold text-sm">פונט קריא</span>
-                </div>
-                <div className={`w-10 h-5 rounded-full relative transition-colors ${readableFont ? 'bg-blue-600' : 'bg-slate-200'}`}>
-                  <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${readableFont ? 'right-6' : 'right-1'}`} />
-                </div>
-              </button>
+              {toggleRows.map(({ key, icon, label, ariaLabel }) => {
+                const value = settings[key] as boolean;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => update(key, !value)}
+                    aria-pressed={value}
+                    aria-label={ariaLabel}
+                    className={cn(
+                      'w-full flex items-center justify-between p-3 rounded-2xl border-2 transition-all',
+                      'focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
+                      value
+                        ? 'border-blue-600 bg-blue-50 text-blue-600'
+                        : 'border-slate-100 text-slate-600 hover:border-slate-200'
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      {icon}
+                      <span className="font-bold text-sm">{label}</span>
+                    </div>
+                    {/* Universal LTR toggle: RIGHT=ON, LEFT=OFF.
+                        Physical left-* + translate-x ignores dir="rtl" intentionally. */}
+                    <div className={cn(
+                      'w-10 h-5 rounded-full relative flex-shrink-0 transition-colors',
+                      value ? 'bg-blue-600' : 'bg-slate-200'
+                    )}>
+                      <div className={cn(
+                        'absolute top-1 left-0.5 w-3 h-3 bg-white rounded-full transition-transform duration-200',
+                        value ? 'translate-x-6' : 'translate-x-0'
+                      )} />
+                    </div>
+                  </button>
+                );
+              })}
             </div>
 
             <hr className="border-slate-100" />
 
-            <button 
+            <button
               onClick={resetSettings}
-              className="w-full py-3 text-sm font-black text-slate-500 hover:text-red-500 transition-colors"
+              className="w-full py-3 text-sm font-black text-slate-500 rounded-xl transition-colors hover:text-red-500 focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2"
             >
-              איפוס הגדרות
+              {getPhrase('acc_reset', 'איפוס הגדרות')}
             </button>
           </div>
         </div>
       )}
 
-      {/* Toggle Button */}
+      {/* FAB trigger */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 ${isOpen ? 'bg-slate-800 text-white' : 'bg-blue-600 text-white'}`}
-        aria-label="תפריט נגישות"
+        ref={fabRef}
+        onClick={() => setIsOpen(prev => !prev)}
+        aria-label={isOpen
+          ? getPhrase('acc_close', 'סגור תפריט נגישות')
+          : getPhrase('acc_open', 'פתח תפריט נגישות')}
         aria-expanded={isOpen}
+        aria-haspopup="dialog"
+        className={cn(
+          'w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300',
+          'hover:scale-110 active:scale-95',
+          'focus-visible:ring-2 focus-visible:ring-offset-2',
+          isOpen
+            ? 'bg-slate-800 text-white focus-visible:ring-slate-500'
+            : 'bg-blue-600 text-white focus-visible:ring-blue-400'
+        )}
       >
-        {isOpen ? <X size={28} /> : <Accessibility size={28} />}
+        {isOpen ? <X size={28} aria-hidden="true" /> : <Accessibility size={28} aria-hidden="true" />}
       </button>
-    </div>
+    </div>,
+    document.body
   );
 };
