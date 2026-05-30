@@ -149,13 +149,13 @@ export const MaxPriceCalculatorPage: React.FC = () => {
             <div className={cn('transition-all duration-300', isScrolled ? 'py-1' : 'py-4')}>
               <div className="relative flex items-center justify-center min-h-[120px]">
                 <ScreenHeader
-                  title={getPhrase('calculator_title_max_price', 'מחשבון מחיר מקסימלי')}
-                  subtitle={getPhrase('calculator_title_max_price_subtitle', 'בדיקת היתכנות כלכלית ותקציב רכישה')}
+                  title={getPhrase('calculator_title_max_price', 'Maximum price calculator')}
+                  subtitle={getPhrase('calculator_title_max_price_subtitle', 'Economic feasibility check and purchase budget')}
                   isScrolled={isScrolled}
                 />
                 <MetricCard
                   value={typeof property.price === 'number' ? property.price : 0}
-                  label={getPhrase('calculator_maxprice_price_label', 'הדירה היקרה ביותר שאוכל לרכוש (בקירוב)')}
+                  label={getPhrase('calculator_maxprice_price_label', 'The most expensive apartment I can buy (approximately)')}
                   isScrolled={isScrolled}
                   formatter={formatCurrency}
                   variant="emerald"

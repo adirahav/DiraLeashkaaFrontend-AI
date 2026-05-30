@@ -67,16 +67,16 @@ export const FinancingStatus: React.FC<FinancingStatusProps> = ({
           )}>
             <AlertTriangle className="text-red-500" size={20} />
             <div className="text-right">
-              <p className="text-xs font-black text-red-600 leading-tight">חריגה מהמגבלה</p>
-              <p className="text-sm font-bold text-red-500 opacity-80">יש להגדיל הון עצמי</p>
+              <p className="text-xs font-black text-red-600 leading-tight">{getPhrase('financing_status_exceeding_the_limit', 'Exceeding the limit')}</p>
+              <p className="text-sm font-bold text-red-500 opacity-80">{getPhrase('financing_status_equity_must_be_increased', 'Equity must be increased')}</p>
             </div>
           </div>
         ) : actualFinancingPercent > 0 && showSuccessStatus ? (
           <div className="flex items-center gap-3 bg-emerald-50 px-4 py-3 rounded-xl border border-emerald-100 shrink-0">
             <CheckCircle2 className="text-emerald-500" size={20} />
             <div className="text-right">
-              <p className="text-xs font-black text-emerald-600 leading-tight">מימון תקין</p>
-              <p className="text-sm font-bold text-emerald-500 opacity-80">עומד במגבלות הבנק</p>
+              <p className="text-xs font-black text-emerald-600 leading-tight">{getPhrase('financing_status_proper_financing', 'Proper financing')}</p>
+              <p className="text-sm font-bold text-emerald-500 opacity-80">{getPhrase('financing_status_meets_banks_limits', 'Meets bank limits')}</p>
             </div>
           </div>
         ) : null}

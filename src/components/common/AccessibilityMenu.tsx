@@ -89,9 +89,9 @@ export const AccessibilityMenu: React.FC = () => {
   }, []);
 
   const fontSizeOptions: { key: AccessibilitySettings['fontSize']; phrase: string; fallback: string }[] = [
-    { key: 'normal', phrase: 'acc_font_normal', fallback: 'רגיל' },
-    { key: 'large',  phrase: 'acc_font_large',  fallback: 'גדול' },
-    { key: 'xlarge', phrase: 'acc_font_xlarge',  fallback: 'ענק'  },
+    { key: 'normal', phrase: 'acc_font_normal', fallback: 'Normal' },
+    { key: 'large',  phrase: 'acc_font_large',  fallback: 'Large'  },
+    { key: 'xlarge', phrase: 'acc_font_xlarge',  fallback: 'XLarge' },
   ];
 
   const toggleRows: {
@@ -103,26 +103,26 @@ export const AccessibilityMenu: React.FC = () => {
     {
       key: 'highContrast',
       icon: <Contrast size={18} aria-hidden="true" />,
-      label: getPhrase('acc_high_contrast', 'ניגודיות גבוהה'),
-      ariaLabel: getPhrase('acc_toggle_high_contrast', 'הפעל ניגודיות גבוהה'),
+      label: getPhrase('acc_high_contrast', 'High Contrast'),
+      ariaLabel: getPhrase('acc_toggle_high_contrast', 'Toggle high contrast'),
     },
     {
       key: 'grayscale',
       icon: <Sun size={18} aria-hidden="true" />,
-      label: getPhrase('acc_grayscale', 'גווני אפור'),
-      ariaLabel: getPhrase('acc_toggle_grayscale', 'הפעל גווני אפור'),
+      label: getPhrase('acc_grayscale', 'Grayscale'),
+      ariaLabel: getPhrase('acc_toggle_grayscale', 'Toggle grayscale'),
     },
     {
       key: 'underlineLinks',
       icon: <Underline size={18} aria-hidden="true" />,
-      label: getPhrase('acc_underline_links', 'הדגשת קישורים'),
-      ariaLabel: getPhrase('acc_toggle_underline_links', 'הפעל הדגשת קישורים'),
+      label: getPhrase('acc_underline_links', 'Underline Links'),
+      ariaLabel: getPhrase('acc_toggle_underline_links', 'Toggle underline links'),
     },
     {
       key: 'readableFont',
       icon: <MousePointer2 size={18} aria-hidden="true" />,
-      label: getPhrase('acc_readable_font', 'פונט קריא'),
-      ariaLabel: getPhrase('acc_toggle_readable_font', 'הפעל פונט קריא'),
+      label: getPhrase('acc_readable_font', 'Readable Font'),
+      ariaLabel: getPhrase('acc_toggle_readable_font', 'Toggle readable font'),
     },
   ];
 
@@ -144,12 +144,12 @@ export const AccessibilityMenu: React.FC = () => {
             <div className="flex items-center gap-2">
               <Accessibility size={20} aria-hidden="true" />
               <h2 id="accessibility-panel-title" className="font-black text-lg">
-                {getPhrase('acc_menu_title', 'תפריט נגישות')}
+                {getPhrase('acc_menu_title', 'Accessibility Menu')}
               </h2>
             </div>
             <button
               onClick={closePanel}
-              aria-label={getPhrase('acc_close', 'סגור תפריט נגישות')}
+              aria-label={getPhrase('acc_close', 'Close accessibility menu')}
               className="p-1 rounded-full transition-colors hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1 focus-visible:ring-offset-blue-600"
             >
               <X size={20} aria-hidden="true" />
@@ -163,7 +163,7 @@ export const AccessibilityMenu: React.FC = () => {
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-slate-700 font-bold text-sm">
                 <Type size={16} aria-hidden="true" />
-                <span>{getPhrase('acc_font_size', 'גודל טקסט')}</span>
+                <span>{getPhrase('acc_font_size', 'Font Size')}</span>
               </div>
               <div className="grid grid-cols-3 gap-2">
                 {fontSizeOptions.map(({ key, phrase, fallback }) => (
@@ -231,7 +231,7 @@ export const AccessibilityMenu: React.FC = () => {
               onClick={resetSettings}
               className="w-full py-3 text-sm font-black text-slate-500 rounded-xl transition-colors hover:text-red-500 focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2"
             >
-              {getPhrase('acc_reset', 'איפוס הגדרות')}
+              {getPhrase('acc_reset', 'Reset Settings')}
             </button>
           </div>
         </div>
@@ -242,8 +242,8 @@ export const AccessibilityMenu: React.FC = () => {
         ref={fabRef}
         onClick={() => setIsOpen(prev => !prev)}
         aria-label={isOpen
-          ? getPhrase('acc_close', 'סגור תפריט נגישות')
-          : getPhrase('acc_open', 'פתח תפריט נגישות')}
+          ? getPhrase('acc_close', 'Close accessibility menu')
+          : getPhrase('acc_open', 'Open accessibility menu')}
         aria-expanded={isOpen}
         aria-haspopup="dialog"
         className={cn(

@@ -64,7 +64,7 @@ const CalculatorCard: React.FC<CalculatorCardProps> = ({ calc, index, onCalcClic
         {calc.isComingSoon && (
           <div className="absolute top-3 right-3 sm:top-6 sm:left-6">
             <span className="bg-white/90 backdrop-blur-sm text-slate-800 text-[8px] sm:text-[10px] font-black px-2 py-0.5 sm:px-3 sm:py-1 rounded-full uppercase tracking-wider shadow-sm">
-              {getPhrase('calculator_coming_soon', 'בקרוב')}
+              {getPhrase('calculator_coming_soon', 'Coming soon')}
             </span>
           </div>
         )}
@@ -81,15 +81,15 @@ const CalculatorCard: React.FC<CalculatorCardProps> = ({ calc, index, onCalcClic
           {!isInteractive ? (
             <span className="text-[10px] sm:text-sm font-black text-slate-400">
               {calc.isComingSoon
-                ? getPhrase('calculator_in_development', 'בפיתוח')
-                : getPhrase('calculator_locked', 'נעול')}
+                ? getPhrase('calculator_coming_soon', 'In development')
+                : getPhrase('calculator_locked', 'Locked')}
             </span>
           ) : (
             <Button
               variant="primary"
               className="!py-1.5 sm:!py-2 !px-3 sm:!px-5 !rounded-xl !text-[10px] sm:!text-sm shadow-sm"
             >
-              {getPhrase('calculator_enter', 'כניסה למחשבון')}
+              {getPhrase('calculator_calculate_button', 'Enter calculator')}
             </Button>
           )}
           {!calc.isComingSoon && (
@@ -186,8 +186,8 @@ export const CalculatorsPage: React.FC = () => {
               exit={{ opacity: 0 }}
             >
               <ScreenHeader
-                title={getPhrase('calculators_title')}
-                subtitle={getPhrase('calculators_subtitle')}
+                title={getPhrase('calculators_title', 'Useful Calculators')}
+                subtitle={getPhrase('calculators_subtitle', 'All the tools you need for smart investment analysis')}
                 isAbsolute={false}
                 className="mb-10"
               />

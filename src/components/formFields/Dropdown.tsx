@@ -40,6 +40,8 @@ export const Dropdown: React.FC<DropdownProps> = ({
   const selectedOption = options.find(opt => opt.value === value) ?? pinnedOptions.find(opt => opt.value === value);
   const { getPhrase } = useSplash();
   const placeholder = getPhrase('dropdown_choose', 'Choose...');
+  const searchPlaceholder = getPhrase('dropdown_search', 'Search...');
+  const noResultsLabel = getPhrase('dropdown_no_result', 'No results found');
 
   const filteredOptions = searchable && searchQuery.trim()
     ? options.filter(opt => opt.label.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -137,7 +139,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="חיפוש..."
+                  placeholder={searchPlaceholder}
                   dir="rtl"
                   className="w-full h-9 pr-9 pl-3 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 text-right placeholder:text-slate-400"
                 />
@@ -146,7 +148,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
           )}
           <div className="p-1.5 flex flex-col gap-1 max-h-[260px] overflow-y-auto custom-scrollbar">
             {filteredOptions.length === 0 && pinnedOptions.length === 0 ? (
-              <div className="p-3 text-sm text-slate-400 text-center">לא נמצאו תוצאות</div>
+              <div className="p-3 text-sm text-slate-400 text-center">{noResultsLabel}</div>
             ) : (
               <>
                 {filteredOptions.map((option) => {

@@ -85,35 +85,35 @@ function extractCityOptions(
   }
 }
 
-const DEFAULT_APARTMENT_TYPES = [
-  { value: 'single', label: 'יחידה' },
-  { value: 'alternate', label: 'חליפית' },
-  { value: 'investment', label: 'השקעה' },
-];
-
-const DEFAULT_MORTGAGE_PERIODS = [
-  { value: '10', label: '10 שנים' },
-  { value: '15', label: '15 שנה' },
-  { value: '20', label: '20 שנה' },
-  { value: '25', label: '25 שנה' },
-  { value: '30', label: '30 שנה' },
-];
-
 function extractApartmentTypeOptions(
   params: Record<string, unknown>,
-  fallback: { value: string; label: string }[],
 ): { value: string; label: string }[] {
   try {
     const raw = params['apartmentTypes'];
-    if (!raw) return fallback;
+    if (!raw) return [];
     const arr: { key: string; value: string }[] =
       typeof raw === 'string' ? JSON.parse(raw) : (raw as { key: string; value: string }[]);
-    const options = arr
+    return arr
       .filter((c) => c.key !== 'choose')
       .map((c) => ({ value: c.key, label: c.value }));
-    return options.length > 0 ? options : fallback;
   } catch {
-    return fallback;
+    return [];
+  }
+}
+
+function extractMortgagePeriodOptions(
+  params: Record<string, unknown>,
+): { value: string; label: string }[] {
+  try {
+    const raw = params['mortgagePeriods'];
+    if (!raw) return [];
+    const arr: { key: number; value: string; default?: boolean }[] =
+      typeof raw === 'string' ? JSON.parse(raw) : (raw as { key: number; value: string; default?: boolean }[]);
+    return arr
+      .filter((c) => c.key !== 0)
+      .map((c) => ({ value: String(c.key), label: c.value }));
+  } catch {
+    return [];
   }
 }
 
@@ -149,10 +149,8 @@ export interface PropertyFormProps {
   incomeRef: React.RefObject<HTMLDivElement | null>;
   commitmentsRef: React.RefObject<HTMLDivElement | null>;
 
-  // Constants — all optional, fall back to fixedParameters or static defaults
+  // Optional city override — falls back to fixedParameters.cities
   CITY_OPTIONS?: { value: string; label: string }[];
-  APARTMENT_TYPES?: { value: string; label: string }[];
-  MORTGAGE_PERIODS?: { value: string; label: string }[];
 }
 
 // ---------------------------------------------------------------------------
@@ -180,8 +178,6 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
   incomeRef,
   commitmentsRef,
   CITY_OPTIONS,
-  APARTMENT_TYPES = DEFAULT_APARTMENT_TYPES,
-  MORTGAGE_PERIODS = DEFAULT_MORTGAGE_PERIODS,
 }) => {
   const { getPhrase, params, getParam } = useSplash();
 
@@ -214,8 +210,13 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
   const cityPinnedOptions = useMemo(() => allCityOptions.filter((o) => o.value === 'else'), [allCityOptions]);
 
   const apartmentTypeOptions = useMemo(
-    () => extractApartmentTypeOptions(params as Record<string, unknown>, APARTMENT_TYPES),
-    [params, APARTMENT_TYPES],
+    () => extractApartmentTypeOptions(params as Record<string, unknown>),
+    [params],
+  );
+
+  const mortgagePeriodOptions = useMemo(
+    () => extractMortgagePeriodOptions(params as Record<string, unknown>),
+    [params],
   );
 
   // Derived display helpers
@@ -486,7 +487,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
           <div className="space-y-6">
             <AdditionalFundingSources
               label={getPhrase('property_additional_funding_sources_label', 'Additional Funding Sources')}
-              tooltip={isAdditionalFundingReadOnly ? additionalFundingReadOnlyTooltip : getPhrase('property_additional_funding_sources_subtitle', '')}
+              tooltip={isAdditionalFundingReadOnly ? additionalFundingReadOnlyTooltip : getPhrase('property_additional_funding_sources_subtitle', 'Additional sources of financing are loans or external funds that you can receive to purchase the property.<br /><br />This is not part of your equity.<br /><br />Enter the source of the loan (for example: bank, education fund, provident fund, help from parents, etc.), the amount and the monthly repayment.')}
               sources={property.additionalFundingSources}
               selectedIds={property.selectedFundingSourceIds}
               onChange={(ids) => onUpdate('selectedFundingSourceIds', ids)}
@@ -791,7 +792,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
               label={getPhrase('property_mortgage_period_label', 'Period')}
               value={property.calcMortgagePeriod}
               onChange={(val) => onUpdate('calcMortgagePeriod', val)}
-              options={MORTGAGE_PERIODS}
+              options={mortgagePeriodOptions}
               disabled={isCalculating}
               error={
                 property.calcMortgagePeriod === ''

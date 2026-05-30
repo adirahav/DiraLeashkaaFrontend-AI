@@ -42,7 +42,7 @@ const SkeletonCard: React.FC = () => (
 // ---------------------------------------------------------------------------
 // Image Carousel
 // ---------------------------------------------------------------------------
-const PropertyImageCarousel: React.FC<{ images?: string[]; noImageLabel: string }> = ({ images = [], noImageLabel }) => {
+const PropertyImageCarousel: React.FC<{ images?: string[]; noImageLabel: string; prevImageLabel: string; nextImageLabel: string }> = ({ images = [], noImageLabel, prevImageLabel, nextImageLabel }) => {
   const [currentIndex, setCurrentIndex] = useState(0)
 
   useEffect(() => {
@@ -76,14 +76,14 @@ const PropertyImageCarousel: React.FC<{ images?: string[]; noImageLabel: string 
         <>
           <button
             onClick={onPrev}
-            aria-label="תמונה קודמת"
+            aria-label={prevImageLabel}
             className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
           >
             <ChevronRight size={18} />
           </button>
           <button
             onClick={onNext}
-            aria-label="תמונה הבאה"
+            aria-label={nextImageLabel}
             className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
           >
             <ChevronLeft size={18} />
@@ -235,7 +235,7 @@ const PropertyCard = React.forwardRef<HTMLElement, PropertyCardProps>(({
         </div>
       )}
 
-      <PropertyImageCarousel images={property.images} noImageLabel={getPhrase('home_property_no_image', 'No Image')} />
+      <PropertyImageCarousel images={property.images} noImageLabel={getPhrase('home_property_no_image', 'No Image')} prevImageLabel={getPhrase('city_properties_prev_image', 'Previous image')} nextImageLabel={getPhrase('city_properties_next_image', 'Next image')} />
 
       <div className="p-5 flex-1 flex flex-col">
         <h3 className="text-lg font-black text-slate-800 mb-1">{property.address}</h3>

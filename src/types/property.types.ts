@@ -45,6 +45,12 @@ export interface PropertyData {
   // Server-computed financial results (null until backend responds)
   calcYieldForecast?: YieldForecastRow[] | null
   calcAmortizationSchedule?: AmortizationRow[] | null
+  calcYields?: {
+    averageReturn: number
+    averageReturnOnEquity: number
+    profit: number
+    profitNpv: number
+  } | null
 
   // Part 1 - Property Details & Equity
   city: string

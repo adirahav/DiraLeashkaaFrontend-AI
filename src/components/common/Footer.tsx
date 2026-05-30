@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { FileText, Mail, Share2, Smartphone, Globe, Accessibility, Info } from 'lucide-react'
+import { FileText, Mail, Share2, Smartphone, Globe, Accessibility, Info, Sparkles } from 'lucide-react'
 import { Browser } from '@capacitor/browser'
 import { useSplash } from '../../hooks/useSplash'
 import { useStore } from '../../store/store'
@@ -30,6 +30,7 @@ export const Footer: React.FC = () => {
   const versionText = getPhrase('drawer_version', 'version %1$s').replace('%1$s', version)
   const copyrightText = getPhrase('drawer_copyright', 'Dirha Leashkaa - All rights reserved %1$s ©')
     .replace('%1$s', String(new Date().getFullYear()))
+  const developedWithAIText = getPhrase('drawer_developed_with_ai', 'Developed with Artificial Intelligence (AI)')
 
   const handleExternalLink = async (url: string) => {
     if (isNative) {
@@ -128,10 +129,14 @@ export const Footer: React.FC = () => {
             </div>
           )}
 
-          <div className="flex flex-col items-center gap-2 text-slate-400 text-xs font-medium">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-x-3 gap-y-1.5 text-slate-400 text-xs font-medium">
             <span>{copyrightText}</span>
-          </div>
-
+            <span className="hidden sm:inline text-slate-300">•</span>
+            <div className="flex items-center gap-1 text-[11px] text-indigo-500 font-semibold">
+              <Sparkles size={11} className="fill-indigo-300 text-indigo-500 animate-pulse shrink-0" />
+              <span>{developedWithAIText}</span>
+            </div>
+          </div>  
         </div>
       </div>
     </footer>

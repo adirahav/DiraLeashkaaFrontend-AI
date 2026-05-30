@@ -1,15 +1,17 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Reorder, useDragControls, motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight, Filter, Trash2, GripVertical, Building2, RotateCcw } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Filter, Trash2, GripVertical, Building2, RotateCcw, TrendingUp } from 'lucide-react'
 
 import { ScreenHeader } from '../components/common/ScreenHeader'
+import { SectionHeader } from '../components/common/SectionHeader'
 import { Card } from '../components/common/Card'
 import { PropertyForm } from '../components/layout/PropertyForm'
 import { Button, Checkbox } from '../components/formFields'
 import { useStore } from '../store/store'
 import { calculatorService, CompareListResponse } from '../services/calculator.service'
 import { propertyService } from '../services/property.service'
+import { formatPercent, formatCurrency } from '../services/formatUtils.service'
 import { useSplash } from '../hooks/useSplash'
 import { cn } from '../lib/utils'
 import { PropertyData, PropertyFundingSource } from '../types/property.types'
@@ -47,6 +49,7 @@ function normalizeProperty(data: any, localSources: PropertyFundingSource[]): Pr
     calcMortgagePeriod: data.calcMortgagePeriod != null ? String(data.calcMortgagePeriod) : '',
     additionalFundingSources: localSources,
     selectedFundingSourceIds: selectedIds,
+    calcYields: data.yields ?? data.calcYields ?? null,
   }
 }
 
@@ -65,6 +68,7 @@ interface PropertyCardProps {
 const PropertyCard = React.memo(function PropertyCard({ property, idx, showOverlay, onUpdate, onRemove, onDragStart, onDragEnd }: PropertyCardProps) {
   const dragControls = useDragControls()
   const stubRef = useRef<HTMLDivElement>(null)
+  const { getPhrase } = useSplash()
 
   const handleUpdate = useCallback(
     (field: string, value: any) => onUpdate(property.uuid!, field, value),
@@ -112,7 +116,7 @@ const PropertyCard = React.memo(function PropertyCard({ property, idx, showOverl
             {idx + 1}
           </div>
           <h2 className="text-xl font-black text-slate-800 truncate">
-            {property.address || 'נכס חדש'}
+            {property.address || getPhrase('compare_calculator_new_property', 'New property')}
           </h2>
         </div>
 
@@ -138,6 +142,31 @@ const PropertyCard = React.memo(function PropertyCard({ property, idx, showOverl
           commitmentsRef={stubRef}
           graphRef={stubRef}
         />
+
+        {property.calcYields && (
+          <div className="mt-6 pt-6 border-t border-slate-100 space-y-4 bg-slate-50 -mx-6 -mb-6 p-6">
+            <SectionHeader title={getPhrase('compare_yield_title', 'Estimated return after 10 years')} icon={<TrendingUp size={16}/>} variant="emerald" />
+            <div className="grid grid-cols-1 gap-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-bold text-slate-500">{getPhrase('compare_yield_annual_total', 'Total annual return')}</span>
+                <span className="font-black text-blue-600">{formatPercent(property.calcYields.averageReturn)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-bold text-slate-500">{getPhrase('compare_yield_annual_equity', 'Annual return on equity')}</span>
+                <span className="font-black text-indigo-600">{formatPercent(property.calcYields.averageReturnOnEquity)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-bold text-slate-500">{getPhrase('compare_yield_profit', 'Total profit')}</span>
+                <span className="font-black text-slate-800">{formatCurrency(property.calcYields.profit)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-bold text-slate-500">{getPhrase('compare_yield_profit_npv', 'Total discounted profit')}</span>
+                <span className="font-black text-slate-800">{formatCurrency(property.calcYields.profitNpv)}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
       </Card>
     </Reorder.Item>
   )
@@ -326,7 +355,7 @@ export const CompareCalculatorPage: React.FC = () => {
       } catch {
         setComparedProperties(prevCompared)
         setAvailableProperties(prevAvailable)
-        setNotification({ type: 'error', message: 'שגיאה בעדכון רשימת ההשוואה' })
+        setNotification({ type: 'error', message: getPhrase('compare_calculator_update_error', 'Error updating comparison list') })
       } finally {
         setShowOverlay(false)
       }
@@ -347,7 +376,7 @@ export const CompareCalculatorPage: React.FC = () => {
     } catch {
       setComparedProperties(prevCompared)
       setAvailableProperties(prevAvailable)
-      setNotification({ type: 'error', message: 'שגיאה באיפוס רשימת ההשוואה' })
+      setNotification({ type: 'error', message: getPhrase('compare_calculator_reset_error', 'Error resetting comparison list') })
     } finally {
       setShowOverlay(false)
     }
@@ -378,7 +407,7 @@ export const CompareCalculatorPage: React.FC = () => {
       )
     } catch {
       setComparedProperties(preDragOrderRef.current)
-      setNotification({ type: 'error', message: 'שגיאה בשמירת סדר הנכסים' })
+      setNotification({ type: 'error', message: getPhrase('compare_calculator_rearrange_error', 'Error saving property order') })
     }
   }, [setNotification])
 
@@ -439,7 +468,7 @@ export const CompareCalculatorPage: React.FC = () => {
       .filter(g => g !== 'אחר')
       .sort((a, b) => a.localeCompare(b, 'he'))
     if (groups.has('אחר')) sorted.push('אחר')
-    return sorted.map(g => ({ value: g, label: g }))
+    return sorted.map(g => ({ value: g, label: g === 'אחר' ? getPhrase('compare_calculator_city_else', 'Other') : g }))
   }, [availableProperties, resolveGroup])
 
   const filteredAvailableProperties = useMemo(
@@ -502,8 +531,8 @@ export const CompareCalculatorPage: React.FC = () => {
         {/* Header + actions */}
         <div className="flex flex-row items-center justify-between gap-2 mb-8">
           <ScreenHeader
-            title={getPhrase('calculator_compare_title', 'השוואת נכסים')}
-            subtitle={getPhrase('calculator_compare_subtitle', 'השוואה חכמה בין נכסים נבחרים')}
+            title={getPhrase('compare_calculator_title', 'Property comparison')}
+            subtitle={getPhrase('compare_calculator_subtitle', 'Smart comparison between selected assets')}
             isAbsolute={false}
             className="shrink-0 scale-90 origin-right sm:scale-100 translate-y-[6px]"
           />
@@ -516,7 +545,7 @@ export const CompareCalculatorPage: React.FC = () => {
                 onClick={handleReset}
                 icon={RotateCcw}
               >
-                איפוס
+                {getPhrase('compare_calculator_reset', 'Reset')}
               </Button>
             )}
 
@@ -528,7 +557,7 @@ export const CompareCalculatorPage: React.FC = () => {
                 onClick={() => setIsFilterOpen(v => !v)}
                 icon={Filter}
               >
-                נכסים ({comparedUUIDs.length}/{compareMaxProperties})
+                {getPhrase('compare_calculator_properties', 'Properties')} ({comparedUUIDs.length}/{compareMaxProperties})
               </Button>
 
               <AnimatePresence>
@@ -540,9 +569,9 @@ export const CompareCalculatorPage: React.FC = () => {
                     className="absolute left-0 top-full mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-100 p-4 z-[60]"
                   >
                     <div className="flex items-center justify-between mb-4">
-                      <span className="font-black text-slate-800">בחר נכסים</span>
+                      <span className="font-black text-slate-800">{getPhrase('compare_calculator_choose_properties', 'Choose properties')}</span>
                       <span className="text-xs text-slate-400">
-                        {comparedUUIDs.length}/{compareMaxProperties} נבחרו
+                        {comparedUUIDs.length}/{compareMaxProperties} {getPhrase('compare_calculator_choosen_properties', 'Selected')}
                       </span>
                     </div>
 
@@ -602,7 +631,7 @@ export const CompareCalculatorPage: React.FC = () => {
                             />
                             <div className="flex-1 min-w-0">
                               <div className="text-sm font-bold text-slate-700 truncate">
-                                {p.address || 'ללא כתובת'}
+                                {p.address || getPhrase('compare_calculator_no_address', 'No address')}
                               </div>
                               <div className="text-xs text-slate-400">
                                 {resolveGroup(p)}
@@ -612,12 +641,12 @@ export const CompareCalculatorPage: React.FC = () => {
                         )
                       })}
                       {filteredAvailableProperties.length === 0 && (
-                        <div className="text-center text-sm text-slate-400 py-4">אין נכסים</div>
+                        <div className="text-center text-sm text-slate-400 py-4">{getPhrase('compare_calculator_no_properties', 'No properties')}</div>
                       )}
                     </div>
 
                     <Button className="w-full mt-4" onClick={() => setIsFilterOpen(false)}>
-                      סגור
+                      {getPhrase('compare_calculator_close', 'Close')}
                     </Button>
                   </motion.div>
                 )}
@@ -632,14 +661,14 @@ export const CompareCalculatorPage: React.FC = () => {
             <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
               <Building2 size={40} className="text-slate-300" />
             </div>
-            <h2 className="text-xl font-black text-slate-800 mb-2">לא נבחרו נכסים להשוואה</h2>
+            <h2 className="text-xl font-black text-slate-800 mb-2">{getPhrase('compare_calculator_no_compare_properties', 'No properties selected for comparison')}</h2>
             <p className="text-slate-500 mb-8">
               {getPhrase(
-                'calculator_compare_no_apartments',
-                'בחרו עד 3 נכסים מהרשימה כדי להתחיל בהשוואה'
+                'compare_calculator_choose_to_start_compare',
+                'Choose up to 3 properties from the list to start comparing'
               )}
             </p>
-            <Button onClick={() => setIsFilterOpen(true)}>בחר נכסים עכשיו</Button>
+            <Button onClick={() => setIsFilterOpen(true)}>{getPhrase('compare_calculator_choose_properties_now', 'Choose properties now')}</Button>
           </div>
         ) : (
           <div className="relative group">
@@ -654,7 +683,7 @@ export const CompareCalculatorPage: React.FC = () => {
                       exit={{ opacity: 0, scale: 0.8 }}
                       onClick={() => scroll('left')}
                       className="w-12 h-12 bg-white/95 backdrop-blur shadow-2xl rounded-2xl flex items-center justify-center text-blue-600 border-2 border-blue-50/50 hover:bg-blue-50 transition-all active:scale-95"
-                      aria-label="גלול שמאלה"
+                      aria-label={getPhrase('compare_calculator_scroll_left', 'Scroll left')}
                     >
                       <ChevronLeft size={28} />
                     </motion.button>
@@ -670,7 +699,7 @@ export const CompareCalculatorPage: React.FC = () => {
                       exit={{ opacity: 0, scale: 0.8 }}
                       onClick={() => scroll('right')}
                       className="w-12 h-12 bg-white/95 backdrop-blur shadow-2xl rounded-2xl flex items-center justify-center text-blue-600 border-2 border-blue-50/50 hover:bg-blue-50 transition-all active:scale-95"
-                      aria-label="גלול ימינה"
+                      aria-label={getPhrase('compare_calculator_scroll_right', 'Scroll right')}
                     >
                       <ChevronRight size={28} />
                     </motion.button>

@@ -1,23 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Logo } from './Logo'
-import {
-  Building2,
-  Calculator,
-  User,
-  LineChart,
-  LogOut,
-  Menu,
-  X,
-  Mail,
-  Share2,
-  Smartphone,
-  Globe,
-  Accessibility,
-  FileText,
-  ChevronRight,
-  Info,
-} from 'lucide-react'
+import { Building2, Calculator, User, LineChart, LogOut, Menu, X, Mail, Share2, Smartphone, Globe, Accessibility, FileText, ChevronRight, Info, Sparkles } from 'lucide-react'
 import { Button } from '../formFields'
 import { useStore } from '../../store/store'
 import { useSplash } from '../../hooks/useSplash'
@@ -91,6 +75,7 @@ export const Header: React.FC = () => {
   }
 
   const isInternalPage = location.pathname !== '/home'
+  const isActive = (path: string) => location.pathname.startsWith(path)
   const helloText = loggedinUser
     ? getPhrase('drawer_hello_user', 'Hello %1$s').replace('%1$s', loggedinUser.fullname ?? '')
     : ''
@@ -99,13 +84,15 @@ export const Header: React.FC = () => {
     '%1$s',
     String(new Date().getFullYear())
   )
+  const developedWithAIText = getPhrase('drawer_developed_with_ai', 'Developed with Artificial Intelligence (AI)')
+
 
   return (
     <div className="sticky top-0 z-[10005] w-full">
       <nav
         className="bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm"
         dir="rtl"
-        aria-label="ניווט ראשי"
+        aria-label={getPhrase('header_main_navigation', 'Main navigation')}
       >
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between relative">
 
@@ -115,7 +102,7 @@ export const Header: React.FC = () => {
               <button
                 onClick={() => navigate('/home')}
                 className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-all hover:scale-110 active:scale-95 flex items-center gap-1 group"
-                aria-label="חזרה"
+                aria-label={getPhrase('header_back', 'Back')}
               >
                 <ChevronRight size={24} className="group-hover:-translate-x-0.5 transition-transform" />
               </button>
@@ -123,7 +110,7 @@ export const Header: React.FC = () => {
             <button
               onClick={() => navigate(loggedinUser ? '/home' : '/login')}
               className="hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg z-10 absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0"
-              aria-label="חזרה לדף הבית"
+              aria-label={getPhrase('header_back_to_homepage', 'Back to home page')}
             >
               <Logo size={48} showText={true} />
             </button>
@@ -141,7 +128,7 @@ export const Header: React.FC = () => {
                 <Button
                   variant="outline"
                   onClick={() => navigate('/calculators')}
-                  className="!border-none !shadow-none !text-slate-600 hover:!text-blue-600 !px-2 !py-1"
+                  className={`!border-none !shadow-none !px-2 !py-1 !rounded-lg transition-all ${isActive('/calculators') ? '!text-blue-600 !bg-blue-50/75 font-black shadow-xs' : '!text-slate-600 hover:!text-blue-600 hover:!bg-slate-50/50'}`}
                   icon={Calculator}
                 >
                   {getPhrase('drawer_calculators', 'Calculators')}
@@ -151,7 +138,7 @@ export const Header: React.FC = () => {
                 <Button
                   variant="outline"
                   onClick={() => navigate('/personal-info')}
-                  className="!border-none !shadow-none !text-slate-600 hover:!text-blue-600 !px-2 !py-1"
+                  className={`!border-none !shadow-none !px-2 !py-1 !rounded-lg transition-all ${isActive('/personal-info') ? '!text-blue-600 !bg-blue-50/75 font-black shadow-xs' : '!text-slate-600 hover:!text-blue-600 hover:!bg-slate-50/50'}`}
                   icon={User}
                 >
                   {getPhrase('drawer_personal_details', 'Personal Details')}
@@ -161,7 +148,7 @@ export const Header: React.FC = () => {
                 <Button
                   variant="outline"
                   onClick={() => navigate('/financial-details')}
-                  className="!border-none !shadow-none !text-slate-600 hover:!text-blue-600 !px-2 !py-1"
+                  className={`!border-none !shadow-none !px-2 !py-1 !rounded-lg transition-all ${isActive('/financial-details') ? '!text-blue-600 !bg-blue-50/75 font-black shadow-xs' : '!text-slate-600 hover:!text-blue-600 hover:!bg-slate-50/50'}`}
                   icon={LineChart}
                 >
                   {getPhrase('drawer_financial_details', 'Financial Details')}
@@ -190,7 +177,7 @@ export const Header: React.FC = () => {
                   <button
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
                     className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-                    aria-label={isMenuOpen ? 'סגור תפריט' : 'פתח תפריט'}
+                    aria-label={isMenuOpen ? getPhrase('header_close_menu', 'Close menu') : getPhrase('header_open_menu', 'Open menu')}
                     aria-expanded={isMenuOpen}
                   >
                     {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -241,7 +228,7 @@ export const Header: React.FC = () => {
                     <Button
                       variant="outline"
                       onClick={() => onMenuNavigate('/calculators')}
-                      className="!border-none !shadow-none !text-slate-600 hover:!bg-slate-50 !rounded-xl !px-4 !py-3 !w-full !justify-start"
+                      className={`!border-none !shadow-none !rounded-xl !px-4 !py-3 !w-full !justify-start transition-all ${isActive('/calculators') ? '!text-blue-600 !bg-blue-50/75 font-black shadow-xs' : '!text-slate-600 hover:!text-blue-600 hover:!bg-slate-50/50'}`}
                       icon={Calculator}
                       iconSize={20}
                     >
@@ -252,7 +239,7 @@ export const Header: React.FC = () => {
                     <Button
                       variant="outline"
                       onClick={() => onMenuNavigate('/personal-info')}
-                      className="!border-none !shadow-none !text-slate-600 hover:!bg-slate-50 !rounded-xl !px-4 !py-3 !w-full !justify-start"
+                      className={`!border-none !shadow-none !rounded-xl !px-4 !py-3 !w-full !justify-start transition-all ${isActive('/personal-info') ? '!text-blue-600 !bg-blue-50/75 font-black shadow-xs' : '!text-slate-600 hover:!text-blue-600 hover:!bg-slate-50/50'}`}
                       icon={User}
                       iconSize={20}
                     >
@@ -263,7 +250,7 @@ export const Header: React.FC = () => {
                     <Button
                       variant="outline"
                       onClick={() => onMenuNavigate('/financial-details')}
-                      className="!border-none !shadow-none !text-slate-600 hover:!bg-slate-50 !rounded-xl !px-4 !py-3 !w-full !justify-start"
+                      className={`!border-none !shadow-none !rounded-xl !px-4 !py-3 !w-full !justify-start transition-all ${isActive('/financial-details') ? '!text-blue-600 !bg-blue-50/75 font-black shadow-xs' : '!text-slate-600 hover:!text-blue-600 hover:!bg-slate-50/50'}`}
                       icon={LineChart}
                       iconSize={20}
                     >
@@ -347,14 +334,14 @@ export const Header: React.FC = () => {
               </div>
 
               {/* Section 5: Version + Copyright */}
-              <div className="mt-4 pt-4 border-t border-slate-100 text-center">
-                <div className="text-slate-400 text-[10px] font-medium mb-1">{copyrightText}</div>
-                <div className="flex items-center justify-center gap-1 text-blue-600/40 text-[10px] font-black">
-                  <Info size={10} />
-                  <span>{versionText}</span>
+              <div className="mt-4 pt-4 border-t border-slate-100 text-center flex flex-col items-center gap-1.5">
+                <div className="text-slate-400 text-[10px] font-medium">{copyrightText}</div>
+                <div className="flex items-center gap-1 text-[11px] text-indigo-500 font-semibold">
+                  <Sparkles size={11} className="fill-indigo-300 text-indigo-500 animate-pulse shrink-0" />
+                  <span>{developedWithAIText}</span>
                 </div>
+                <div className="text-blue-600/40 text-[10px] font-black tracking-widest uppercase mt-0.5"><span>{versionText}</span></div>
               </div>
-
             </div>
           </div>
         </div>

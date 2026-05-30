@@ -288,7 +288,7 @@ export const ForgotPasswordPage: React.FC = () => {
                         value={digit}
                         onChange={(e) => onCodeChange(idx, e.target.value)}
                         onKeyDown={(e) => onCodeKeyDown(idx, e)}
-                        aria-label={`ספרה ${idx + 1}`}
+                        aria-label={`${getPhrase('forgot_password_digit', 'Digit')} ${idx + 1}`}
                         disabled={isLoading}
                         className="w-14 h-16 text-center text-2xl font-black border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none transition-all disabled:opacity-50"
                       />

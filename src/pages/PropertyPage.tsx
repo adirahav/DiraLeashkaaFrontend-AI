@@ -77,7 +77,7 @@ function useDebounce<T>(value: T, delay: number): T {
 
 export const PropertyPage: React.FC = () => {
   // --- Splash ---
-  const { params, isReady: splashReady } = useSplash();
+  const { params, isReady: splashReady, getPhrase } = useSplash();
   const defaultRepaymentPercent = useMemo(() => {
     try {
       const raw = (params as Record<string, unknown>)['propertyInputs'];
@@ -497,8 +497,8 @@ export const PropertyPage: React.FC = () => {
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-8">
                 <div className="flex items-center justify-between w-full lg:w-auto gap-4 shrink-0">
                   <ScreenHeader
-                    title="הערכת עלויות ותשואה"
-                    subtitle="ניתוח פיננסי מעמיק של הנכס"
+                    title={getPhrase('cost_and_return_assessment_title', 'Cost and Return Assessment')}
+                    subtitle={getPhrase('cost_and_return_assessment_subtitle', 'In-depth financial analysis of the property')}
                     isScrolled={isScrolled}
                     isAbsolute={false}
                   />
@@ -514,7 +514,7 @@ export const PropertyPage: React.FC = () => {
                       onClick={() => isPart1Valid && setViewMode('results')}
                       disabled={!isPart1Valid}
                     >
-                      <span className="text-xs font-black">ניתוח תוצאות</span>
+                      <span className="text-xs font-black">{getPhrase('analysis_of_results_title', 'Analysis of Results')}</span>
                       <PieChart size={22} />
                     </Button>
                   )}
@@ -573,9 +573,9 @@ export const PropertyPage: React.FC = () => {
             {!isPart1Valid ? (
               <Card className="p-12 text-center bg-slate-100 border-dashed border-2 border-slate-300">
                 <Info size={48} className="mx-auto text-slate-400 mb-4" />
-                <h3 className="text-xl font-bold text-slate-500">לא ניתן לחשב תחזית פיננסית</h3>
+                <h3 className="text-xl font-bold text-slate-500">{getPhrase('analysis_of_results_unable_calculate', 'Cannot calculate financial forecast')}</h3>
                 <p className="text-slate-400 mt-2">
-                  יש למלא את כל שדות החובה בחלק הראשון כדי לראות את התחזית
+                  {getPhrase('analysis_of_results_all_fields_required', 'Fill in all required fields in the first section to see the forecast')}
                 </p>
               </Card>
             ) : (
@@ -587,7 +587,7 @@ export const PropertyPage: React.FC = () => {
                       variant="outline"
                       className="p-2 text-blue-600 hover:bg-blue-50 border-none shadow-none focus:ring-0 active:scale-90 shrink-0 min-w-0"
                       onClick={() => setViewMode('form')}
-                      ariaLabel="חזרה לעריכה"
+                      ariaLabel={getPhrase('analysis_of_results_back_to_edit', 'Back to edit')}
                       icon={ChevronRight}
                       iconSize={24}
                     />
@@ -595,19 +595,19 @@ export const PropertyPage: React.FC = () => {
                       isActive={activeResultTab === 'yield'}
                       onClick={() => setActiveResultTab('yield')}
                       icon={<PieChart size={16} />}
-                      label="תשואה"
+                      label={getPhrase('analysis_of_results_yield_forecast_tab', 'Yield')}
                     />
                     <Tab
                       isActive={activeResultTab === 'amortization'}
                       onClick={() => setActiveResultTab('amortization')}
                       icon={<List size={16} />}
-                      label="סילוקין"
+                      label={getPhrase('analysis_of_results_amortization_schedule_tab', 'Amortization')}
                     />
                     <Tab
                       isActive={activeResultTab === 'graph'}
                       onClick={() => setActiveResultTab('graph')}
                       icon={<LineChartIcon size={16} />}
-                      label="גרף"
+                      label={getPhrase('analysis_of_results_graph_tab', 'Graph')}
                     />
                   </div>
                 </div>

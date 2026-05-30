@@ -337,7 +337,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
             MORTGAGE_PERIODS={MORTGAGE_PERIODS}
           />
 
-          <div className="pt-6 border-t border-slate-100 space-y-4 bg-slate-50 -mx-6 -mb-6 p-6">
+          <div className="pt-6 border-t border-slate-100 space-y-4 bg-slate-50 -mx-6 -mb-6 p-6 mt-10">
             <SectionHeader title="תשואה מוערכת לאחר 10 שנים" icon={<TrendingUp size={16}/>} variant="emerald" />
             <div className="grid grid-cols-1 gap-3">
               <div className="flex justify-between items-center">

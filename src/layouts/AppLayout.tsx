@@ -4,11 +4,13 @@ import { Header } from '../components/common/Header'
 import { Footer } from '../components/common/Footer'
 import { AccessibilityMenu } from '../components/common/AccessibilityMenu'
 import { Notification } from '../components/common/Notification'
+import { useSplash } from '../hooks/useSplash'
 
 export const AppLayout = () => {
   const isResultsMode = useStore((state) => state.isResultsMode)
   const notification = useStore((state) => state.notification)
   const clearNotification = useStore((state) => state.clearNotification)
+  const { getPhrase } = useSplash()
 
   return (
     <div className="min-h-screen flex flex-col selection:bg-blue-100 max-w-full">
@@ -16,7 +18,7 @@ export const AppLayout = () => {
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:right-4 focus:z-[200] bg-blue-600 text-white px-4 py-2 rounded-lg font-bold"
       >
-        דלג לתוכן המרכזי
+        {getPhrase('app_skip_to_main_content', 'Skip to main content')}
       </a>
 
       {!isResultsMode && <Header />}

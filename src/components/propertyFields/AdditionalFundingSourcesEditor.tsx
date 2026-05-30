@@ -25,6 +25,7 @@ export const AdditionalFundingSourcesEditor: React.FC<{
   const deleteSourceLabel = getPhrase('property_additional_funding_sources_delete_source', 'Delete funding source');
   const deleteLabel = getPhrase('property_additional_funding_sources_delete', 'Delete');
   const addSourceLabel = getPhrase('property_additional_funding_sources_add_source', 'Add Funding Source');
+  const sourcePlaceholder = getPhrase('additional_funding_source_example', 'e.g. Bank');
 
   const addSource = () => {
     const newId = crypto.randomUUID();
@@ -85,7 +86,7 @@ export const AdditionalFundingSourcesEditor: React.FC<{
             labelClassName="md:hidden"
             value={source.source}
             onChange={(e) => updateSource(index, 'source', e.target.value)}
-            placeholder="למשל: בנק"
+            placeholder={sourcePlaceholder}
           />
           <NumericInput
             id={`amount-${source.id}`}
