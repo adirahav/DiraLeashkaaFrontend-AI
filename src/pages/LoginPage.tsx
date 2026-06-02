@@ -9,6 +9,8 @@ import { useSplash } from '../hooks/useSplash'
 import { getNextOnboardingStep } from '../utils/user.utils'
 import { pendingActionService } from '../services/pending-action.service'
 import { httpService } from '../services/http.service'
+import { App } from '@capacitor/app'
+import { useNativeBackButton } from '../hooks/useNativeBackButton'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const PASSWORD_MIN_LENGTH = 6
@@ -39,6 +41,8 @@ export const LoginPage: React.FC = () => {
   const [serverError, setServerError] = useState('')
   const [isSubmitDisabled, setIsSubmitDisabled] = useState(true)
   const isLoggingIn = useRef(false)
+
+  useNativeBackButton(() => App.exitApp())
 
   // Reset any stale loading state left by a previous page
   useEffect(() => { setIsLoading(false) }, []) // eslint-disable-line react-hooks/exhaustive-deps
@@ -142,7 +146,7 @@ export const LoginPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative overflow-hidden">
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 0.1, scale: 1 }}

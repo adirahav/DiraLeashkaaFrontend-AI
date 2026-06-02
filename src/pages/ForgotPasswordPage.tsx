@@ -9,6 +9,7 @@ import { ScreenHeader } from '../components/common/ScreenHeader'
 import { useStore } from '../store/store'
 import { useSplash } from '../hooks/useSplash'
 import { forgotPasswordService } from '../services/forgotPassword.service'
+import { useNativeBackButton } from '../hooks/useNativeBackButton'
 
 type ForgotStep = 'EMAIL' | 'VERIFY' | 'RESET'
 
@@ -68,6 +69,16 @@ export const ForgotPasswordPage: React.FC = () => {
   const clearNotification = useStore((state) => state.clearNotification)
 
   const [forgotStep, setForgotStep] = useState<ForgotStep>('EMAIL')
+
+  useNativeBackButton(() => {
+    if (forgotStep === 'EMAIL') {
+      navigate('/login', { replace: true })
+    } else if (forgotStep === 'VERIFY') {
+      setForgotStep('EMAIL')
+    } else {
+      setForgotStep('VERIFY')
+    }
+  })
   const [email, setEmail] = useState('')
   const [code, setCode] = useState(['', '', '', ''])
   const [forgotPasswordToken, setForgotPasswordToken] = useState('')

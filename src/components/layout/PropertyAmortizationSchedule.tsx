@@ -46,7 +46,7 @@ export const PropertyAmortizationSchedule: React.FC<PropertyAmortizationSchedule
       </div>
 
       <Card className="relative !p-0 overflow-hidden rounded-none lg:rounded-[2rem] border-0 lg:border shadow-none lg:shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-        <div ref={scrollRef} className="overflow-x-auto max-h-[600px] overflow-y-auto pr-0 lg:pr-0">
+        <div ref={scrollRef} className="overflow-x-auto h-[calc(100dvw-40px)] lg:h-auto lg:max-h-[600px] overflow-y-auto pr-0 lg:pr-0">
           <table className="w-full lg:min-w-[600px] text-right border-separate border-spacing-0 table-fixed">
             <thead className="sticky top-0 z-10">
               <tr className="bg-slate-50 border-b border-slate-100">

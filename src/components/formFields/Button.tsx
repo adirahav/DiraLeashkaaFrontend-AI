@@ -39,7 +39,7 @@ export const Button: React.FC<{
       aria-label={ariaLabel}
       tabIndex={tabIndex}
       className={cn(
-        'px-6 py-3 rounded-xl font-bold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-center enabled:active:scale-95 focus-visible:ring-4 focus-visible:ring-blue-100 focus:outline-none flex items-center justify-center gap-2',
+        'px-4 py-3 rounded-xl font-bold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-center enabled:active:scale-95 focus-visible:ring-4 focus-visible:ring-blue-100 focus:outline-none flex items-center justify-center gap-2',
         variants[variant],
         className,
       )}

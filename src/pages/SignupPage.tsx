@@ -15,6 +15,7 @@ import { userService } from '../services/user.service'
 import { parseNumber } from '../services/formatUtils.service'
 import { getNextOnboardingStep } from '../utils/user.utils'
 import { User } from '../types'
+import { useNativeBackButton } from '../hooks/useNativeBackButton'
 
 const STEP_ROUTE_MAP: Record<string, number> = {
   '/personal-info': 1,
@@ -38,6 +39,15 @@ export const SignupPage: React.FC = () => {
   const [step, setStep] = useState(1)
   const [direction, setDirection] = useState(0)
   const [serverError, setServerError] = useState<string | null>(null)
+
+  useNativeBackButton(() => {
+    if (step === 1) {
+      navigate('/login', { replace: true })
+    } else {
+      setDirection(-1)
+      setStep(step - 1)
+    }
+  })
 
   const [formData, setFormData] = useState({
     fullname: loggedinUser?.fullname ?? '',

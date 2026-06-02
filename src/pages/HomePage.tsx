@@ -11,6 +11,8 @@ import { useStore } from '../store/store'
 import { userService } from '../services/user.service'
 import { propertyService } from '../services/property.service'
 import { useSplash } from '../hooks/useSplash'
+import { App } from '@capacitor/app'
+import { useNativeBackButton } from '../hooks/useNativeBackButton'
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate()
@@ -25,6 +27,8 @@ export const HomePage: React.FC = () => {
   const fullData = useStore((state) => state.fullData)
   const removeProperty = useStore((state) => state.removeProperty)
   const restoreProperty = useStore((state) => state.restoreProperty)
+
+  useNativeBackButton(() => App.minimizeApp())
 
   const [selectedCity, setSelectedCity] = useState<string | null>(null)
   const [isPulling, setIsPulling] = useState(false)

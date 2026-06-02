@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { jwtDecode } from 'jwt-decode'
 import { User, Wallet, Save } from 'lucide-react'
@@ -7,6 +7,8 @@ import { useSplash } from '../hooks/useSplash'
 import { userService } from '../services/user.service'
 import { parseNumber } from '../services/formatUtils.service'
 import { getNextOnboardingStep } from '../utils/user.utils'
+import { App } from '@capacitor/app'
+import { useNativeBackButton } from '../hooks/useNativeBackButton'
 import { SectionHeader } from '../components/common/SectionHeader'
 import { UserPersonalInfo } from '../components/layout/UserPersonalInfo'
 import { UserFinancialDetails } from '../components/layout/UserFinancialDetails'
@@ -26,6 +28,26 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ mode = 'PERSONAL' }) =
   const setNotification = useStore((state) => state.setNotification)
   const setLoggedinUser = useStore((state) => state.setLoggedinUser)
   const setToken = useStore((state) => state.setToken)
+
+  const backPressedRef = useRef(false)
+  const backTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useNativeBackButton(() => {
+    const isCompleted = loggedinUser ? getNextOnboardingStep(loggedinUser) === '/home' : true
+    if (isCompleted) {
+      navigate('/home')
+    } else if (backPressedRef.current) {
+      App.minimizeApp()
+    } else {
+      backPressedRef.current = true
+      setNotification({
+        type: 'error',
+        message: getPhrase('back_incomplete_registration', 'יש להשלים את הרישום כדי להשתמש באפליקציה'),
+      })
+      if (backTimerRef.current) clearTimeout(backTimerRef.current)
+      backTimerRef.current = setTimeout(() => { backPressedRef.current = false }, 5000)
+    }
+  })
 
   const buildFormSnapshot = () => ({
     fullname: loggedinUser?.fullname ?? '',

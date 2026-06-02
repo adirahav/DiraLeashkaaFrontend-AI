@@ -7,6 +7,7 @@ import { Button } from '../components/formFields'
 import { useStore } from '../store/store'
 import { calculatorService } from '../services/calculator.service'
 import { useSplash } from '../hooks/useSplash'
+import { useNativeBackButton } from '../hooks/useNativeBackButton'
 import { CalculatorItem } from '../types/index'
 import { cn } from '../lib/utils'
 import imgMaxPrice from '../assets/images/calculator_max_price.png'
@@ -118,6 +119,8 @@ export const CalculatorsPage: React.FC = () => {
 
   const loggedinUser = useStore((state) => state.loggedinUser)
   const setIsLoading = useStore((state) => state.setIsLoading)
+
+  useNativeBackButton(() => navigate('/home'))
 
   const [calculators, setCalculators] = useState<CalculatorItem[]>([])
   const [isFetching, setIsFetching] = useState(true)

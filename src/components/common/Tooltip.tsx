@@ -46,11 +46,8 @@ export const Tooltip: React.FC<TooltipProps> = ({ text, children, position = 'to
       <div
         onMouseEnter={() => setShow(true)}
         onMouseLeave={() => setShow(false)}
-        onFocus={() => setShow(true)}
-        onBlur={() => setShow(false)}
-        onClick={() => setShow(!show)}
-        className="cursor-help focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-full"
-        tabIndex={-1}
+        onTouchStart={(e) => { e.preventDefault(); setShow(s => !s); }}
+        className="cursor-help"
         aria-describedby={show ? id : undefined}
       >
         {children}

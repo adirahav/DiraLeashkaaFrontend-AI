@@ -29,10 +29,10 @@ interface PropertyTourProps {
 }
 
 const NEXT_STEP: Partial<Record<TourStep, TourStep>> = {
-  CITY: 'PRICE',
+  CITY: 'TYPE',
+  TYPE: 'PRICE',
   PRICE: 'EQUITY',
-  EQUITY: 'TYPE',
-  TYPE: 'INCOME',
+  EQUITY: 'INCOME',
   INCOME: 'COMMITMENTS',
 };
 
@@ -216,7 +216,6 @@ export const PropertyTour: React.FC<PropertyTourProps> = ({
     <TourSpotlight
       isOpen={showTour && activeRect !== null}
       targetRect={activeRect}
-      onClose={() => setShowTour(false)}
       onSkip={handleSkip}
       title={stepContent[tourStep].title}
       description={stepContent[tourStep].description}

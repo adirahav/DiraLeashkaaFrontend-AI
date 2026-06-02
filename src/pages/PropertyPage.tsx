@@ -19,6 +19,7 @@ import { propertyService } from '../services/property.service';
 import { useSplash } from '../hooks/useSplash';
 import { buildDefaultProperty } from '../store/slices/property.slice';
 import { Info, PieChart, ChevronRight, List, LineChart as LineChartIcon } from 'lucide-react';
+import { useNativeBackButton } from '../hooks/useNativeBackButton';
 
 
 function parseIfString(val: any): any {
@@ -121,6 +122,14 @@ export const PropertyPage: React.FC = () => {
   // --- UI State ---
   const [isReady, setIsReady] = useState(false);
   const [viewMode, setViewMode] = useState<'form' | 'results'>('form');
+
+  useNativeBackButton(() => {
+    if (viewMode === 'results') {
+      setViewMode('form')
+    } else {
+      navigate('/home')
+    }
+  });
   const [activeResultTab, setActiveResultTab] = useState<'yield' | 'amortization' | 'graph'>('yield');
   const [isTourEnding, setIsTourEnding] = useState(false);
   const [tourStep, setTourStep] = useState<'CITY' | 'PRICE' | 'EQUITY' | 'TYPE' | 'INCOME' | 'COMMITMENTS'>('CITY');
@@ -213,7 +222,7 @@ export const PropertyPage: React.FC = () => {
   useEffect(() => {
     if (isInitialLoad.current) return;
     if (!debouncedProperty?.updatedByField) return;
-    if (showTourRef.current) return; // during tour, saves are triggered by the Next Step button
+    if (useStore.getState().showTour) return; // during tour, saves are triggered by the Next Step button
 
     let cancelled = false;
 

@@ -1,13 +1,32 @@
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useRef } from 'react'
+import { App } from '@capacitor/app'
+import { Capacitor } from '@capacitor/core'
 
-export function useNativeBackButton() {
-  const navigate = useNavigate()
+type Handler = () => void
+const handlerStack: Handler[] = []
+let listenerRegistered = false
 
-  return () => {
-    if (window.history.state?.idx > 0) {
-      navigate(-1)
-    } else {
-      navigate('/', { replace: true })
+function ensureListener() {
+  if (listenerRegistered) return
+  listenerRegistered = true
+  App.addListener('backButton', () => {
+    const top = handlerStack[handlerStack.length - 1]
+    if (top) top()
+  })
+}
+
+export function useNativeBackButton(handler: Handler): void {
+  const handlerRef = useRef<Handler>(handler)
+  handlerRef.current = handler
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return
+    ensureListener()
+    const wrapper = () => handlerRef.current()
+    handlerStack.push(wrapper)
+    return () => {
+      const idx = handlerStack.lastIndexOf(wrapper)
+      if (idx !== -1) handlerStack.splice(idx, 1)
     }
-  }
+  }, [])
 }

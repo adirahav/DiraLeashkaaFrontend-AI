@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { jwtDecode } from 'jwt-decode'
 import { motion } from 'motion/react'
@@ -11,6 +11,7 @@ import { useSplash } from '../hooks/useSplash'
 import { useScrolled } from '../hooks/useScrolled'
 import { useNativeBackButton } from '../hooks/useNativeBackButton'
 import { userService } from '../services/user.service'
+import { App } from '@capacitor/app'
 import { getNextOnboardingStep } from '../utils/user.utils'
 import { User } from '../types'
 
@@ -23,11 +24,35 @@ export const ConsentPage: React.FC = () => {
   const setToken = useStore((state) => state.setToken)
   const isLoading = useStore((state) => state.isLoading)
   const setIsLoading = useStore((state) => state.setIsLoading)
+  const setNotification = useStore((state) => state.setNotification)
 
   const isScrolled = useScrolled()
-  const handleBack = useNativeBackButton()
+
+  const backPressedRef = useRef(false)
+  const backTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const isActionMode = loggedinUser ? !loggedinUser.termsOfUseAccept : false
+
+  useNativeBackButton(() => {
+    if (!loggedinUser) {
+      App.minimizeApp()
+      return
+    }
+    const isCompleted = getNextOnboardingStep(loggedinUser) === '/home'
+    if (isCompleted) {
+      navigate('/home')
+    } else if (backPressedRef.current) {
+      App.minimizeApp()
+    } else {
+      backPressedRef.current = true
+      setNotification({
+        type: 'error',
+        message: getPhrase('back_incomplete_registration', 'יש להשלים את הרישום כדי להשתמש באפליקציה'),
+      })
+      if (backTimerRef.current) clearTimeout(backTimerRef.current)
+      backTimerRef.current = setTimeout(() => { backPressedRef.current = false }, 5000)
+    }
+  })
 
   const [checked, setChecked] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)

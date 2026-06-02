@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Send } from 'lucide-react'
 import { SectionHeader } from '../components/common/SectionHeader'
 import { Notification } from '../components/common/Notification'
@@ -10,10 +11,12 @@ import { useSplash } from '../hooks/useSplash'
 import { contactUsService } from '../services/contactUs.service'
 import { utilService } from '../services/util.service'
 import { Mail } from 'lucide-react';
+import { useNativeBackButton } from '../hooks/useNativeBackButton'
 
 const MIN_MESSAGE_LENGTH = 10
 
 export const ContactUsPage: React.FC = () => {
+  const navigate = useNavigate()
   const { getPhrase, params } = useSplash()
 
   const isLoading = useStore((s) => s.isLoading)
@@ -21,6 +24,8 @@ export const ContactUsPage: React.FC = () => {
   const globalNotification = useStore((s) => s.notification)
   const setNotification = useStore((s) => s.setNotification)
   const clearNotification = useStore((s) => s.clearNotification)
+
+  useNativeBackButton(() => navigate('/home'))
 
   const [subject, setSubject] = useState('')
   const [message, setMessage] = useState('')

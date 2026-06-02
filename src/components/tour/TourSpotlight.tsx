@@ -12,7 +12,7 @@ const POPOVER_GAP = 40;
 interface TourSpotlightProps {
   isOpen: boolean;
   targetRect: { top: number; left: number; width: number; height: number } | null;
-  onClose: () => void;
+  onClose?: () => void;
   onSkip?: () => void;
   title: string;
   description: string;

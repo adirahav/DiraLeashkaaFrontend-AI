@@ -13,6 +13,7 @@ import { calculatorService, CompareListResponse } from '../services/calculator.s
 import { propertyService } from '../services/property.service'
 import { formatPercent, formatCurrency } from '../services/formatUtils.service'
 import { useSplash } from '../hooks/useSplash'
+import { useNativeBackButton } from '../hooks/useNativeBackButton'
 import { cn } from '../lib/utils'
 import { PropertyData, PropertyFundingSource } from '../types/property.types'
 
@@ -180,6 +181,8 @@ export const CompareCalculatorPage: React.FC = () => {
 
   const loggedinUser = useStore(state => state.loggedinUser)
   const setNotification = useStore(state => state.setNotification)
+
+  useNativeBackButton(() => navigate('/calculators'))
 
   const [comparedProperties, setComparedProperties] = useState<PropertyData[]>([])
   const [availableProperties, setAvailableProperties] = useState<PropertyData[]>([])

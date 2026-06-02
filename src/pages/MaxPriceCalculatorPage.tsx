@@ -8,6 +8,7 @@ import { PropertyForm } from '../components/layout/PropertyForm';
 import { useStore } from '../store/store';
 import { calculatorService } from '../services/calculator.service';
 import { useSplash } from '../hooks/useSplash';
+import { useNativeBackButton } from '../hooks/useNativeBackButton';
 import { formatCurrency } from '../services/utils';
 import { cn } from '../lib/utils';
 import { buildDefaultProperty } from '../store/slices/property.slice';
@@ -49,6 +50,8 @@ export const MaxPriceCalculatorPage: React.FC = () => {
   const { getPhrase, params } = useSplash();
 
   const loggedinUser = useStore((state) => state.loggedinUser);
+
+  useNativeBackButton(() => navigate('/calculators'));
 
   const userFundingSources: PropertyFundingSource[] = (loggedinUser?.additionalFundingSources ?? []).map((s) => ({
     id: s.uuid,

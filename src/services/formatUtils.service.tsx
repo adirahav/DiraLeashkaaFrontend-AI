@@ -46,6 +46,7 @@ export const formatCurrency = (val: number) => {
   );
 };
 
+
 export const formatPercent = (val: number) => {
   const isNegative = val < 0;
   const absoluteVal = Math.abs(val);

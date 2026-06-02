@@ -90,7 +90,7 @@ export const HomeWelcome: React.FC<HomeWelcomeProps> = ({ onAddPropertyPress, ca
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.8 }}
-            className="absolute top-6 left-6 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm border border-white/50 flex items-center gap-2"
+            className="absolute top-6 left-6 z-20 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm border border-white/50 flex items-center gap-2"
           >
             <Sparkles size={16} className="text-amber-500" />
             <span className="text-xs font-black text-slate-700">
