@@ -18,7 +18,8 @@ export const HomeWelcome: React.FC<HomeWelcomeProps> = ({ onAddPropertiesPress, 
   const buttonRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!showTour) {
+    const isDismissed = localStorage.getItem('tour_dismissed') === 'true';
+    if (!showTour && !isDismissed) {
       const timer = setTimeout(() => {
         buttonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         setTimeout(() => setShowTour(true), 1800);
@@ -175,6 +176,16 @@ export const HomeWelcome: React.FC<HomeWelcomeProps> = ({ onAddPropertiesPress, 
         <div className="w-8 h-[2px] bg-slate-200" />
         דירה להשקעה - הדרך שלך לחופש כלכלי
         <div className="w-8 h-[2px] bg-slate-200" />
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 1.4, duration: 0.5 }}
+        className="mt-4 inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-50/80 border border-indigo-100 text-indigo-700 text-xs font-bold rounded-full shadow-xs select-none hover:bg-indigo-100/45 transition-colors cursor-default"
+      >
+        <Sparkles size={12} className="fill-indigo-400 text-indigo-600 animate-pulse" />
+        <span>נבנה, נכתב ועוצב באופן מלא על ידי בינה מלאכותית (AI)</span>
       </motion.div>
     </div>
   );

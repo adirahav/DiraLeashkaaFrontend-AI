@@ -10,24 +10,29 @@ import { ContactUsPage } from './screens/ContactUsPage';
 import { HomePage } from './screens/HomePage';
 import { PropertyPage } from './screens/PropertyPage';
 import { ForgotPassword } from './screens/ForgotPassword';
+import { LandingPage } from './screens/LandingPage';
 import { CalculatorsPage } from './screens/CalculatorsPage';
 import { MaxPriceCalculator } from './screens/MaxPriceCalculator';
 import { CompareCalculator } from './screens/CompareCalculator';
 import { AccessibilityMenu } from './components/common/AccessibilityMenu';
 import { Footer } from './components/common/Footer';
 import { Header } from './components/common/Header';
+import { UpgradeRequired } from './components/common/UpgradeRequired';
+import { UpgradeRecommended } from './components/common/UpgradeRecommended';
 
 const App: React.FC = () => {
-  const [currentScreen, setCurrentScreen] = useState<Screen>('LOGIN');
+  const [currentScreen, setCurrentScreen] = useState<Screen>('LANDING');
   const [userName] = useState('ישראל');
   const [userEmail, setUserEmail] = useState('');
   const [showTour, setShowTour] = useState(false);
   const [isResultsMode, setIsResultsMode] = useState(false);
+  const [showMinorBanner, setShowMinorBanner] = useState(true);
 
   const navigate = (screen: Screen) => {
     if (screen === 'LOGIN') {
       setUserEmail('');
       setShowTour(false);
+      setShowMinorBanner(true);
     }
     setCurrentScreen(screen);
     setIsResultsMode(false);
@@ -36,18 +41,24 @@ const App: React.FC = () => {
 
   const handleLogin = (email: string) => {
     setUserEmail(email);
-    navigate('HOME');
-    if (email === 'tour@gmail.com') {
-      // Tour will be triggered in HomePage/HomeWelcome
+    if (email.toLowerCase().trim() === 'tour@gmail.com') {
+      localStorage.removeItem('tour_dismissed');
     }
+    navigate('HOME');
   };
 
-  const showNavigation = currentScreen !== 'LOGIN' && 
+  const isMajorVersionUser = userEmail.toLowerCase().trim() === 'majorversion@gmail.com';
+  const isMinorVersionUser = userEmail.toLowerCase().trim() === 'minorversion@gmail.com';
+
+  const showNavigation = currentScreen !== 'LANDING' &&
+                        currentScreen !== 'LOGIN' && 
                         currentScreen !== 'REGISTER' && 
                         currentScreen !== 'FORGOT_PASSWORD';
 
   const renderScreen = () => {
     switch (currentScreen) {
+      case 'LANDING':
+        return <LandingPage onNavigate={navigate} />;
       case 'LOGIN':
         return <Login onNavigate={navigate} onLogin={handleLogin} />;
       case 'REGISTER':
@@ -80,8 +91,16 @@ const App: React.FC = () => {
     }
   };
 
+  if (isMajorVersionUser) {
+    return <UpgradeRequired />;
+  }
+
   return (
     <div className="min-h-screen flex flex-col selection:bg-blue-100 max-w-full">
+      {isMinorVersionUser && showMinorBanner && (
+        <UpgradeRecommended onClose={() => setShowMinorBanner(false)} />
+      )}
+
       <a 
         href="#main-content" 
         className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:right-4 focus:z-[200] bg-blue-600 text-white px-4 py-2 rounded-lg font-bold"

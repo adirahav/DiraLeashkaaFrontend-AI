@@ -337,7 +337,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
             MORTGAGE_PERIODS={MORTGAGE_PERIODS}
           />
 
-          <div className="pt-6 border-t border-slate-100 space-y-4 bg-slate-50 -mx-6 -mb-6 p-6 mt-10">
+          <div className="pt-6 border-t border-slate-100 space-y-4 bg-slate-50 -mx-6 -mb-6 p-6">
             <SectionHeader title="תשואה מוערכת לאחר 10 שנים" icon={<TrendingUp size={16}/>} variant="emerald" />
             <div className="grid grid-cols-1 gap-3">
               <div className="flex justify-between items-center">
@@ -568,7 +568,7 @@ export const CompareCalculator: React.FC<CompareCalculatorProps> = ({ onNavigate
 
   return (
     <div className="min-h-screen bg-slate-50 text-right pb-20" dir="rtl">
-      <main className="max-w-[1600px] mx-auto px-4 py-8">
+      <main className="max-w-[1280px] mx-auto px-4 py-8">
         <div className="flex flex-row items-center justify-between gap-2 mb-8">
           <ScreenHeader 
             title="השוואת נכסים" 

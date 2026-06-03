@@ -237,6 +237,14 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
   FINANCIAL_DEFAULTS,
   MORTGAGE_PERIODS,
 }) => {
+  const isEquityModified = FINANCIAL_DEFAULTS ? equity !== FINANCIAL_DEFAULTS.equity : false;
+  const isCommitmentsModified = FINANCIAL_DEFAULTS ? commitments !== FINANCIAL_DEFAULTS.commitments : false;
+  const hasChangedDefaults = isEquityModified || isCommitmentsModified;
+
+  const fundingSourcesTooltip = hasChangedDefaults
+    ? "לא ניתן לשנות או לבחור מקורות מימון נוספים כאשר ערכי ברירת המחדל של ההון העצמי או ההתחייבויות שונו."
+    : "בחר מקורות מימון נוספים שהוגדרו בפרופיל";
+
   return (
     <>
       {/* Part 1.1.1: Property Details */}
@@ -361,7 +369,8 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                   }} 
                   required 
                   error={equity === 0 ? 'שדה חובה' : undefined}
-                  disabled={isCalculating}
+                  disabled={isCalculating || (selectedFundingSources && selectedFundingSources.length > 0)}
+                  tooltip={selectedFundingSources && selectedFundingSources.length > 0 ? "לא ניתן לשנות את ההון העצמי כאשר נעשה שימוש במקורות מימון נוספים." : undefined}
                 />
               </div>
               <CalcInput 
@@ -377,7 +386,8 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                 value={equity}
                 defaultValue={FINANCIAL_DEFAULTS.equity}
                 onChange={setEquity}
-                disabled={isCalculating}
+                disabled={isCalculating || (selectedFundingSources && selectedFundingSources.length > 0)}
+                tooltip={selectedFundingSources && selectedFundingSources.length > 0 ? "לא ניתן לשנות את ההון העצמי כאשר נעשה שימוש במקורות מימון נוספים." : undefined}
               />
               <CalcInput 
                 label="הון עצמי לאחר הוצאות" 
@@ -480,7 +490,8 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                   }
                 }} 
                 required 
-                disabled={isCalculating}
+                disabled={isCalculating || (selectedFundingSources && selectedFundingSources.length > 0)}
+                tooltip={selectedFundingSources && selectedFundingSources.length > 0 ? "לא ניתן לשנות את ההתחייבויות וההלוואות כאשר נעשה שימוש במקורות מימון נוספים." : undefined}
               />
             </div>
           </div>
@@ -490,7 +501,8 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
               sources={fundingSources}
               selectedIds={selectedFundingSources}
               onChange={setSelectedFundingSources}
-              disabled={isCalculating}
+              disabled={isCalculating || hasChangedDefaults}
+              tooltip={fundingSourcesTooltip}
             />
           </div>
 

@@ -43,15 +43,23 @@ export const HomeCities: React.FC<HomeCitiesProps> = ({
             }`}
           >
             {CITY_ICONS[city] && !brokenIcons[city] ? (
-              <img 
-                src={CITY_ICONS[city]} 
-                alt={city} 
-                onError={() => setBrokenIcons(prev => ({ ...prev, [city]: true }))}
-                className="w-6 h-6 object-contain"
-                referrerPolicy="no-referrer"
-              />
+              <div className="w-8 h-8 rounded-lg bg-white p-1 flex items-center justify-center shrink-0 shadow-xs border border-slate-100 inline-flex">
+                <img 
+                  src={CITY_ICONS[city]} 
+                  alt={city} 
+                  onError={() => setBrokenIcons(prev => ({ ...prev, [city]: true }))}
+                  className="w-full h-full object-contain"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
             ) : (
-              <MapPin size={18} />
+              <div className={`w-8 h-8 rounded-lg p-1.5 flex items-center justify-center shrink-0 border inline-flex ${
+                selectedCity === city 
+                  ? 'bg-blue-500/20 border-blue-400/20 text-white' 
+                  : 'bg-slate-50 border-slate-100 text-slate-500'
+              }`}>
+                <MapPin size={16} />
+              </div>
             )}
             {city}
           </Button>

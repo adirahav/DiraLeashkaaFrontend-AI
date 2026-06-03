@@ -55,11 +55,17 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({
     };
   }, [showTour]);
 
+  const handleSkip = () => {
+    localStorage.setItem('tour_dismissed', 'true');
+    setShowTour(false);
+  };
+
   return (
     <TourSpotlight 
       isOpen={showTour}
       targetRect={buttonRect}
-      onClose={() => setShowTour(false)}
+      onClose={handleSkip}
+      onSkip={handleSkip}
       title="בוא נתחיל!"
       description="כדי לראות את הקסם קורה, לחץ על הכפתור המודגש כדי להוסיף את הנכס הראשון שלך."
     />

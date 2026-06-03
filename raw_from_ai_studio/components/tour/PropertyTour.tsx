@@ -159,11 +159,17 @@ export const PropertyTour: React.FC<PropertyTourProps> = ({
     }
   }, [showTour, tourStep, isCalculating]);
 
+  const handleSkip = () => {
+    localStorage.setItem('tour_dismissed', 'true');
+    setShowTour(false);
+  };
+
   return (
     <TourSpotlight 
       isOpen={showTour && activeRect !== null}
       targetRect={activeRect}
-      onClose={() => setShowTour(false)}
+      onClose={handleSkip}
+      onSkip={handleSkip}
       title={tourStep === 'CITY' ? 'בחירת עיר' : tourStep === 'PRICE' ? 'מחיר הנכס' : tourStep === 'EQUITY' ? 'הון עצמי' : tourStep === 'TYPE' ? 'סוג הנכס' : tourStep === 'INCOME' ? 'הכנסות' : 'התחייבויות'}
       description={
         tourStep === 'CITY' 

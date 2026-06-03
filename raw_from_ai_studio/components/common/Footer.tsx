@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Screen } from '../../types';
-import { FileText, Mail, Share2, Smartphone, Accessibility, Info, Globe } from 'lucide-react';
+import { FileText, Mail, Share2, Smartphone, Accessibility, Info, Globe, Sparkles } from 'lucide-react';
 
 interface FooterProps {
   onNavigate: (screen: Screen) => void;
@@ -65,8 +65,13 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             </span>
           </div>
           
-          <div className="flex flex-col items-center gap-2 text-slate-400 text-xs font-medium">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-x-3 gap-y-1.5 text-slate-400 text-xs font-medium">
             <span>© {new Date().getFullYear()} דירה להשקעה - כל הזכויות שמורות</span>
+            <span className="hidden sm:inline text-slate-300">•</span>
+            <div className="flex items-center gap-1 text-[11px] text-indigo-500 font-semibold">
+              <Sparkles size={11} className="fill-indigo-300 text-indigo-500 animate-pulse shrink-0" />
+              <span>פותח בשילוב בינה מלאכותית (AI)</span>
+            </div>
           </div>
         </div>
       </div>

@@ -47,3 +47,15 @@ export function getFooterData(
 
   return { version, shareUrl, moreUrl, moreLabel, isNative }
 }
+
+/** Raw `lastVersion` string from the splash params (e.g. "2.5.12"). Empty string if unavailable. */
+export function getStoreVersion(params: Record<string, unknown>): string {
+  const isNative = Capacitor.isNativePlatform()
+  return extractVersionField(params[isNative ? 'appVersion' : 'webVersion'], 'lastVersion')
+}
+
+/** Store URL (Google Play / website) from the splash params. */
+export function getStoreUrl(params: Record<string, unknown>): string {
+  const isNative = Capacitor.isNativePlatform()
+  return extractVersionField(params[isNative ? 'appVersion' : 'webVersion'], 'url')
+}

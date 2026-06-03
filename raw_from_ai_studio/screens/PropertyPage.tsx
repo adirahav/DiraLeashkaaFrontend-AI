@@ -234,6 +234,7 @@ export const PropertyPage: React.FC<PropertyPageProps> = ({ onNavigate, showTour
 
   // Images
   const [images, setImages] = useState<string[]>(['https://res.cloudinary.com/do5lkisxf/image/upload/v1740137110/ml_diraleashkaa/n69h59cgew5eyub1yren.jpg']);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const lastFocusedId = useRef<string | null>(null);
 
   // --- Debounce Logic ---
@@ -528,11 +529,33 @@ export const PropertyPage: React.FC<PropertyPageProps> = ({ onNavigate, showTour
   }, [d, isPart1Valid]);
 
   // --- Handlers ---
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files) {
-      const newImages = Array.from(files).map(file => URL.createObjectURL(file as File));
-      setImages(prev => [...prev, ...newImages]);
+    if (files && files.length > 0) {
+      setIsUploadingImage(true);
+      try {
+        const fileList = Array.from(files) as File[];
+        const loadedImages: string[] = [];
+        
+        // Show loading state for at least 1500ms to provide visual transition feedback
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        for (const file of fileList) {
+          const result = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+          loadedImages.push(result);
+        }
+        
+        setImages(prev => [...prev, ...loadedImages]);
+      } catch (err) {
+        console.error("Error uploading images:", err);
+      } finally {
+        setIsUploadingImage(false);
+      }
     }
   };
 
@@ -818,6 +841,7 @@ export const PropertyPage: React.FC<PropertyPageProps> = ({ onNavigate, showTour
             images={images}
             removeImage={removeImage}
             handleImageUpload={handleImageUpload}
+            isUploadingImage={isUploadingImage}
           />
 
           {/* Mobile Navigation Button - Bottom of Form - REMOVED per user request */}

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Logo } from '../animations/Logo';
-import { Building2, Calculator, User, LineChart, LogOut, Menu, X, Mail, Share2, Smartphone, Accessibility, FileText, ChevronRight } from 'lucide-react';
+import { Building2, Calculator, User, LineChart, LogOut, Menu, X, Mail, Share2, Smartphone, Accessibility, FileText, ChevronRight, Sparkles } from 'lucide-react';
 import { Screen } from '../../types';
 import { Button } from '../formFields';
 
@@ -15,6 +15,11 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, userName = 'ישרא
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
   const isInternalPage = currentScreen !== 'HOME';
+
+  const isPersonalActive = currentScreen === 'PERSONAL_DETAILS' || currentScreen === 'PROFILE';
+  const isCalculatorsActive = currentScreen === 'CALCULATORS' || currentScreen === 'MAX_PRICE' || currentScreen === 'COMPARE_PROPERTIES';
+  const isFinancialActive = currentScreen === 'FINANCIAL_DATA';
+  const isPropertyActive = currentScreen === 'PROPERTY';
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
@@ -58,7 +63,11 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, userName = 'ישרא
             <li>
               <Button 
                 onClick={() => onNavigate('PROPERTY')}
-                className="!px-4 !py-2 !rounded-lg"
+                className={`!px-4 !py-2 !rounded-lg transition-all ${
+                  isPropertyActive
+                    ? '!bg-blue-700 ring-2 ring-blue-100'
+                    : ''
+                }`}
                 icon={Building2}
               >
                 הוסף נכס חדש +
@@ -68,7 +77,11 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, userName = 'ישרא
               <Button 
                 variant="outline"
                 onClick={() => onNavigate('CALCULATORS')}
-                className="!border-none !shadow-none !text-slate-600 hover:!text-blue-600 !px-2 !py-1"
+                className={`!border-none !shadow-none !px-3 !py-1.5 !rounded-lg transition-all ${
+                  isCalculatorsActive 
+                    ? '!text-blue-600 !bg-blue-50/75 font-black shadow-xs' 
+                    : '!text-slate-600 hover:!text-blue-600 hover:!bg-slate-50/50'
+                }`}
                 icon={Calculator}
               >
                 מחשבונים
@@ -78,7 +91,11 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, userName = 'ישרא
               <Button 
                 variant="outline"
                 onClick={() => onNavigate('PERSONAL_DETAILS')}
-                className="!border-none !shadow-none !text-slate-600 hover:!text-blue-600 !px-2 !py-1"
+                className={`!border-none !shadow-none !px-3 !py-1.5 !rounded-lg transition-all ${
+                  isPersonalActive 
+                    ? '!text-blue-600 !bg-blue-50/75 font-black shadow-xs' 
+                    : '!text-slate-600 hover:!text-blue-600 hover:!bg-slate-50/50'
+                }`}
                 icon={User}
               >
                 פרטים אישיים
@@ -88,7 +105,11 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, userName = 'ישרא
               <Button 
                 variant="outline"
                 onClick={() => onNavigate('FINANCIAL_DATA')}
-                className="!border-none !shadow-none !text-slate-600 hover:!text-blue-600 !px-2 !py-1"
+                className={`!border-none !shadow-none !px-3 !py-1.5 !rounded-lg transition-all ${
+                  isFinancialActive 
+                    ? '!text-blue-600 !bg-blue-50/75 font-black shadow-xs' 
+                    : '!text-slate-600 hover:!text-blue-600 hover:!bg-slate-50/50'
+                }`}
                 icon={LineChart}
               >
                 נתונים כלכליים
@@ -148,7 +169,11 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, userName = 'ישרא
                       onNavigate('PROPERTY');
                       setIsMenuOpen(false);
                     }}
-                    className="!px-4 !py-3 !bg-blue-50 !text-blue-700 !rounded-xl font-bold transition-colors text-right w-full !shadow-none"
+                    className={`!px-4 !py-3 !rounded-xl font-bold transition-all text-right w-full !shadow-none ${
+                      isPropertyActive
+                        ? '!bg-blue-600 !text-white'
+                        : '!bg-white border-2 border-dashed border-blue-200 hover:border-blue-300 !text-blue-600 hover:!bg-blue-50/20'
+                    }`}
                     icon={Building2}
                     iconSize={20}
                   >
@@ -162,7 +187,11 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, userName = 'ישרא
                       onNavigate('CALCULATORS');
                       setIsMenuOpen(false);
                     }}
-                    className="!border-none !shadow-none !text-slate-600 hover:!bg-slate-50 !rounded-xl !px-4 !py-3 !w-full !justify-start"
+                    className={`!border-none !shadow-none !rounded-xl !px-4 !py-3 !w-full !justify-start transition-all ${
+                      isCalculatorsActive
+                        ? '!text-blue-700 !bg-blue-50/80 font-black border-r-4 border-blue-600 rounded-r-none'
+                        : '!text-slate-600 hover:!bg-slate-50 font-medium'
+                    }`}
                     icon={Calculator}
                     iconSize={20}
                   >
@@ -176,7 +205,11 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, userName = 'ישרא
                       onNavigate('PERSONAL_DETAILS');
                       setIsMenuOpen(false);
                     }}
-                    className="!border-none !shadow-none !text-slate-600 hover:!bg-slate-50 !rounded-xl !px-4 !py-3 !w-full !justify-start"
+                    className={`!border-none !shadow-none !rounded-xl !px-4 !py-3 !w-full !justify-start transition-all ${
+                      isPersonalActive
+                        ? '!text-blue-700 !bg-blue-50/80 font-black border-r-4 border-blue-600 rounded-r-none'
+                        : '!text-slate-600 hover:!bg-slate-50 font-medium'
+                    }`}
                     icon={User}
                     iconSize={20}
                   >
@@ -190,7 +223,11 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, userName = 'ישרא
                       onNavigate('FINANCIAL_DATA');
                       setIsMenuOpen(false);
                     }}
-                    className="!border-none !shadow-none !text-slate-600 hover:!bg-slate-50 !rounded-xl !px-4 !py-3 !w-full !justify-start"
+                    className={`!border-none !shadow-none !rounded-xl !px-4 !py-3 !w-full !justify-start transition-all ${
+                      isFinancialActive
+                        ? '!text-blue-700 !bg-blue-50/80 font-black border-r-4 border-blue-600 rounded-r-none'
+                        : '!text-slate-600 hover:!bg-slate-50 font-medium'
+                    }`}
                     icon={LineChart}
                     iconSize={20}
                   >
@@ -277,9 +314,13 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, userName = 'ישרא
                   </Button>
                 </li>
               </ul>
-              <div className="mt-4 pt-4 border-t border-slate-100 text-center">
-                <div className="text-slate-400 text-[10px] font-medium mb-1">© {new Date().getFullYear()} דירה להשקעה - כל הזכויות שמורות</div>
-                <div className="text-blue-600/40 text-[10px] font-black tracking-widest uppercase">גירסה 1.0.4</div>
+              <div className="mt-4 pt-4 border-t border-slate-100 text-center flex flex-col items-center gap-1.5">
+                <div className="text-slate-400 text-[10px] font-medium">© {new Date().getFullYear()} דירה להשקעה - כל הזכויות שמורות</div>
+                <div className="flex items-center gap-1 text-[11px] text-indigo-500 font-semibold">
+                  <Sparkles size={11} className="fill-indigo-300 text-indigo-500 animate-pulse shrink-0" />
+                  <span>פותח בשילוב בינה מלאכותית (AI)</span>
+                </div>
+                <div className="text-blue-600/40 text-[10px] font-black tracking-widest uppercase mt-0.5">גירסה 1.0.4</div>
               </div>
             </div>
           </div>

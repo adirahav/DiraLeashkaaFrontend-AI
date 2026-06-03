@@ -41,9 +41,25 @@ references:
       - Use the `getNextOnboardingStep(user)` helper.
       - If the user is incomplete and trying to access a page they aren't ready for (like `/home`), redirect them to their current required step (`/consent`, `/personal-info`, or `/financial-details`).
 
+6. **Version Governance & Upgrade Orchestration**
+   - Version Source: Comparison between `localAppVersion` (from `package.json` / build config) and `storeAppVersion` (fetched via userService.getAppMetadata()).
+
+   - Semantic Parsing: Implement a version parser that breaks strings into [`Major, Minor, Patch`].
+      - Example logic:
+         - `isMandatory:` If `store.Major > local.Major` OR `store.Minor > local.Minor`.
+         - `isRecommended:` If `store.Major == local.Major` AND `store.Minor == local.Minor` AND `store.Patch > local.Patch`.
+
+   - UI Execution:
+      - Mandatory (High Priority): If `isMandatory`, render `UpgradeRequired` as a terminal root component, blocking all other app hydration and routing.
+
+      - Recommended (Low Priority): If `isRecommended`, render `UpgradeRecommended` as a non-blocking banner at the top of the main layout.
+
+   - Dismissal Logic: Manage a `hasDismissedRecommended` flag in the local state to ensure the banner stays hidden after the user clicks close for the duration of the session.
+
 # Tailwind Implementation Logic
 - *Root Container:* `relative w-full min-h-screen overflow-x-hidden selection:bg-blue-100`.
 - *Overlay Layer:* High `z-index` (e.g., `z-[9999]`) for the `Notification` container.
+- *Version Layer:* Ensure the `UpgradeRequired` component occupies `z-[10000]` to sit even above global notifications, ensuring no bypass is possible.
 
 # Files Structure
 ROOT-PROJ/

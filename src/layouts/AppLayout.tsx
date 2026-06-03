@@ -4,9 +4,16 @@ import { Header } from '../components/common/Header'
 import { Footer } from '../components/common/Footer'
 import { AccessibilityMenu } from '../components/common/AccessibilityMenu'
 import { Notification } from '../components/common/Notification'
+import { UpgradeRecommended } from '../components/versioning/UpgradeRecommended'
 import { useSplash } from '../hooks/useSplash'
 
-export const AppLayout = () => {
+interface AppLayoutProps {
+  showRecommendedBanner: boolean
+  updateUrl: string
+  onDismissBanner: () => void
+}
+
+export const AppLayout = ({ showRecommendedBanner, updateUrl, onDismissBanner }: AppLayoutProps) => {
   const isResultsMode = useStore((state) => state.isResultsMode)
   const notification = useStore((state) => state.notification)
   const clearNotification = useStore((state) => state.clearNotification)
@@ -20,6 +27,10 @@ export const AppLayout = () => {
       >
         {getPhrase('app_skip_to_main_content', 'Skip to main content')}
       </a>
+
+      {showRecommendedBanner && (
+        <UpgradeRecommended updateUrl={updateUrl} onClose={onDismissBanner} />
+      )}
 
       {!isResultsMode && <Header />}
 

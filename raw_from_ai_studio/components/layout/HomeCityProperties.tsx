@@ -177,7 +177,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           <Button 
             onClick={() => onEditPress('PROPERTY')}
             variant="outline"
-            className="px-6 py-3 rounded-xl font-bold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-center enabled:active:scale-95 focus:ring-4 focus:ring-blue-100 focus:outline-none flex items-center justify-center gap-2 border-2 border-slate-200 text-slate-600 enabled:hover:bg-slate-50 flex-1 bg-blue-50 text-blue-600 border-none hover:bg-blue-100 py-2 h-auto"
+            className="flex-1 bg-blue-50 text-blue-600 border-none hover:bg-blue-100 py-2 h-auto"
             icon={Edit}
             iconSize={16}
           >
@@ -186,7 +186,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           <Button 
             onClick={() => setShowConfirm(true)}
             variant="outline"
-            className="px-6 py-3 rounded-xl font-bold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-center enabled:active:scale-95 focus:ring-4 focus:ring-blue-100 focus:outline-none flex items-center justify-center gap-2 border-2 border-slate-200 text-slate-600 enabled:hover:bg-slate-50 p-2 bg-red-50 text-red-600 border-none hover:bg-red-100 h-auto min-w-0"
+            className="p-2 bg-red-50 text-red-600 border-none hover:bg-red-100 h-auto min-w-0"
             icon={Trash2}
             iconSize={16}
             ariaLabel="מחק נכס"
