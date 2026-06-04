@@ -24,17 +24,19 @@ export const createAuthSlice: StateCreator<RootState, [], [], AuthSlice> = (set)
 
   login: async (email, password) => {
     const { user, token } = await authService.login(email, password)
-    
+
     if (!user.tourCompletedTime) {
       const saved = await utilService.getFromStorage(TOUR_COMPLETED_KEY)
       if (saved) user.tourCompletedTime = saved
     }
     set({ loggedinUser: user, token })
+    console.log(`[LOGIN] User stored in state: ${user.email}, tourCompleted: ${!!user.tourCompletedTime}`)
     return user
   },
 
   logout: async () => {
     await authService.logout()
     set({ loggedinUser: null, token: null })
+    console.log(`[LOGIN] User logged out, auth state cleared`)
   },
 })

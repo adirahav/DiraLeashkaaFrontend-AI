@@ -20,6 +20,7 @@ export const authService = {
 }
 
 async function login(email: string, password: string): Promise<{ user: User; token: string }> {
+    console.log(`[LOGIN] Call API POST '/auth/login' — email: ${email.trim().toLowerCase()}`)
     const raw = await httpService.post<string>(
         '/auth/login',
         { email: email.trim().toLowerCase(), password },
@@ -29,17 +30,21 @@ async function login(email: string, password: string): Promise<{ user: User; tok
     const token = raw.replace(/^"|"$/g, '')
     const user = jwtDecode<User>(token)
     await utilService.saveToStorage(STORAGE_KEY_LAST_LOGGEDIN_EMAIL, user.email)
+    console.log(`[LOGIN] API POST '/auth/login' response: user=${user.email}`)
     return { user, token }
 }
 
 async function signup(credentials: SignupCredentials): Promise<{ user: User; token: string }> {
+    console.log(`[SIGNUP] Call API POST '/auth/signup' — email: ${credentials.email}`)
     await httpService.post('/auth/signup', {
         fullname: credentials.fullname,
         email: credentials.email,
         password: credentials.password,
         yearOfBirth: credentials.yearOfBirth,
     })
+    console.log(`[SIGNUP] API POST '/auth/signup' response: account created`)
 
+    console.log(`[SIGNUP] Call API POST '/auth/login' (auto-login)`)
     const raw = await httpService.post<string>(
         '/auth/login',
         { email: credentials.email, password: credentials.password },
@@ -49,6 +54,7 @@ async function signup(credentials: SignupCredentials): Promise<{ user: User; tok
     const token = raw.replace(/^"|"$/g, '')
     const user = jwtDecode<User>(token)
     await utilService.saveToStorage(STORAGE_KEY_LAST_LOGGEDIN_EMAIL, user.email)
+    console.log(`[SIGNUP] API POST '/auth/login' response: user=${user.email}`)
     return { user, token }
 }
 

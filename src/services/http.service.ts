@@ -40,7 +40,7 @@ async function ajax<T>(
 
     const platform = Capacitor.isNativePlatform() ? "android" : "web"
     const jwtToken = token || useStore.getState().token
-    console.debug(`[http] ${method} ${endpoint} | token: ${jwtToken ? jwtToken.slice(0, 20) + '…' : 'NONE'}`)
+    console.log(`[API] Call API ${method} '${endpoint}'`)
 
     const config: AxiosRequestConfig = {
         url: `${BASE_URL}${endpoint}`,
@@ -55,8 +55,7 @@ async function ajax<T>(
         const res: AxiosResponse<T> = await axios(config)
         return res.data
     } catch (err: any) {
-        console.error(`Had Issues ${method}ing to the backend, endpoint: ${endpoint}, with data: `, data)
-        console.dir(err)
+        console.log(`[ERROR] ${method} '${endpoint}' failed — status: ${err.response?.status ?? 'network'}`)
 
         if (err.response && err.response.status === 401) {
             if (typeof window !== 'undefined') {
@@ -66,6 +65,7 @@ async function ajax<T>(
                     ...(method !== 'GET' && data ? { apiCall: { method: method as string, endpoint, data } } : {}),
                 })
             }
+            console.log(`[API] 401 — clearing auth, redirecting to /login`)
             useStore.setState({ loggedinUser: null, token: null })
             await utilService.deleteFromStorage('token')
             if (typeof window !== 'undefined') {

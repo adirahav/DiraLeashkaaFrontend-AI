@@ -72,13 +72,16 @@ export const ConsentPage: React.FC = () => {
   const handleAccept = async () => {
     setIsLoading(true)
     setServerError(null)
+    console.log(`[API] Terms of Use accepted`)
     try {
       const newToken = await userService.updateUser({ termsOfUseAccept: true })
       const updatedUser = jwtDecode<User>(newToken)
       setToken(newToken)
       setLoggedinUser(updatedUser)
       forceFetchSplash()
-      navigate(getNextOnboardingStep(updatedUser), { replace: true })
+      const nextStep = getNextOnboardingStep(updatedUser)
+      console.log(`[NAV] Navigating after consent acceptance: ${nextStep}`)
+      navigate(nextStep, { replace: true })
     } catch {
       setServerError(getPhrase('signup_server_error', 'An error occurred. Please try again.'))
     } finally {

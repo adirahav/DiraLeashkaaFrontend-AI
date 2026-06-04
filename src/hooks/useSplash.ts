@@ -8,9 +8,8 @@ export function useSplash() {
     (key: string, fallback?: string): string => {
       const phrases = context?.phrases ?? {}
       if (key in phrases) return phrases[key]
-      if (import.meta.env.DEV) {
-        console.warn(`[useSplash] Missing phrase key: "${key}"`)
-      }
+      console.log(`[SPLASH] Missing phrase key: "${key}"`)
+
       return fallback ?? `[${key}]`
     },
     [context?.phrases]

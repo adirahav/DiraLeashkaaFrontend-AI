@@ -137,6 +137,7 @@ export const CalculatorsPage: React.FC = () => {
       try {
         const data = await calculatorService.getAll()
         setCalculators(data)
+        console.log(`[API] Calculators loaded: ${data.length}`)
       } finally {
         setIsLoading(false)
         setIsFetching(false)
@@ -147,6 +148,7 @@ export const CalculatorsPage: React.FC = () => {
   }, [loggedinUser, navigate, setIsLoading])
 
   const onCalcClick = (type: string) => {
+    console.log(`[NAV] Calculator selected: ${type}`)
     navigate(`/calculators/${toKebabCase(type)}`)
   }
 

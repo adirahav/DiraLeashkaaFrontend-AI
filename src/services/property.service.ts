@@ -71,20 +71,31 @@ function token() {
 }
 
 async function getById(uuid: string, options?: { calcYields?: boolean }): Promise<PropertyData> {
+  console.log(`[PROPERTY] Call API GET '/property/${uuid}'`)
   const params = options?.calcYields ? { calcYields: true } : null
-  return httpService.get<PropertyData>(`/property/${uuid}`, params, token())
+  const data = await httpService.get<PropertyData>(`/property/${uuid}`, params, token())
+  console.log(`[PROPERTY] API GET '/property/${uuid}' response:`, data)
+  return data
 }
 
 async function create(fieldName: string, fieldValue: any, defaults?: Record<string, any>): Promise<PropertyData> {
   const backendName = toBackendField(fieldName)
-  return httpService.post<PropertyData>('/property', { fieldName: backendName, fieldValue: toServerValue(backendName, fieldValue), ...defaults }, token())
+  console.log(`[PROPERTY] Call API POST '/property' — fieldName: ${backendName}`)
+  const data = await httpService.post<PropertyData>('/property', { fieldName: backendName, fieldValue: toServerValue(backendName, fieldValue), ...defaults }, token())
+  console.log(`[PROPERTY] API POST '/property' response: uuid=${data.uuid}`)
+  return data
 }
 
 async function save(uuid: string, fieldName: string, fieldValue: any): Promise<PropertyData> {
   const backendName = toBackendField(fieldName)
-  return httpService.put<PropertyData>('/property', { propertyUUID: uuid, fieldName: backendName, fieldValue: toServerValue(backendName, fieldValue) }, token())
+  console.log(`[PROPERTY] Call API PUT '/property' — uuid: ${uuid}, fieldName: ${backendName}`)
+  const data = await httpService.put<PropertyData>('/property', { propertyUUID: uuid, fieldName: backendName, fieldValue: toServerValue(backendName, fieldValue) }, token())
+  console.log(`[PROPERTY] API PUT '/property' response:`, data)
+  return data
 }
 
 async function archive(uuid: string): Promise<void> {
-  return httpService.patch(`/property/${uuid}/archive`, null, token())
+  console.log(`[PROPERTY] Call API PATCH '/property/${uuid}/archive'`)
+  await httpService.patch(`/property/${uuid}/archive`, null, token())
+  console.log(`[PROPERTY] API PATCH '/property/${uuid}/archive' response: archived`)
 }

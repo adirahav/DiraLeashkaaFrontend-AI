@@ -80,11 +80,12 @@ export const SignupPage: React.FC = () => {
   const saveUser = async () => {
     setIsLoading(true)
     setServerError(null)
+    console.log(`[SIGNUP] Step ${step} submitted`)
     try {
       let updatedUser: User
 
       if (!loggedinUser) {
-        // Step 1 — new user: POST /auth/signup
+        console.log(`[SIGNUP] Step 1: creating new account for: ${formData.email.trim().toLowerCase()}`)
         const { user, token } = await authService.signup({
           fullname: formData.fullname.trim(),
           email: formData.email.trim().toLowerCase(),
@@ -94,15 +95,17 @@ export const SignupPage: React.FC = () => {
         setToken(token)
         setLoggedinUser(user)
         updatedUser = user
+        console.log(`[SIGNUP] Step 1: account created, user: ${user.email}`)
       } else {
-        // Existing user: PUT /user with step-specific payload
         let newToken: string
         if (step === 1) {
+          console.log(`[SIGNUP] Step 1: updating personal info`)
           newToken = await userService.updateUser({
             fullname: formData.fullname.trim(),
             yearOfBirth: parseInt(formData.yearOfBirth),
           })
         } else if (step === 2) {
+          console.log(`[SIGNUP] Step 2: updating financial details`)
           newToken = await userService.updateUser({
             equity: parseNumber(formData.equity),
             incomes: parseNumber(formData.incomes),
@@ -115,6 +118,7 @@ export const SignupPage: React.FC = () => {
             })),
           })
         } else {
+          console.log(`[SIGNUP] Step 3: accepting terms of use`)
           newToken = await userService.updateUser({ termsOfUseAccept: true })
         }
         updatedUser = jwtDecode<User>(newToken)
@@ -123,6 +127,7 @@ export const SignupPage: React.FC = () => {
       }
 
       if (step >= TOTAL_STEPS) {
+        console.log(`[SIGNUP] Registration complete, navigating to /home`)
         forceFetchSplash()
         navigate('/home', { replace: true })
       } else {
@@ -131,6 +136,7 @@ export const SignupPage: React.FC = () => {
       }
     } catch (err: any) {
       const isEmailTaken = step === 1 && err?.response?.status === 400
+      if (isEmailTaken) console.log(`[SIGNUP] Email already exists: ${formData.email}`)
       setServerError(
         isEmailTaken
           ? getPhrase('signup_email_taken_error', 'Email address already exists. Try logging in.')

@@ -9,6 +9,7 @@ let listenerRegistered = false
 function ensureListener() {
   if (listenerRegistered) return
   listenerRegistered = true
+  console.log(`[NAV] Native back button listener registered`)
   App.addListener('backButton', () => {
     const top = handlerStack[handlerStack.length - 1]
     if (top) top()
@@ -24,6 +25,7 @@ export function useNativeBackButton(handler: Handler): void {
     ensureListener()
     const wrapper = () => handlerRef.current()
     handlerStack.push(wrapper)
+    console.log(`[NAV] Back button handler pushed, stack depth: ${handlerStack.length}`)
     return () => {
       const idx = handlerStack.lastIndexOf(wrapper)
       if (idx !== -1) handlerStack.splice(idx, 1)

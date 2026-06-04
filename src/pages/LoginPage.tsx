@@ -106,6 +106,7 @@ export const LoginPage: React.FC = () => {
     setIsLoading(true)
     setServerError('')
     isLoggingIn.current = true
+    console.log(`[LOGIN] Login form submitted for: ${email}`)
 
     try {
       const user = await login(email, password)
@@ -116,6 +117,7 @@ export const LoginPage: React.FC = () => {
         let returnPath = pending.returnPath
         if (pending.apiCall) {
           const { method, endpoint, data } = pending.apiCall
+          console.log(`[LOGIN] Replaying pending API call: ${method} '${endpoint}'`)
           try {
             let response: Record<string, any> | null = null
             if (method === 'POST') response = await httpService.post(endpoint, data)
@@ -123,22 +125,25 @@ export const LoginPage: React.FC = () => {
             else if (method === 'PATCH') response = await httpService.patch(endpoint, data)
             else if (method === 'DELETE') await httpService.delete(endpoint, data)
 
-            // POST created a new resource — navigate to its canonical URL
             const resourceId = response?.id ?? response?.uuid ?? response?._id
             if (resourceId && returnPath.endsWith('/new')) {
               returnPath = returnPath.slice(0, -3) + resourceId
             }
           } catch {
-            // Replay failed — user lands on the page and can retry manually
+            console.log(`[LOGIN] Pending action replay failed — user lands on page to retry`)
           }
         }
         await pendingActionService.clear()
+        console.log(`[LOGIN] Redirecting to pending return path: ${returnPath}`)
         navigate(returnPath, { replace: true })
       } else {
-        navigate(getNextOnboardingStep(user), { replace: true })
+        const nextStep = getNextOnboardingStep(user)
+        console.log(`[LOGIN] Login successful, redirecting to: ${nextStep}`)
+        navigate(nextStep, { replace: true })
       }
     } catch {
       isLoggingIn.current = false
+      console.log(`[LOGIN] Invalid credentials for: ${email}`)
       setServerError(getPhrase('login_credentials_error', 'Invalid credentials, please try again'))
     } finally {
       setIsLoading(false)

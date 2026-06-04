@@ -286,6 +286,7 @@ export const CompareCalculatorPage: React.FC = () => {
     calculatorService
       .getCompareList()
       .then(response => {
+        console.log(`[API] Compare list loaded: ${response.allProperties.length} total, ${response.comparedPropertiesUUIDs?.length ?? 0} compared`)
         applyCompareResponse(response)
       })
       .catch(() => {
@@ -306,6 +307,7 @@ export const CompareCalculatorPage: React.FC = () => {
         lastFocusedId.current = activeEl.id
       }
       setShowOverlay(true)
+      console.log(`[PROPERTY] Compare field update: uuid=${uuid}, field=${fieldName}`)
       try {
         const updated = await propertyService.save(uuid, fieldName, fieldValue)
         setComparedProperties(prev =>
@@ -348,6 +350,8 @@ export const CompareCalculatorPage: React.FC = () => {
 
       if (newUUIDs.length === comparedUUIDs.length && !isSelected) return
 
+      const action = isSelected ? 'remove' : 'add'
+      console.log(`[API] Toggle compare property: uuid=${uuid} action=${action}`)
       setShowOverlay(true)
       const prevCompared = comparedProperties
       const prevAvailable = availableProperties
@@ -369,6 +373,7 @@ export const CompareCalculatorPage: React.FC = () => {
   // ── Reset ─────────────────────────────────────────────────────────────────
 
   const handleReset = useCallback(async () => {
+    console.log(`[API] Compare list reset`)
     setShowOverlay(true)
     const prevCompared = comparedProperties
     const prevAvailable = availableProperties
@@ -404,11 +409,13 @@ export const CompareCalculatorPage: React.FC = () => {
 
   const handleDragEnd = useCallback(async () => {
     const newOrder = comparedPropertiesRef.current
+    console.log(`[PROPERTY] Compare properties reordered: ${newOrder.map(p => p.uuid).join(', ')}`)
     try {
       await calculatorService.updateCompareList(
         newOrder.map(p => p.uuid ?? '').filter(Boolean)
       )
     } catch {
+      console.log(`[PROPERTY] Compare reorder failed, restoring previous order`)
       setComparedProperties(preDragOrderRef.current)
       setNotification({ type: 'error', message: getPhrase('compare_calculator_rearrange_error', 'Error saving property order') })
     }

@@ -50,12 +50,14 @@ export const HomePage: React.FC = () => {
 
     const load = async () => {
       setIsLoading(true)
+      console.log(`[API] Home Phase 1 load started for user: ${loggedinUser.email}`)
       try {
         await userService.getHome(false)
+        console.log(`[API] Home Phase 1 load complete`)
       } finally {
         setIsLoading(false)
       }
-      // Phase 2: fire-and-forget (updates store reactively)
+      console.log(`[API] Home Phase 2 full-data fetch started (fire-and-forget)`)
       userService.getHome(true).catch(() => {})
     }
 
@@ -143,11 +145,14 @@ export const HomePage: React.FC = () => {
       const property = current[index]
       if (!property) return
 
+      console.log(`[PROPERTY] Optimistic delete: ${uuid}`)
       removeProperty(uuid)
 
       try {
         await propertyService.archive(uuid)
+        console.log(`[PROPERTY] Property archived on server: ${uuid}`)
       } catch {
+        console.log(`[PROPERTY] Archive failed, restoring property: ${uuid}`)
         restoreProperty(property, index)
       }
     },

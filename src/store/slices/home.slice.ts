@@ -30,34 +30,38 @@ export const createHomeSlice: StateCreator<RootState, [], [], HomeSlice> = (set)
   setHome: (data) =>
     set((state) => {
       if (data.fullData) {
-        // Phase 2: merge calculated fields into existing Phase 1 properties by uuid
         const mergedProperties = state.properties.map((existing) => {
           const updated = data.properties.find((p) => p.uuid === existing.uuid)
           return updated ? normalizeProperty(updated) : existing
         })
+        console.log(`[STORE] Home Phase 2 merged: ${mergedProperties.length} properties with calculated fields`)
         return {
           properties: mergedProperties,
           bestYields: data.bestYields?.map(normalizeProperty) ?? state.bestYields,
           fullData: true,
         }
       }
-      // Phase 1: populate basic list
+      console.log(`[STORE] Home Phase 1 loaded: ${data.properties.length} properties`)
       return {
         properties: data.properties.map(normalizeProperty),
         fullData: false,
       }
     }),
 
-  removeProperty: (uuid) =>
+  removeProperty: (uuid) => {
+    console.log(`[STORE] Property removed from home list: ${uuid}`)
     set((state) => ({
       properties: state.properties.filter((p) => p.uuid !== uuid),
       bestYields: state.bestYields?.filter((p) => p.uuid !== uuid) ?? null,
-    })),
+    }))
+  },
 
-  restoreProperty: (property, index) =>
+  restoreProperty: (property, index) => {
+    console.log(`[STORE] Property restored at index ${index}: ${property.uuid}`)
     set((state) => {
       const restored = [...state.properties]
       restored.splice(index, 0, property)
       return { properties: restored }
-    }),
+    })
+  },
 })

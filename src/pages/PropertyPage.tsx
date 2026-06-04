@@ -169,18 +169,20 @@ export const PropertyPage: React.FC = () => {
     if (!splashReady) return;
 
     if (propertyUUID) {
-      // Skip fetch if we already have fresh data for this UUID (e.g. just created)
       if (useStore.getState().currentProperty?.uuid === propertyUUID) {
+        console.log(`[PROPERTY] Property ${propertyUUID} already in store, skipping fetch`)
         isInitialLoad.current = false;
         setIsReady(true);
         return;
       }
 
+      console.log(`[PROPERTY] Fetching property: ${propertyUUID}`)
       setCalculating(true);
       propertyService
         .getById(propertyUUID)
         .then((data) => {
           if (cancelled) return;
+          console.log(`[PROPERTY] Property loaded: ${propertyUUID}`)
           const local = useStore.getState().currentProperty;
           const userSources = local?.additionalFundingSources ?? buildDefaultProperty(loggedinUser, params as Record<string, unknown>).additionalFundingSources;
           setCurrentProperty({
@@ -197,12 +199,14 @@ export const PropertyPage: React.FC = () => {
           if (cancelled) return;
           setCalculating(false);
           if (err?.response?.status === 403) {
+            console.log(`[PROPERTY] 403 on property fetch, logging out`)
             logout().then(() => navigate('/login'));
           } else {
             navigate('/home');
           }
         });
     } else {
+      console.log(`[PROPERTY] Initializing new property for user: ${loggedinUser.email}`)
       initProperty(loggedinUser, params as Record<string, unknown>);
       isInitialLoad.current = false;
       setIsReady(true);
@@ -234,6 +238,7 @@ export const PropertyPage: React.FC = () => {
       lastFocusedId.current = activeEl.id;
     }
 
+    console.log(`[PROPERTY] Auto-save debounced: field=${updatedByField}, uuid=${uuid ?? 'new'}`)
     setCalculating(true);
 
     const doSave = uuid
@@ -255,6 +260,7 @@ export const PropertyPage: React.FC = () => {
         });
         setCalculating(false);
         if (!uuid && updated.uuid) {
+          console.log(`[PROPERTY] New property created with uuid: ${updated.uuid}`)
           navigate(`/property/${updated.uuid}`, { replace: true });
         }
         if (lastFocusedId.current) {
@@ -335,6 +341,7 @@ export const PropertyPage: React.FC = () => {
     const prop = useStore.getState().currentProperty;
     if (!prop?.updatedByField) return;
     const { uuid, updatedByField } = prop;
+    console.log(`[PROPERTY] Tour save triggered: field=${updatedByField}, uuid=${uuid ?? 'new'}`)
     const fieldValue = (prop as Record<string, any>)[updatedByField];
     const doSave = uuid
       ? propertyService.save(uuid, updatedByField, fieldValue)

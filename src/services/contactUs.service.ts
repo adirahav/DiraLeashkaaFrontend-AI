@@ -7,5 +7,8 @@ export const contactUsService = {
 }
 
 async function sendMessage(subject: string, message: string, appEnv: string): Promise<boolean> {
-    return httpService.post<boolean>(BASE_URL, { subject, message, appEnv })
+    console.log(`[API] Call API POST '/contactUs' — subject: ${subject}, env: ${appEnv}`)
+    const result = await httpService.post<boolean>(BASE_URL, { subject, message, appEnv })
+    console.log(`[API] API POST '/contactUs' response: ${result}`)
+    return result
 }

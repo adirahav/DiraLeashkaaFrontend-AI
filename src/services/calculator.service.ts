@@ -12,7 +12,10 @@ export const calculatorService = {
 }
 
 async function getAll(): Promise<CalculatorItem[]> {
-  return httpService.get<CalculatorItem[]>('/calculator', null, token())
+  console.log(`[API] Call API GET '/calculator'`)
+  const data = await httpService.get<CalculatorItem[]>('/calculator', null, token())
+  console.log(`[API] API GET '/calculator' response: ${data.length} calculators`)
+  return data
 }
 
 function token() {
@@ -20,7 +23,10 @@ function token() {
 }
 
 async function getMaxPrice(): Promise<PropertyData> {
-  return httpService.get<PropertyData>('/calculator/maxPrice', null, token())
+  console.log(`[API] Call API GET '/calculator/maxPrice'`)
+  const data = await httpService.get<PropertyData>('/calculator/maxPrice', null, token())
+  console.log(`[API] API GET '/calculator/maxPrice' response:`, data)
+  return data
 }
 
 const FIELD_NAME_MAP: Record<string, string> = {
@@ -60,7 +66,10 @@ function toServerValue(backendName: string, value: any): any {
 
 async function updateMaxPrice(fieldName: string, fieldValue: any): Promise<PropertyData> {
   const backendName = toBackendField(fieldName)
-  return httpService.put<PropertyData>('/calculator/maxPrice', { fieldName: backendName, fieldValue: toServerValue(backendName, fieldValue) }, token())
+  console.log(`[API] Call API PUT '/calculator/maxPrice' — fieldName: ${backendName}`)
+  const data = await httpService.put<PropertyData>('/calculator/maxPrice', { fieldName: backendName, fieldValue: toServerValue(backendName, fieldValue) }, token())
+  console.log(`[API] API PUT '/calculator/maxPrice' response:`, data)
+  return data
 }
 
 export interface CompareListResponse {
@@ -69,9 +78,14 @@ export interface CompareListResponse {
 }
 
 async function getCompareList(): Promise<CompareListResponse> {
-  return httpService.get<CompareListResponse>('/calculator/compare', null, token())
+  console.log(`[API] Call API GET '/calculator/compare'`)
+  const data = await httpService.get<CompareListResponse>('/calculator/compare', null, token())
+  console.log(`[API] API GET '/calculator/compare' response: ${data.allProperties.length} properties, ${data.comparedPropertiesUUIDs?.length ?? 0} compared`)
+  return data
 }
 
 async function updateCompareList(propertiesExternalIds: string[]): Promise<void> {
-  return httpService.put<void>('/calculator/compare', { propertiesExternalIds }, token())
+  console.log(`[API] Call API PUT '/calculator/compare' — ${propertiesExternalIds.length} properties`)
+  await httpService.put<void>('/calculator/compare', { propertiesExternalIds }, token())
+  console.log(`[API] API PUT '/calculator/compare' response: list updated`)
 }

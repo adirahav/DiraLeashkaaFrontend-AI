@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Logo } from './Logo'
 import { Building2, Calculator, User, LineChart, LogOut, Menu, X, Mail, Share2, Smartphone, Globe, Accessibility, FileText, ChevronRight, Info, Sparkles } from 'lucide-react'
@@ -9,6 +9,7 @@ import { getFooterData } from '../../utils/platform.utils'
 import { getNextOnboardingStep } from '../../utils/user.utils'
 import { authService } from '../../services/auth.service'
 import { Browser } from '@capacitor/browser'
+import { LogViewer } from '../debug/LogViewer'
 
 const AUTH_PAGES = ['/login', '/signup', '/forgot-password']
 
@@ -16,6 +17,9 @@ export const Header: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [showLogViewer, setShowLogViewer] = useState(false)
+  const tapCountRef = useRef(0)
+  const tapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const loggedinUser = useStore((state) => state.loggedinUser)
   const logout = useStore((state) => state.logout)
@@ -74,6 +78,20 @@ export const Header: React.FC = () => {
     }
   }
 
+  const handleLogoTap = (e: React.MouseEvent) => {
+    e.preventDefault()
+    tapCountRef.current += 1
+    if (tapTimerRef.current) clearTimeout(tapTimerRef.current)
+    tapTimerRef.current = setTimeout(() => { tapCountRef.current = 0 }, 3000)
+    if (tapCountRef.current >= 7) {
+      tapCountRef.current = 0
+      if (tapTimerRef.current) clearTimeout(tapTimerRef.current)
+      setShowLogViewer(true)
+      return
+    }
+    navigate(loggedinUser ? '/home' : '/login')
+  }
+
   const isInternalPage = location.pathname !== '/home'
   const isActive = (path: string) => location.pathname.startsWith(path)
   const helloText = loggedinUser
@@ -108,7 +126,7 @@ export const Header: React.FC = () => {
               </button>
             )}
             <button
-              onClick={() => navigate(loggedinUser ? '/home' : '/login')}
+              onClick={handleLogoTap}
               className="hover:opacity-80 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg z-10 absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0"
               aria-label={getPhrase('header_back_to_homepage', 'Back to home page')}
             >
@@ -346,6 +364,8 @@ export const Header: React.FC = () => {
           </div>
         </div>
       )}
+
+      {showLogViewer && <LogViewer onClose={() => setShowLogViewer(false)} />}
     </div>
   )
 }

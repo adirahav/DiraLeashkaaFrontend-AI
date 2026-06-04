@@ -69,9 +69,11 @@ export const ContactUsPage: React.FC = () => {
     if (!isFormValid) return
 
     setIsLoading(true)
+    console.log(`[API] Contact form submitted — subject: ${subject}`)
     try {
       const appEnv = utilService.getAppEnv()
       await contactUsService.sendMessage(subject, message, appEnv)
+      console.log(`[API] Contact message sent successfully`)
       setSubject('')
       setMessage('')
       setSubjectTouched(false)

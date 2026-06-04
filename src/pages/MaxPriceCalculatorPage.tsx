@@ -87,6 +87,7 @@ export const MaxPriceCalculatorPage: React.FC = () => {
       .getMaxPrice()
       .then((data) => {
         if (cancelled) return;
+        console.log(`[API] Max price calculator loaded`)
         setProperty(normalizeResponse(data, userFundingSources));
       })
       .catch(() => {
@@ -109,8 +110,10 @@ export const MaxPriceCalculatorPage: React.FC = () => {
       }
 
       setIsCalculating(true);
+      console.log(`[API] Max price field update: ${fieldName}`)
       try {
         const updated = await calculatorService.updateMaxPrice(fieldName, fieldValue);
+        console.log(`[API] Max price recalculated: price=${updated.price}`)
         setProperty(normalizeResponse(updated, userFundingSources));
       } finally {
         setIsCalculating(false);

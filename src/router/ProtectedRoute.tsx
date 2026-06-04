@@ -10,12 +10,14 @@ export const ProtectedRoute = () => {
   const { pathname } = useLocation()
 
   if (!loggedinUser || !token) {
+    console.log(`[NAV] Protected route '${pathname}' — unauthenticated, redirecting to /login`)
     return <Navigate to="/login" replace />
   }
 
   if (!ONBOARDING_PATHS.has(pathname)) {
     const next = getNextOnboardingStep(loggedinUser)
     if (next !== '/home') {
+      console.log(`[NAV] Onboarding incomplete, redirecting from '${pathname}' to '${next}'`)
       return <Navigate to={next} replace />
     }
   }

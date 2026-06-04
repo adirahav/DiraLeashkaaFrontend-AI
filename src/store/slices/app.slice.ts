@@ -35,9 +35,15 @@ export const createAppSlice: StateCreator<RootState, [], [], AppSlice> = (set) =
 
   setShowTour: (val) => set({ showTour: val }),
 
-  setNotification: (notification) => set({ notification }),
+  setNotification: (notification) => {
+    if (notification) console.log(`[STORE] Notification: ${notification.type} — ${notification.message}`)
+    set({ notification })
+  },
 
   clearNotification: () => set({ notification: null }),
 
-  setLang: (lang) => set({ lang }),
+  setLang: (lang) => {
+    console.log(`[STORE] Language changed to: ${lang}`)
+    set({ lang })
+  },
 })

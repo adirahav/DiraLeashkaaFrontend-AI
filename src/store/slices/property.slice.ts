@@ -143,9 +143,18 @@ export const createPropertySlice: StateCreator<RootState, [], [], PropertySlice>
         : state.currentProperty,
     })),
 
-  setCurrentProperty: (property) => set({ currentProperty: property }),
+  setCurrentProperty: (property) => {
+    console.log(`[STORE] Current property set: uuid=${property.uuid ?? 'new'}`)
+    set({ currentProperty: property })
+  },
 
-  initProperty: (user, params) => set({ currentProperty: buildDefaultProperty(user, params) }),
+  initProperty: (user, params) => {
+    console.log(`[STORE] Property initialized for user: ${user?.email ?? 'guest'}`)
+    set({ currentProperty: buildDefaultProperty(user, params) })
+  },
 
-  setCalculating: (val) => set({ isCalculating: val }),
+  setCalculating: (val) => {
+    console.log(`[STORE] Calculating state: ${val}`)
+    set({ isCalculating: val })
+  },
 })

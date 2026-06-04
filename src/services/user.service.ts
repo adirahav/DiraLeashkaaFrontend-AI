@@ -25,23 +25,33 @@ export const userService = {
 }
 
 async function fetchSplash(lang: string): Promise<SplashApiResponse> {
-  return httpService.get<SplashApiResponse>('/user/splash', { lang })
+  console.log(`[SPLASH] Call API GET '/user/splash' — lang: ${lang}`)
+  const data = await httpService.get<SplashApiResponse>('/user/splash', { lang })
+  console.log(`[SPLASH] API GET '/user/splash' response: splash data loaded`)
+  return data
 }
 
 async function updateUser(data: UserUpdateData): Promise<string> {
+  console.log(`[API] Call API PUT '/user/' — fields: ${Object.keys(data).join(', ')}`)
   const currentToken = useStore.getState().token?.replace(/^"|"$/g, '') ?? undefined
   const raw = await httpService.put<string>('/user/', data, currentToken, { responseType: 'text' })
-  return raw.replace(/^"|"$/g, '')
+  const token = raw.replace(/^"|"$/g, '')
+  console.log(`[API] API PUT '/user/' response: new token received`)
+  return token
 }
 
 async function getHome(fullData: boolean): Promise<HomeResponse> {
+  console.log(`[API] Call API GET '/user/home' — fullData: ${fullData}`)
   const currentToken = useStore.getState().token?.replace(/^"|"$/g, '') ?? undefined
   const data = await httpService.get<HomeResponse>('/user/home', { fullData }, currentToken)
   useStore.getState().setHome(data)
+  console.log(`[API] API GET '/user/home' response:`, data)
   return data
 }
 
 async function completeTour(): Promise<void> {
+  console.log(`[API] Call API PATCH '/user/tourCompleted'`)
   const currentToken = useStore.getState().token?.replace(/^"|"$/g, '') ?? undefined
   await httpService.patch<void>('/user/tourCompleted', {}, currentToken)
+  console.log(`[API] API PATCH '/user/tourCompleted' response: tour marked complete`)
 }

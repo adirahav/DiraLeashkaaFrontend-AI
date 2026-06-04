@@ -16,7 +16,8 @@ export const createUserSlice: StateCreator<RootState, [], [], UserSlice> = (set,
     const tourTime = new Date().toISOString()
     set({ loggedinUser: { ...user, tourCompletedTime: tourTime } })
     utilService.saveToStorage(TOUR_COMPLETED_KEY, tourTime)
-    userService.completeTour().catch((err) => console.error('Tour completion sync failed:', err))
+    console.log(`[STORE] Tour completed at: ${tourTime}`)
+    userService.completeTour().catch((err) => console.log(`[ERROR] Tour completion sync failed: ${err}`))
   },
 })
 

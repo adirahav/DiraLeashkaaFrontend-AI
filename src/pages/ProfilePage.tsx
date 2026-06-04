@@ -79,6 +79,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ mode = 'PERSONAL' }) =
     const wasIncomplete = getNextOnboardingStep(loggedinUser) !== '/home'
 
     setIsLoading(true)
+    console.log(`[API] Profile save initiated — mode: ${mode}`)
     try {
       let payload: Parameters<typeof userService.updateUser>[0]
 
@@ -110,8 +111,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ mode = 'PERSONAL' }) =
 
       if (wasIncomplete) {
         const nextStep = getNextOnboardingStep(updatedUser)
+        console.log(`[NAV] Registration incomplete, redirecting to: ${nextStep}`)
         navigate(nextStep, { replace: true })
       } else {
+        console.log(`[API] Profile saved successfully`)
         setInitialData({ ...formData })
         setNotification({
           type: 'success',

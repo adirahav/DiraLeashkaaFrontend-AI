@@ -103,6 +103,7 @@ export const ForgotPasswordPage: React.FC = () => {
     }
     setError('')
     setIsLoading(true)
+    console.log(`[FORGOT-PASSWORD] Generate code requested for: ${email}`)
     try {
       await forgotPasswordService.generateCode(email)
       setCode(['', '', '', ''])
@@ -110,6 +111,7 @@ export const ForgotPasswordPage: React.FC = () => {
     } catch (err: any) {
       const isUserNotFound = err?.response?.status === 404 || err?.response?.status === 400
       if (isUserNotFound) {
+        console.log(`[FORGOT-PASSWORD] Email not found (${err?.response?.status}), advancing to VERIFY anyway`)
         setCode(['', '', '', ''])
         setForgotStep('VERIFY')
       } else {
@@ -125,16 +127,20 @@ export const ForgotPasswordPage: React.FC = () => {
     if (joined.length < 4) return
     setError('')
     setIsLoading(true)
+    console.log(`[FORGOT-PASSWORD] Verifying code for: ${email}`)
     try {
       const token = await forgotPasswordService.validateCode(email, joined)
       setForgotPasswordToken(token)
+      console.log(`[FORGOT-PASSWORD] Code valid, moving to RESET stage`)
       setForgotStep('RESET')
     } catch (err: any) {
       if (err?.response?.status === 401) {
+        console.log(`[FORGOT-PASSWORD] Code expired (401), resetting to EMAIL stage`)
         setError(getPhrase('forgot_password_expired_error', 'Code expired. Please request a new one.'))
         setCode(['', '', '', ''])
         setForgotStep('EMAIL')
       } else {
+        console.log(`[FORGOT-PASSWORD] Invalid code entered`)
         setError(getPhrase('forgot_password_code_error', 'Incorrect code. Please try again.'))
         setCode(['', '', '', ''])
         setTimeout(() => codeInputs[0].current?.focus(), 50)
@@ -155,9 +161,11 @@ export const ForgotPasswordPage: React.FC = () => {
     }
     setError('')
     setIsLoading(true)
+    console.log(`[FORGOT-PASSWORD] Resetting password`)
     try {
       await forgotPasswordService.changePassword(newPassword, forgotPasswordToken)
       setIsSubmitted(true)
+      console.log(`[FORGOT-PASSWORD] Password reset successful, redirecting to /login`)
       setNotification({
         type: 'success',
         message: getPhrase('forgot_password_success', 'Password updated successfully! You can now log in.'),
@@ -165,6 +173,7 @@ export const ForgotPasswordPage: React.FC = () => {
       setTimeout(() => { clearNotification(); navigate('/login') }, 3000)
     } catch (err: any) {
       if (err?.response?.status === 401) {
+        console.log(`[FORGOT-PASSWORD] Reset token expired (401), restarting flow`)
         setError(getPhrase('forgot_password_expired_error', 'Session expired. Please start over.'))
         setForgotPasswordToken('')
         setCode(['', '', '', ''])
