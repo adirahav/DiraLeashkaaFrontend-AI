@@ -17,6 +17,7 @@ export interface NumericInputProps {
   labelClassName?: string;
   tooltip?: string;
   disabled?: boolean;
+  'data-track'?: string;
 }
 
 export const NumericInput: React.FC<NumericInputProps> = ({
@@ -32,6 +33,7 @@ export const NumericInput: React.FC<NumericInputProps> = ({
   labelClassName = '',
   tooltip,
   disabled = false,
+  'data-track': dataTrack,
 }) => {
   const errorId = React.useId();
 
@@ -60,13 +62,14 @@ export const NumericInput: React.FC<NumericInputProps> = ({
           id={id}
           type="text"
           inputMode="numeric"
-          value={value}
+          value={formatInputNumber(value, formatWithCommas)}
           onChange={handleChange}
           placeholder={placeholder}
           disabled={disabled}
           aria-required={required}
           aria-invalid={!!error}
           aria-describedby={error ? errorId : undefined}
+          data-track={dataTrack}
           className={cn(
             'w-full h-[54px] px-4 border rounded-xl focus:outline-none transition-all text-right placeholder:text-right font-normal text-black shadow-none',
             disabled && 'bg-slate-50 cursor-not-allowed',

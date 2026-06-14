@@ -1,11 +1,11 @@
 
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import { List } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { SectionHeader } from '../common/SectionHeader';
 import { Card } from '../common/Card';
 import { useSplash } from '../../hooks/useSplash';
-import { formatCompact, formatPercent } from '../../services/utils';
+import { formatCurrency, formatPercent } from '../../services/utils';
 import { AmortizationRow } from '../../types/property.types';
 
 interface PropertyAmortizationScheduleProps {
@@ -20,18 +20,6 @@ export const PropertyAmortizationSchedule: React.FC<PropertyAmortizationSchedule
   activeResultTab,
 }) => {
   const { getPhrase } = useSplash();
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (window.innerWidth >= 1024) return;
-    if (activeResultTab !== 'amortization') return;
-    const el = scrollRef.current;
-    if (!el) return;
-    const raf = requestAnimationFrame(() => {
-      el.scrollTop = el.scrollHeight;
-    });
-    return () => cancelAnimationFrame(raf);
-  }, [activeResultTab, amortizationSchedule]);
 
   if (!Array.isArray(amortizationSchedule) || amortizationSchedule.length === 0) return null;
 
@@ -46,7 +34,7 @@ export const PropertyAmortizationSchedule: React.FC<PropertyAmortizationSchedule
       </div>
 
       <Card className="relative !p-0 overflow-hidden rounded-none lg:rounded-[2rem] border-0 lg:border shadow-none lg:shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-        <div ref={scrollRef} className="overflow-x-auto h-[calc(100dvw-40px)] lg:h-auto lg:max-h-[600px] overflow-y-auto pr-0 lg:pr-0">
+        <div className="overflow-x-auto max-h-[calc(100dvh-130px)] lg:max-h-[600px] overflow-y-auto">
           <table className="w-full lg:min-w-[600px] text-right border-separate border-spacing-0 table-fixed">
             <thead className="sticky top-0 z-10">
               <tr className="bg-slate-50 border-b border-slate-100">
@@ -79,23 +67,23 @@ export const PropertyAmortizationSchedule: React.FC<PropertyAmortizationSchedule
                   <td className="lg:sticky lg:right-0 lg:bg-white lg:border-r lg:border-slate-100 p-2 lg:p-4 text-sm lg:text-base font-bold text-slate-600 text-center">
                     {row.monthNo}
                   </td>
-                  <td className={cn('p-2 lg:p-4 text-sm lg:text-base font-medium', row.fundBop < 0 ? 'text-red-600' : 'text-slate-700')} dir="ltr">
-                    {formatCompact(row.fundBop)}
+                  <td className={cn('p-2 lg:p-4 text-sm lg:text-base font-medium', row.fundBop < 0 ? 'text-red-600' : 'text-slate-700')}>
+                    {formatCurrency(row.fundBop)}
                   </td>
                   <td className={cn('p-2 lg:p-4 text-sm lg:text-base font-medium', row.interest < 0 ? 'text-red-600' : 'text-slate-700')} dir="ltr">
                     {formatPercent(row.interest)}
                   </td>
-                  <td className={cn('p-2 lg:p-4 text-sm lg:text-base font-black', row.monthlyRepayments < 0 ? 'text-red-600' : 'text-slate-800')} dir="ltr">
-                    {formatCompact(row.monthlyRepayments)}
+                  <td className={cn('p-2 lg:p-4 text-sm lg:text-base font-black', row.monthlyRepayments < 0 ? 'text-red-600' : 'text-slate-800')}>
+                    {formatCurrency(row.monthlyRepayments)}
                   </td>
-                  <td className={cn('p-2 lg:p-4 text-sm lg:text-base font-medium', row.fundRefund < 0 ? 'text-red-600' : 'text-slate-700')} dir="ltr">
-                    {formatCompact(row.fundRefund)}
+                  <td className={cn('p-2 lg:p-4 text-sm lg:text-base font-medium', row.fundRefund < 0 ? 'text-red-600' : 'text-slate-700')}>
+                    {formatCurrency(row.fundRefund)}
                   </td>
-                  <td className={cn('p-2 lg:p-4 text-sm lg:text-base font-medium', row.interestRepayment < 0 ? 'text-red-600' : 'text-slate-700')} dir="ltr">
-                    {formatCompact(row.interestRepayment)}
+                  <td className={cn('p-2 lg:p-4 text-sm lg:text-base font-medium', row.interestRepayment < 0 ? 'text-red-600' : 'text-slate-700')}>
+                    {formatCurrency(row.interestRepayment)}
                   </td>
-                  <td className={cn('p-2 lg:p-4 text-sm lg:text-base font-black', row.fundEop < 0 ? 'text-red-600' : 'text-slate-800')} dir="ltr">
-                    {formatCompact(row.fundEop)}
+                  <td className={cn('p-2 lg:p-4 text-sm lg:text-base font-black', row.fundEop < 0 ? 'text-red-600' : 'text-slate-800')}>
+                    {formatCurrency(row.fundEop)}
                   </td>
                 </tr>
               ))}

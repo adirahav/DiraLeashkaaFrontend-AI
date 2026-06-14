@@ -98,6 +98,7 @@ export const UserFinancialDetails: React.FC<UserFinancialDetailsProps> = ({
         required
         error={getEquityError()}
         tooltip={getPhrase('signup_equity_tooltip', 'Total cash and liquid savings available for property purchase (excluding loans or mortgage)')}
+        data-track="signup-equity"
       />
 
       <NumericInput
@@ -109,6 +110,7 @@ export const UserFinancialDetails: React.FC<UserFinancialDetailsProps> = ({
         required
         error={getIncomesError()}
         tooltip={getPhrase('signup_incomes_tooltip', 'All fixed income sources (salary, rental income, pension, etc.)')}
+        data-track="signup-incomes"
       />
 
       <NumericInput
@@ -120,6 +122,7 @@ export const UserFinancialDetails: React.FC<UserFinancialDetailsProps> = ({
         required
         error={getCommitmentsError()}
         tooltip={getPhrase('signup_commitments_tooltip', 'Total monthly repayments on all loans and obligations with more than 18 months remaining')}
+        data-track="signup-commitments"
       />
 
       {showAdditionalFunding && (
@@ -145,6 +148,7 @@ export const UserFinancialDetails: React.FC<UserFinancialDetailsProps> = ({
               className="px-12 py-4 text-lg shadow-xl shadow-blue-200/50 hover:scale-[1.02] transition-transform"
               icon={buttonIcon}
               iconSize={20}
+              data-track="signup-next"
             >
               {resolvedNextText}
             </Button>
@@ -157,17 +161,17 @@ export const UserFinancialDetails: React.FC<UserFinancialDetailsProps> = ({
   const navButtons = (onNext || onPrev) && (
     onPrev ? (
       <div className="grid grid-cols-2 gap-4 mt-6">
-        <Button variant="outline" onClick={onPrev} className="py-4">
+        <Button variant="outline" onClick={onPrev} className="py-4" data-track="signup-back">
           {resolvedPrevText}
         </Button>
         {onNext && (
-          <Button onClick={onNext} disabled={!isStepValid || isLoading} className="py-4">
+          <Button onClick={onNext} disabled={!isStepValid || isLoading} className="py-4" data-track="signup-next">
             {resolvedNextText}
           </Button>
         )}
       </div>
     ) : (
-      <Button onClick={onNext} disabled={!isStepValid || isLoading} className="mt-6 py-4 w-full">
+      <Button onClick={onNext} disabled={!isStepValid || isLoading} className="mt-6 py-4 w-full" data-track="signup-next">
         {resolvedNextText}
       </Button>
     )

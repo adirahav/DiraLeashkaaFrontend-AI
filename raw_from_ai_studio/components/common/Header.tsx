@@ -9,9 +9,10 @@ interface HeaderProps {
   onNavigate: (screen: Screen) => void;
   userName?: string;
   currentScreen: Screen;
+  userEmail?: string;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onNavigate, userName = 'ישראל', currentScreen }) => {
+export const Header: React.FC<HeaderProps> = ({ onNavigate, userName = 'ישראל', currentScreen, userEmail }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
   const isInternalPage = currentScreen !== 'HOME';
@@ -20,6 +21,8 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, userName = 'ישרא
   const isCalculatorsActive = currentScreen === 'CALCULATORS' || currentScreen === 'MAX_PRICE' || currentScreen === 'COMPARE_PROPERTIES';
   const isFinancialActive = currentScreen === 'FINANCIAL_DATA';
   const isPropertyActive = currentScreen === 'PROPERTY';
+  const isAdminActive = currentScreen === 'ADMIN';
+  const isAdminUser = userEmail?.toLowerCase().trim() === 'admin@gmail.com';
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
@@ -115,6 +118,22 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, userName = 'ישרא
                 נתונים כלכליים
               </Button>
             </li>
+            {isAdminUser && (
+              <li>
+                <Button 
+                  variant="outline"
+                  onClick={() => onNavigate('ADMIN')}
+                  className={`!border-none !shadow-none !px-3 !py-1.5 !rounded-lg transition-all ${
+                    isAdminActive 
+                      ? '!text-indigo-600 !bg-indigo-50 font-black shadow-sm ring-1 ring-indigo-100' 
+                      : '!text-indigo-500 hover:!text-indigo-700 hover:!bg-indigo-50/50 font-bold'
+                  }`}
+                  icon={Sparkles}
+                >
+                  אזור מנהל
+                </Button>
+              </li>
+            )}
           </ul>
 
           <ul className="flex items-center gap-4 list-none p-0 m-0">
@@ -234,6 +253,26 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, userName = 'ישרא
                     נתונים כלכליים
                   </Button>
                 </li>
+                {isAdminUser && (
+                  <li>
+                    <Button 
+                      variant="outline"
+                      onClick={() => {
+                        onNavigate('ADMIN');
+                        setIsMenuOpen(false);
+                      }}
+                      className={`!border-none !shadow-none !rounded-xl !px-4 !py-3 !w-full !justify-start transition-all ${
+                        isAdminActive
+                          ? '!text-indigo-600 !bg-indigo-50/90 font-black border-r-4 border-indigo-600 rounded-r-none'
+                          : '!text-indigo-500 hover:!bg-indigo-50/40 font-bold'
+                      }`}
+                      icon={Sparkles}
+                      iconSize={20}
+                    >
+                      אזור מנהל
+                    </Button>
+                  </li>
+                )}
               </ul>
               <div className="h-px bg-slate-100 my-2"></div>
               <ul className="grid grid-cols-2 gap-2 px-2 list-none p-0 m-0">

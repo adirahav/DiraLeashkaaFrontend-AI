@@ -47,9 +47,9 @@ export const HomePage: React.FC = () => {
     if (!loggedinUser) return
     if (loadedForUser.current === loggedinUser.email) return
     loadedForUser.current = loggedinUser.email
+    setIsLoading(true) // synchronous — prevents welcome-screen flash before async load starts
 
     const load = async () => {
-      setIsLoading(true)
       console.log(`[API] Home Phase 1 load started for user: ${loggedinUser.email}`)
       try {
         await userService.getHome(false)

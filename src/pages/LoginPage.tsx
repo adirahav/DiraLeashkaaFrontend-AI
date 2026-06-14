@@ -11,6 +11,8 @@ import { pendingActionService } from '../services/pending-action.service'
 import { httpService } from '../services/http.service'
 import { App } from '@capacitor/app'
 import { useNativeBackButton } from '../hooks/useNativeBackButton'
+import { useDebugTap } from '../hooks/useDebugTap'
+import { LogViewer } from '../components/debug/LogViewer'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const PASSWORD_MIN_LENGTH = 6
@@ -29,7 +31,6 @@ export const LoginPage: React.FC = () => {
   const navigate = useNavigate()
   const { getPhrase, forceFetchSplash } = useSplash()
 
-  const loggedinUser = useStore((state) => state.loggedinUser)
   const isLoading = useStore((state) => state.isLoading)
   const setIsLoading = useStore((state) => state.setIsLoading)
   const login = useStore((state) => state.login)
@@ -43,15 +44,10 @@ export const LoginPage: React.FC = () => {
   const isLoggingIn = useRef(false)
 
   useNativeBackButton(() => App.exitApp())
+  const { handleTap, showViewer, closeViewer } = useDebugTap()
 
   // Reset any stale loading state left by a previous page
   useEffect(() => { setIsLoading(false) }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Auth guard — redirect already-logged-in users, but skip if handleSubmit owns navigation
-  useEffect(() => {
-    if (!loggedinUser || isLoggingIn.current) return
-    navigate(getNextOnboardingStep(loggedinUser), { replace: true })
-  }, [loggedinUser, navigate])
 
   // Pre-fill last logged-in email
   useEffect(() => {
@@ -173,7 +169,7 @@ export const LoginPage: React.FC = () => {
       >
         <Card className="w-full">
           <motion.div variants={itemVariants} className="flex flex-col items-center mb-8">
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleTap} className="cursor-pointer">
               <Logo size={64} className="mb-4" showText={true} />
             </motion.div>
             <div className="text-center">
@@ -262,6 +258,7 @@ export const LoginPage: React.FC = () => {
           </form>
         </Card>
       </motion.div>
+      {showViewer && <LogViewer onClose={closeViewer} />}
     </div>
   )
 }

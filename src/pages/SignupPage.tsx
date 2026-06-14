@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
 import { jwtDecode } from 'jwt-decode'
+import { App as CapacitorApp } from '@capacitor/app'
+import { Capacitor } from '@capacitor/core'
 import { Card } from '../components/common/Card'
 import { Logo } from '../components/common/Logo'
 import { UserPersonalInfo } from '../components/layout/UserPersonalInfo'
@@ -12,10 +14,15 @@ import { useStore } from '../store/store'
 import { useSplash } from '../hooks/useSplash'
 import { authService } from '../services/auth.service'
 import { userService } from '../services/user.service'
+import { trackerService } from '../services/tracker.service'
 import { parseNumber } from '../services/formatUtils.service'
 import { getNextOnboardingStep } from '../utils/user.utils'
+import { getStoreVersion } from '../utils/platform.utils'
 import { User } from '../types'
 import { useNativeBackButton } from '../hooks/useNativeBackButton'
+import { useActivityTracker } from '../hooks/useActivityTracker'
+import { useDebugTap } from '../hooks/useDebugTap'
+import { LogViewer } from '../components/debug/LogViewer'
 
 const STEP_ROUTE_MAP: Record<string, number> = {
   '/personal-info': 1,
@@ -27,7 +34,7 @@ const TOTAL_STEPS = 3
 
 export const SignupPage: React.FC = () => {
   const navigate = useNavigate()
-  const { getPhrase, forceFetchSplash } = useSplash()
+  const { getPhrase, forceFetchSplash, params } = useSplash()
 
   const loggedinUser = useStore((state) => state.loggedinUser)
   const token = useStore((state) => state.token)
@@ -35,6 +42,11 @@ export const SignupPage: React.FC = () => {
   const setToken = useStore((state) => state.setToken)
   const isLoading = useStore((state) => state.isLoading)
   const setIsLoading = useStore((state) => state.setIsLoading)
+  const trackerUUID = useStore((state) => state.trackerUUID)
+  const startTracker = useStore((state) => state.startTracker)
+  const trackerInitRef = useRef(false)
+
+  useActivityTracker({ trackerUUID })
 
   const [step, setStep] = useState(1)
   const [direction, setDirection] = useState(0)
@@ -48,6 +60,7 @@ export const SignupPage: React.FC = () => {
       setStep(step - 1)
     }
   })
+  const { handleTap, showViewer, closeViewer } = useDebugTap()
 
   const [formData, setFormData] = useState({
     fullname: loggedinUser?.fullname ?? '',
@@ -60,6 +73,28 @@ export const SignupPage: React.FC = () => {
     additionalFundingSources: [] as any[],
     termsOfUseAccept: '',
   })
+
+  // Tracker init on mount — ref prevents Strict Mode double-init
+  useEffect(() => {
+    if (trackerInitRef.current) return
+    trackerInitRef.current = true
+    const init = async () => {
+      try {
+        const version = Capacitor.isNativePlatform()
+          ? (await CapacitorApp.getInfo()).version
+          : getStoreVersion(params) || 'web'
+        const uuid = await trackerService.insertTracker({
+          version,
+          createdAt: new Date().toISOString(),
+          status: 'in_progress',
+        })
+        if (uuid) startTracker(uuid)
+      } catch {
+        console.log('[TRACKER] Event failed to send')
+      }
+    }
+    init()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auth guard on mount — resume at the correct wizard step
   useEffect(() => {
@@ -96,6 +131,7 @@ export const SignupPage: React.FC = () => {
         setLoggedinUser(user)
         updatedUser = user
         console.log(`[SIGNUP] Step 1: account created, user: ${user.email}`)
+        if (trackerUUID) trackerService.linkTrackerToUser(trackerUUID)
       } else {
         let newToken: string
         if (step === 1) {
@@ -186,7 +222,7 @@ export const SignupPage: React.FC = () => {
       >
         <Card className="w-full">
           <div className="flex flex-col items-center mb-10">
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleTap} className="cursor-pointer">
               <Logo size={64} className="mb-4" showText={true} />
             </motion.div>
             <div className="w-full text-right">
@@ -298,6 +334,7 @@ export const SignupPage: React.FC = () => {
           </div>
         </Card>
       </motion.div>
+      {showViewer && <LogViewer onClose={closeViewer} />}
     </div>
   )
 }

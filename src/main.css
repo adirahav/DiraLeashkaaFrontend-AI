@@ -168,8 +168,14 @@ body.is-results-mode .accessibility-menu-container {
       position: fixed !important;
       top: 0 !important;
       left: 100% !important;
+      /* Use JS-computed pixel values (set on :root) for reliability on Android WebView.
+         Fall back to vh/vw, then dvh/dvw for browsers that support them. */
+      width: 100vh !important;
+      height: 100vw !important;
       width: 100dvh !important;
       height: 100dvw !important;
+      width: var(--landscape-w, 100dvh) !important;
+      height: var(--landscape-h, 100dvw) !important;
       transform: rotate(90deg);
       transform-origin: top left;
       z-index: 9999;

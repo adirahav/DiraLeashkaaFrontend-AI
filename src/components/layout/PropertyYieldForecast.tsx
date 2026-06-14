@@ -1,11 +1,11 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { Table as TableIcon } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { SectionHeader } from '../common/SectionHeader';
 import { Card } from '../common/Card';
 import { useSplash } from '../../hooks/useSplash';
-import { formatCurrency, formatPercent } from '../../services/utils';
+import { formatCurrency, formatFractionsToPercent, formatPercent } from '../../services/utils';
 import { YieldForecastRow } from '../../types/property.types';
 
 interface PropertyYieldForecastProps {
@@ -22,18 +22,7 @@ export const PropertyYieldForecast: React.FC<PropertyYieldForecastProps> = ({
   const { getPhrase } = useSplash();
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (window.innerWidth >= 1024) return;
-    if (activeResultTab !== 'yield') return;
-    const el = scrollRef.current;
-    if (!el) return;
-    const raf = requestAnimationFrame(() => {
-      el.scrollTop = el.scrollHeight;
-    });
-    return () => cancelAnimationFrame(raf);
-  }, [activeResultTab, yieldForecast]);
-
-  if (!Array.isArray(yieldForecast) || yieldForecast.length === 0) return null;
+if (!Array.isArray(yieldForecast) || yieldForecast.length === 0) return null;
 
   return (
     <section className={cn('hidden lg:block', activeResultTab === 'yield' && 'block')}>
@@ -46,7 +35,7 @@ export const PropertyYieldForecast: React.FC<PropertyYieldForecastProps> = ({
       </div>
 
       <Card className="relative !p-0 overflow-hidden rounded-none lg:rounded-[2rem] border-0 lg:border shadow-none lg:shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-        <div ref={scrollRef} className="overflow-x-auto h-[calc(100dvw-40px)] lg:h-auto lg:max-h-[600px] overflow-y-auto pr-0 lg:pr-0">
+        <div ref={scrollRef} className="overflow-x-auto h-[calc(100dvw-40px)] lg:h-auto lg:max-h-[600px] overflow-y-auto pb-4">
           <table className="w-full lg:min-w-[700px] text-right border-separate border-spacing-0 table-fixed">
             <thead className="sticky top-0 z-10">
               <tr className="bg-slate-50 border-b border-slate-100">
@@ -104,10 +93,10 @@ export const PropertyYieldForecast: React.FC<PropertyYieldForecastProps> = ({
                     {formatCurrency(row.profit)}
                   </td>
                   <td className={cn('p-2 lg:p-4 text-sm lg:text-base font-black', row.totalReturn < 0 ? 'text-red-600' : 'text-slate-800')} dir="ltr">
-                    {formatPercent(row.totalReturn)}
+                    {formatFractionsToPercent(row.totalReturn)}
                   </td>
                   <td className={cn('p-2 lg:p-4 text-sm lg:text-base font-black', row.returnOnEquity < 0 ? 'text-red-600' : 'text-slate-800')} dir="ltr">
-                    {formatPercent(row.returnOnEquity)}
+                    {formatFractionsToPercent(row.returnOnEquity)}
                   </td>
                 </tr>
               ))}

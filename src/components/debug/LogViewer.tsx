@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { X, Trash2, Copy, Check, GripHorizontal } from 'lucide-react'
 import { logger, LogEntry } from '../../utils/logger'
+import { Clipboard } from '@capacitor/clipboard'
+import { Capacitor } from '@capacitor/core'
 
 // ── Tag colours ───────────────────────────────────────────────────────────────
 
@@ -24,7 +26,6 @@ function tagColor(tag: string) {
 // ── JSON splitting ────────────────────────────────────────────────────────────
 
 function splitMessage(msg: string): { text: string; json: unknown | null } {
-  // The logger appends JSON.stringify(arg) after a space — find first { or [ boundary
   const match = msg.match(/^([\s\S]*?)\s*(\{[\s\S]+|\[[\s\S]+)$/)
   if (!match) return { text: msg, json: null }
   try {
@@ -146,33 +147,50 @@ interface Props {
 
 export const LogViewer: React.FC<Props> = ({ onClose }) => {
   const [logs, setLogs] = useState<LogEntry[]>(() => logger.getLogs())
-  const [activeTag, setActiveTag] = useState<string | null>(null)
-  const [copied, setCopied] = useState(false)
+  const [activeTags, setActiveTags] = useState<string[]>([])
+  const [activePages, setActivePages] = useState<string[]>([])
+  const [copyState, setCopyState] = useState<'idle' | 'ok' | 'fail'>('idle')
 
   const [pos, setPos] = useState({ x: 16, y: window.innerHeight - 420 })
   const dragOrigin = useRef<{ mx: number; my: number; wx: number; wy: number } | null>(null)
   const windowRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
+  const isAtBottom = useRef(true)
 
   useEffect(() => logger.subscribe(setLogs), [])
 
   const availableTags = logger.getAvailableTags()
-  const filtered = activeTag ? logs.filter((e) => e.tag === activeTag) : logs
+  const availablePages = [...new Set(logs.map((e) => e.page).filter(Boolean))].sort()
 
-  // Auto-scroll to bottom on new entries
+  const filtered = logs.filter((e) =>
+    (activeTags.length === 0  || activeTags.includes(e.tag)) &&
+    (activePages.length === 0 || activePages.includes(e.page))
+  )
+
+  const toggleTag  = (tag:  string) => setActiveTags( (prev) => prev.includes(tag)  ? prev.filter((t) => t !== tag)  : [...prev, tag])
+  const togglePage = (page: string) => setActivePages((prev) => prev.includes(page) ? prev.filter((p) => p !== page) : [...prev, page])
+
   useEffect(() => {
     const el = listRef.current
-    if (el) el.scrollTop = el.scrollHeight
+    if (!el) return
+    const onScroll = () => {
+      isAtBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight <= 40
+    }
+    el.addEventListener('scroll', onScroll, { passive: true })
+    return () => el.removeEventListener('scroll', onScroll)
+  }, [])
+
+  useEffect(() => {
+    const el = listRef.current
+    if (el && isAtBottom.current) el.scrollTop = el.scrollHeight
   }, [logs.length])
 
-  // Close on Escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
     document.addEventListener('keydown', handler)
     return () => document.removeEventListener('keydown', handler)
   }, [onClose])
 
-  // Drag — document-level with passive:false so preventDefault() kills scroll
   const onDragStart = (e: React.PointerEvent<HTMLDivElement>) => {
     e.preventDefault()
     dragOrigin.current = { mx: e.clientX, my: e.clientY, wx: pos.x, wy: pos.y }
@@ -199,17 +217,58 @@ export const LogViewer: React.FC<Props> = ({ onClose }) => {
     document.addEventListener('pointerup', handleUp)
   }
 
-  const handleCopy = useCallback(() => {
-    const text = filtered.map((e) => `[${e.timestamp}] [${e.tag}] ${e.message}`).join('\n')
-    navigator.clipboard.writeText(text).then(() => {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    })
-  }, [filtered])
+  const copyText = filtered.map((e) => {
+    const msg = e.message.length > 300 ? e.message.slice(0, 300) + '…' : e.message
+    return `[${e.timestamp}] [${e.tag}] ${msg}`
+  }).join('\n')
+
+  const handleCopy = useCallback(async () => {
+    const finish = (ok: boolean) => {
+      setCopyState(ok ? 'ok' : 'fail')
+      setTimeout(() => setCopyState('idle'), 2000)
+    }
+
+    // Native clipboard — requires APK rebuild after `cap sync` to register the plugin
+    if (Capacitor.isNativePlatform()) {
+      try {
+        await Clipboard.write({ string: copyText })
+        finish(true)
+      } catch {
+        finish(false)
+      }
+      return
+    }
+
+    // Web: modern Clipboard API
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(copyText)
+        finish(true)
+        return
+      } catch { /* fall through */ }
+    }
+
+    // Web: execCommand fallback
+    try {
+      const el = document.createElement('textarea')
+      el.value = copyText
+      el.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0'
+      document.body.appendChild(el)
+      el.focus()
+      el.select()
+      const ok = document.execCommand('copy')
+      document.body.removeChild(el)
+      finish(ok)
+    } catch {
+      finish(false)
+    }
+  }, [copyText])
 
   const handleClear = useCallback(() => {
     logger.clear()
-    setActiveTag(null)
+    setActiveTags([])
+    setActivePages([])
+    isAtBottom.current = true
   }, [])
 
   return (
@@ -237,11 +296,17 @@ export const LogViewer: React.FC<Props> = ({ onClose }) => {
           <button
             onPointerDown={(e) => e.stopPropagation()}
             onClick={handleCopy}
-            className="flex items-center gap-1 px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-200 text-[10px] font-bold transition-colors"
+            className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold transition-colors ${
+              copyState === 'fail'
+                ? 'bg-red-700 text-white'
+                : 'bg-slate-700 hover:bg-slate-600 text-slate-200'
+            }`}
             title="Copy to clipboard"
           >
-            {copied ? <Check size={11} className="text-green-400" /> : <Copy size={11} />}
-            {copied ? 'Copied' : 'Copy'}
+            {copyState === 'ok'   && <Check size={11} className="text-green-400" />}
+            {copyState === 'fail' && <X     size={11} />}
+            {copyState === 'idle' && <Copy  size={11} />}
+            {copyState === 'ok' ? 'Copied' : copyState === 'fail' ? 'Failed' : 'Copy'}
           </button>
           <button
             onPointerDown={(e) => e.stopPropagation()}
@@ -266,9 +331,9 @@ export const LogViewer: React.FC<Props> = ({ onClose }) => {
       {availableTags.length > 0 && (
         <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 border-b border-slate-700 overflow-x-auto shrink-0 no-scrollbar">
           <button
-            onClick={() => setActiveTag(null)}
+            onClick={() => setActiveTags([])}
             className={`px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap transition-colors ${
-              activeTag === null ? 'bg-white text-slate-900' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+              activeTags.length === 0 ? 'bg-white text-slate-900' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
             }`}
           >
             All
@@ -276,14 +341,43 @@ export const LogViewer: React.FC<Props> = ({ onClose }) => {
           {availableTags.map((tag) => (
             <button
               key={tag}
-              onClick={() => setActiveTag(tag === activeTag ? null : tag)}
+              onClick={() => toggleTag(tag)}
               className={`px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap transition-colors ${
-                activeTag === tag
+                activeTags.includes(tag)
                   ? tagColor(tag) + ' ring-1 ring-white/30'
                   : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
               }`}
             >
               {tag}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Path filter chips */}
+      {availablePages.length > 0 && (
+        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 border-b border-slate-700 overflow-x-auto shrink-0 no-scrollbar">
+          <span className="text-slate-500 text-[9px] font-bold shrink-0 uppercase tracking-wider">Path</span>
+          <button
+            onClick={() => setActivePages([])}
+            className={`px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap transition-colors ${
+              activePages.length === 0 ? 'bg-white text-slate-900' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+            }`}
+          >
+            All
+          </button>
+          {availablePages.map((page) => (
+            <button
+              key={page}
+              onClick={() => togglePage(page)}
+              className={`px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap transition-colors ${
+                activePages.includes(page)
+                  ? 'bg-slate-200 text-slate-900 ring-1 ring-white/30'
+                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+              }`}
+              title={page}
+            >
+              {page.length > 18 ? `…${page.slice(-16)}` : page}
             </button>
           ))}
         </div>

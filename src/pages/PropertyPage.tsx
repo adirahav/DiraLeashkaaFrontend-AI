@@ -341,7 +341,6 @@ export const PropertyPage: React.FC = () => {
     const prop = useStore.getState().currentProperty;
     if (!prop?.updatedByField) return;
     const { uuid, updatedByField } = prop;
-    console.log(`[PROPERTY] Tour save triggered: field=${updatedByField}, uuid=${uuid ?? 'new'}`)
     const fieldValue = (prop as Record<string, any>)[updatedByField];
     const doSave = uuid
       ? propertyService.save(uuid, updatedByField, fieldValue)
@@ -350,11 +349,41 @@ export const PropertyPage: React.FC = () => {
         });
     doSave.then((updated) => {
       const local = useStore.getState().currentProperty;
-      const userSources = local?.additionalFundingSources ?? buildDefaultProperty(loggedinUser, params as Record<string, unknown>).additionalFundingSources;
+      if (!local) return;
+      const userSources = local.additionalFundingSources ?? buildDefaultProperty(loggedinUser, params as Record<string, unknown>).additionalFundingSources;
+      // Merge server-computed values (calc* fields, forecasts, etc.) but re-apply all
+      // user-entered fields from local state. Without this, e.g. the TYPE step response
+      // returns price=0 and stomps the price the user already typed on the next step.
       setCurrentProperty({
         ...normalizePropertyResponse(updated, userSources),
-        apartmentType: updated.apartmentType || local?.apartmentType || '',
         loggedinUserCalcAge,
+        // Re-apply every user-editable field from local state
+        city: local.city,
+        cityElse: local.cityElse,
+        address: local.address,
+        apartmentType: local.apartmentType,
+        price: local.price,
+        note: local.note,
+        calcEquity: local.calcEquity,
+        defaultIncomes: local.defaultIncomes,
+        defaultCommitments: local.defaultCommitments,
+        calcMortgagePeriod: local.calcMortgagePeriod,
+        possibleMonthlyRepaymentPercent: local.possibleMonthlyRepaymentPercent,
+        possibleMonthlyRepaymentCustomValue: local.possibleMonthlyRepaymentCustomValue,
+        lawyerPercent: local.lawyerPercent,
+        lawyerCustomValue: local.lawyerCustomValue,
+        realEstateAgentPercent: local.realEstateAgentPercent,
+        realEstateAgentCustomValue: local.realEstateAgentCustomValue,
+        rentPercent: local.rentPercent,
+        rentCustomValue: local.rentCustomValue,
+        calcBrokerMortgage: local.calcBrokerMortgage,
+        calcRepairing: local.calcRepairing,
+        calcLifeInsurance: local.calcLifeInsurance,
+        calcStructureInsurance: local.calcStructureInsurance,
+        selectedFundingSourceIds: local.selectedFundingSourceIds,
+        additionalFundingSources: local.additionalFundingSources,
+        media: local.media,
+        uuid: updated.uuid ?? local.uuid,
         updatedByField: undefined,
       });
       if (!uuid && updated.uuid) {

@@ -28,6 +28,7 @@ export function priceFormat(value: number | null | undefined): string {
   return `${value.toLocaleString('he-IL')} ₪`
 }
 
+
 interface StoredWithExpiry<T> {
   data: T
   expiry: number

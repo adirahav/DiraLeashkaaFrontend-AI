@@ -62,7 +62,7 @@ export const UpgradeRequired: React.FC = () => {
         </a>
 
         <div className="mt-8 text-xs font-semibold text-slate-400 font-mono">
-          SYS_UPGRADE_REQUIRED
+          {getPhrase('sys_upgrade_required', 'Software Update Required')}
         </div>
       </div>
     </div>

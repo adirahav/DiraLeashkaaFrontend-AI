@@ -79,6 +79,7 @@ export const UserPersonalInfo: React.FC<UserPersonalInfoProps> = ({
         placeholder={getPhrase('signup_fullname_placeholder', 'Enter your full name')}
         error={nameError}
         required
+        data-track="signup-fullname"
       />
 
       <EmailInput
@@ -88,6 +89,7 @@ export const UserPersonalInfo: React.FC<UserPersonalInfoProps> = ({
         placeholder={getPhrase('signup_email_placeholder', 'example@mail.com')}
         required
         disabled={isEmailReadOnly}
+        data-track="signup-email"
       />
 
       {!isPasswordReadOnly && (
@@ -119,6 +121,7 @@ export const UserPersonalInfo: React.FC<UserPersonalInfoProps> = ({
       className={variant === 'profile' ? 'px-12 py-4 text-lg shadow-xl shadow-blue-200' : 'mt-4 py-4'}
       icon={buttonIcon}
       iconSize={20}
+      data-track="signup-next"
     >
       {resolvedButtonText}
     </Button>

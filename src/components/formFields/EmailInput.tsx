@@ -16,6 +16,7 @@ export const EmailInput: React.FC<{
   disabled?: boolean;
   id?: string;
   onValidationError?: (hasError: boolean) => void;
+  'data-track'?: string;
 }> = ({ onValidationError, error: externalError, onChange, ...props }) => {
   const [localError, setLocalError] = useState<string | undefined>(undefined);
   const { getPhrase } = useSplash();

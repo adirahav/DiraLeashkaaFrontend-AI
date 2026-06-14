@@ -12,6 +12,7 @@ export const Button: React.FC<{
   icon?: React.ElementType;
   iconSize?: number;
   tabIndex?: number;
+  'data-track'?: string;
 }> = ({
   children,
   onClick,
@@ -23,6 +24,7 @@ export const Button: React.FC<{
   icon: Icon,
   iconSize = 18,
   tabIndex,
+  'data-track': dataTrack,
 }) => {
   const variants = {
     primary: 'bg-blue-600 text-white enabled:hover:bg-blue-700 shadow-lg shadow-blue-200',
@@ -38,6 +40,7 @@ export const Button: React.FC<{
       disabled={disabled}
       aria-label={ariaLabel}
       tabIndex={tabIndex}
+      data-track={dataTrack}
       className={cn(
         'px-4 py-3 rounded-xl font-bold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-center enabled:active:scale-95 focus-visible:ring-4 focus-visible:ring-blue-100 focus:outline-none flex items-center justify-center gap-2',
         variants[variant],

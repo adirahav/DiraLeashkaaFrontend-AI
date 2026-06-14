@@ -15,6 +15,7 @@ export interface User {
   termsOfUseAccept: string
   additionalFundingSources?: AdditionalFundingSource[]
   tourCompletedTime: string | null
+  permissions?: string[]
 }
 
 export interface PendingApiCall {

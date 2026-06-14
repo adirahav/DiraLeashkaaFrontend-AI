@@ -10,16 +10,21 @@ import { getNextOnboardingStep } from '../../utils/user.utils'
 import { authService } from '../../services/auth.service'
 import { Browser } from '@capacitor/browser'
 import { LogViewer } from '../debug/LogViewer'
+import { useDebugTap } from '../../hooks/useDebugTap'
+import { tapState } from '../../utils/debugTap'
 
 const AUTH_PAGES = ['/login', '/signup', '/forgot-password']
+
+// Module-level nav debounce — survives Header remounts on Android
+let _navTimer: ReturnType<typeof setTimeout> | null = null
 
 export const Header: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [showLogViewer, setShowLogViewer] = useState(false)
-  const tapCountRef = useRef(0)
-  const tapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [drawerOffset, setDrawerOffset] = useState(64) // fallback = nav height only
+  const stickyRef = useRef<HTMLDivElement>(null)
+  const { handleTap, showViewer: showLogViewer, closeViewer } = useDebugTap()
 
   const loggedinUser = useStore((state) => state.loggedinUser)
   const logout = useStore((state) => state.logout)
@@ -34,6 +39,13 @@ export const Header: React.FC = () => {
     () => getFooterData(phrases, params as Record<string, unknown>),
     [phrases, params]
   )
+
+  // Measure sticky container bottom so the drawer starts below banner + header
+  useEffect(() => {
+    if (isMenuOpen && stickyRef.current) {
+      setDrawerOffset(stickyRef.current.getBoundingClientRect().bottom)
+    }
+  }, [isMenuOpen])
 
   // Auto-close drawer on route change
   useEffect(() => {
@@ -78,21 +90,42 @@ export const Header: React.FC = () => {
     }
   }
 
+  // Browser.open only handles https:// — deep links like whatsapp:// must go via the
+  // Android intent system (_system target) to avoid the in-app browser hanging.
+  const handleShareLink = (url: string) => {
+    if (isNative) {
+      window.open(url, '_system')
+    } else {
+      window.open(url, '_blank', 'noopener,noreferrer')
+    }
+  }
+
   const handleLogoTap = (e: React.MouseEvent) => {
     e.preventDefault()
-    tapCountRef.current += 1
-    if (tapTimerRef.current) clearTimeout(tapTimerRef.current)
-    tapTimerRef.current = setTimeout(() => { tapCountRef.current = 0 }, 3000)
-    if (tapCountRef.current >= 7) {
-      tapCountRef.current = 0
-      if (tapTimerRef.current) clearTimeout(tapTimerRef.current)
-      setShowLogViewer(true)
-      return
-    }
-    navigate(loggedinUser ? '/home' : '/login')
+    if (_navTimer) { clearTimeout(_navTimer); _navTimer = null }
+
+    const opened = handleTap()
+    if (opened) return
+
+    // Debounce navigation so rapid taps don't cause mid-sequence route changes
+    // (which would remount the Header on Android and reset the tap counter).
+    const dest = loggedinUser ? '/home' : '/login'
+    _navTimer = setTimeout(() => {
+      _navTimer = null
+      if (tapState.count === 1) {
+        tapState.count = 0
+        if (tapState.timer) { clearTimeout(tapState.timer); tapState.timer = null }
+        navigate(dest)
+      }
+    }, 250)
   }
 
   const isInternalPage = location.pathname !== '/home'
+
+  const getBackPath = () => {
+    if (location.pathname.startsWith('/calculators/')) return '/calculators'
+    return '/home'
+  }
   const isActive = (path: string) => location.pathname.startsWith(path)
   const helloText = loggedinUser
     ? getPhrase('drawer_hello_user', 'Hello %1$s').replace('%1$s', loggedinUser.fullname ?? '')
@@ -106,7 +139,7 @@ export const Header: React.FC = () => {
 
 
   return (
-    <div className="sticky top-0 z-[10005] w-full">
+    <div ref={stickyRef} className="sticky top-0 z-[10005] w-full">
       <nav
         className="bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm"
         dir="rtl"
@@ -118,7 +151,7 @@ export const Header: React.FC = () => {
           <div className="flex items-center gap-4">
             {isInternalPage && loggedinUser && (
               <button
-                onClick={() => navigate('/home')}
+                onClick={() => navigate(getBackPath())}
                 className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-all hover:scale-110 active:scale-95 flex items-center gap-1 group"
                 aria-label={getPhrase('header_back', 'Back')}
               >
@@ -211,15 +244,17 @@ export const Header: React.FC = () => {
       {/* Mobile Drawer */}
       {isMenuOpen && loggedinUser && (
         <div className="md:hidden">
-          {/* Backdrop */}
+          {/* Backdrop — top is measured from the sticky ref so it sits below banner + nav */}
           <div
-            className="fixed top-16 inset-0 bg-slate-900/60 backdrop-blur-sm z-[9998] animate-in fade-in duration-200"
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9998] animate-in fade-in duration-200"
+            style={{ top: drawerOffset }}
             onClick={() => setIsMenuOpen(false)}
           />
 
           {/* Drawer panel */}
           <div
-            className="fixed top-16 inset-x-0 bg-white border-b border-slate-200 shadow-2xl animate-in slide-in-from-top-2 duration-200 z-[9999] max-h-[calc(100vh-4rem)] overflow-y-auto"
+            className="fixed inset-x-0 bg-white border-b border-slate-200 shadow-2xl animate-in slide-in-from-top-2 duration-200 z-[9999] overflow-y-auto"
+            style={{ top: drawerOffset, maxHeight: `calc(100vh - ${drawerOffset}px)` }}
             dir="rtl"
           >
             <div className="p-4 flex flex-col gap-2">
@@ -295,7 +330,7 @@ export const Header: React.FC = () => {
                 <li>
                   <Button
                     variant="outline"
-                    onClick={() => handleExternalLink(shareUrl)}
+                    onClick={() => handleShareLink(shareUrl)}
                     className="!border-none !shadow-none !text-slate-500 hover:!bg-slate-50 !rounded-lg !text-sm !px-3 !py-2 !justify-start w-full"
                     icon={Share2}
                     iconSize={16}
@@ -336,11 +371,8 @@ export const Header: React.FC = () => {
                     {getPhrase('drawer_terms_of_use', 'Terms of Use')}
                   </Button>
                 </li>
-              </ul>
-
-              {/* Section 4: Logout */}
-              <div className="px-2">
-                <Button
+                <li>
+                  <Button
                   variant="outline"
                   onClick={onLogout}
                   className="!border-none !shadow-none !text-red-500 hover:!bg-red-50 !rounded-lg !text-sm !px-3 !py-2 !justify-start w-full"
@@ -349,9 +381,10 @@ export const Header: React.FC = () => {
                 >
                   {getPhrase('drawer_logout', 'Logout')}
                 </Button>
-              </div>
+                </li>
+              </ul>
 
-              {/* Section 5: Version + Copyright */}
+               {/* Section 4: Version + Copyright */}
               <div className="mt-4 pt-4 border-t border-slate-100 text-center flex flex-col items-center gap-1.5">
                 <div className="text-slate-400 text-[10px] font-medium">{copyrightText}</div>
                 <div className="flex items-center gap-1 text-[11px] text-indigo-500 font-semibold">
@@ -365,7 +398,7 @@ export const Header: React.FC = () => {
         </div>
       )}
 
-      {showLogViewer && <LogViewer onClose={() => setShowLogViewer(false)} />}
+      {showLogViewer && <LogViewer onClose={closeViewer} />}
     </div>
   )
 }

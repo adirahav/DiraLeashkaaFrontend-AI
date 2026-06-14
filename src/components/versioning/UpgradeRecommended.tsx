@@ -20,10 +20,11 @@ export const UpgradeRecommended: React.FC<UpgradeRecommendedProps> = ({ updateUr
       dir="rtl"
       role="banner"
       aria-live="polite"
+      style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.5rem)' }}
       className={cn(
         'relative z-50 w-full flex items-center justify-between gap-2',
         'bg-gradient-to-r from-blue-600 to-indigo-600',
-        'py-2 px-4 text-xs font-semibold text-white shadow-xs select-none'
+        'pb-2 px-4 text-xs font-semibold text-white shadow-xs select-none'
       )}
     >
       {/* Right side (RTL start): icon + message */}

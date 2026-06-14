@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { MetricCard } from '../propertyFields';
-import { formatPercent, formatCurrency } from '../../services/utils';
+import { formatPercent, formatCurrency, formatFractionsToPercent } from '../../services/utils';
 import { useSplash } from '../../hooks/useSplash';
 
 interface PropertyMetricsProps {
@@ -26,10 +26,10 @@ export const PropertyMetrics: React.FC<PropertyMetricsProps> = ({
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4 transition-all duration-300 ease-in-out flex-1 w-full">
       <MetricCard
-        value={totalYield10y}
+        value={Math.round(totalYield10y * 100) / 100}
         label={getPhrase('property_yield_label', 'Yield (10yr)')}
         isScrolled={isScrolled}
-        formatter={formatPercent}
+        formatter={formatFractionsToPercent}
         variant="emerald"
       />
       <MetricCard

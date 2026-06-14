@@ -29,22 +29,31 @@ export const createHomeSlice: StateCreator<RootState, [], [], HomeSlice> = (set)
 
   setHome: (data) =>
     set((state) => {
-      if (data.fullData) {
-        const mergedProperties = state.properties.map((existing) => {
-          const updated = data.properties.find((p) => p.uuid === existing.uuid)
+      const incoming = data.properties ?? []
+      const normalizedBest = data.bestYields?.map(normalizeProperty) ?? null
+
+      if (data.fullData && state.properties.length > 0) {
+        // Phase 2: merge calculated fields into existing properties by uuid
+        const merged = state.properties.map((existing) => {
+          const updated = incoming.find((p) => p.uuid === existing.uuid)
           return updated ? normalizeProperty(updated) : existing
         })
-        console.log(`[STORE] Home Phase 2 merged: ${mergedProperties.length} properties with calculated fields`)
+        console.log(`[STORE] setHome merge: ${merged.length} properties (state=${state.properties.length}, incoming=${incoming.length})`)
         return {
-          properties: mergedProperties,
-          bestYields: data.bestYields?.map(normalizeProperty) ?? state.bestYields,
+          properties: merged,
+          bestYields: normalizedBest ?? state.bestYields,
           fullData: true,
         }
       }
-      console.log(`[STORE] Home Phase 1 loaded: ${data.properties.length} properties`)
+
+      // Phase 1 — or fullData:true arrived before any properties in the store
+      // (Android: server may return fullData:true even for Phase 1 call)
+      const normalized = incoming.map(normalizeProperty)
+      console.log(`[STORE] setHome populate: ${normalized.length} properties, fullData=${data.fullData}`)
       return {
-        properties: data.properties.map(normalizeProperty),
-        fullData: false,
+        properties: normalized,
+        bestYields: normalizedBest ?? state.bestYields,
+        fullData: data.fullData,
       }
     }),
 

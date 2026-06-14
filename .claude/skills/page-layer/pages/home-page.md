@@ -1,110 +1,97 @@
 ---
-name: home-page
-description: The primary investment dashboard. Manages state for multi-city property portfolios, high-level financial forecasts, and best-yield discovery. Supports dual loading states (Light/Full data) for performance optimization.
+name: tracker-system
+description: Global user activity tracking system. Captures clicks, form field interactions, scroll depth, idle states, and navigation events automatically. Feeds the Admin analytics dashboard with structured tracker data. Designed for new-user funnel analysis with built-in DB size protection.
 references:
-  - @page-layer/SKILL.md  
-  - @css-layer/SKILL.md
-  - @state-management-layer/SKILL.md  
-  - @splash-layer/SKILL.md
-  - @phrase-usage.md
-  - @fixed-paramaetrs-usage.md
+  - @page-layer/SKILL.md
+  - @state-management-layer/SKILL.md
   - @api-layer/SKILL.md
-  - @user-api.yaml
-  - @ui-component-layer/SKILL.md  
-  - @tab-component.md
-  - @screen-header-component.md
-  - @metric-card-component.md
-  - @modal-component.md
-  - @home-cities-component.md
-  - @home-city-properties-component.md
-  - @home-best-yields-component.md
-  - @home-welcome-component.md
+  - @tracker-api.yaml
+  - @ui-component-layer/SKILL.md
+  - @admin-dashboard-component.md
+  - @session-timeline-component.md
 ---
 
 # Requirements (Product Logic)
 
-1. **Auth & Permissions:**
-- *Auth Guard:* Only `loggedinUser` can access. Non-logged-in users navigate to `/login`.
+1. **Tracking Scope:**
+- *Native platforms only:* Tracker is active exclusively when `Capacitor.isNativePlatform()` returns `true`. Web users are never tracked.
+- *New users only (Phase 1):* Only track users whose `createdAt` is within the last 7 days. This constraint is lifted in future phases.
 
-2. **Data Fetching Strategy (Performance):**
-- *Phase 1 (Mount):* Call `getHome(false)`. Displays basic property list and city navigation.
+2. **Tracker Lifecycle:**
+- *Mount:* A new tracker record is created on `AppLayout` mount. A `trackerId` (`crypto.randomUUID()`) is generated and stored in Zustand for the duration of the app session.
+- *Unmount:* Tracker is closed with `endedAt` timestamp and final `status` (`drop` or `complete`).
+- *Status Resolution:* `complete` is set explicitly on meaningful terminal actions (e.g. property saved). All other endings default to `drop`.
 
-- *Phase 2 (Background):* Immediately follow with `getHome(true)` to fetch heavy calculations (Best Yield, 10-year forecasts).
+3. **Event Capture (`useActivityTracker`):**
+- *Hook mounted once* in `AppLayout.tsx`. Never in individual components.
+- *Click:* Event delegation on `document`. Reads `data-track` first, then `aria-label`, then inner text (truncated to 40 chars).
+- *Focus / Blur:* Targets `input`, `textarea`, `select` only. Blur records `filled: true/false`. Password fields (`type="password"`) are never logged by value.
+- *Scroll:* Debounced 300ms. Fires once per threshold per page: 25% / 50% / 75% / 100%.
+- *Idle:* Fires after 30 seconds of no `mousemove`, `keydown`, or `touchstart`. Resets on any of these events.
+- *Navigation:* Captured via React Router `useLocation()` on every `pathname` change.
 
-- Note: Use `fullData` flag in the UI to show skeletons/loading states for heavy components while basic data is visible.
+4. **Event Schema:**
+- Every event written to `tracker_events` collection includes:
+  - `trackerId` — FK to `trackers` collection
+  - `type` — `click | focus | blur | scroll | idle | navigation | api`
+  - `tag` — `UI | NAV | SPLASH | SIGNUP | LOGIN | PROPERTY | ERROR`
+  - `action` — human-readable description
+  - `page` — `window.location.pathname` at time of event
+  - `timestamp` — `ISODate`
+  - `meta` — open object for type-specific context (e.g. `{ field: 'email', filled: true }`)
 
-3. **Visual States:**
-- *State A: Empty Portfolio & New User (Tour Mode):*
-  - Trigger: `properties.length === 0` AND `loggedinUser.tourCompletedTime === null`.
-  - Action: Activate `HomeWelcome` with `showTour={true}`.
-  - Logic: The tour should start after a short delay (2.5s) to allow entry animations to finish.
+5. **`data-track` Convention:**
+- Add `data-track` to elements whose auto-detected label would be ambiguous.
+- The hook reads `data-track` first — it is the override, not the default.
+- Example: `<button data-track="calculate-yield">חשב תשואה</button>`
+- This attribute is *optional* — only required where auto-detection is insufficient.
 
-- *State B: Empty Portfolio (Manual Mode):*
-  - Trigger: `properties.length === 0` AND `loggedinUser.tourCompletedTime !== null`.
-  - Action: Render `HomeWelcome` without the spotlight overlay.
+6. **DB Size Protection:**
+- *TTL Index:* `trackers.createdAt` expires after 30 days automatically.
+- *Event cap:* Maximum 200 events per tracker. Hook stops writing silently once cap is reached.
+- *New-user gate:* Backend middleware rejects tracker writes for users older than 7 days (Phase 1).
 
-- *State C:* Active Portfolio:
-  - Trigger: `properties.length > 0`.
-  - Header: `ScreenHeader` with `title: home_title` and `subtitle: home_subtitle`.
-  - Forecast Banner: Display 10-year forecast tag using `home_future_field_tag` (span) and `home_future_field_text` (p).
-
-4. **Component Orchestration:**
-- *HomeCities:*
-  - Prop `cities`: Unique sorted keys of `property.city`.
-  - Special Case: Properties without a city key are grouped under "else".
-  - Selection: Default to the first city in the sorted list.
-
-- *HomeCityProperties:*
-  - Filtered properties based on `selectedCity`.
-  - Logic: Calculate `maxYieldInCity` dynamically to highlight the top-performer in that city.
-
-- *HomeBestYield:*
-  - Displays `bestYields` data once `fullData` is loaded.
-
-5. **Actions & Navigation:**
-- *Edit:* Navigate to /property?propertyUUID={uuid}.
-
-- *Delete:*
-  - Trigger `Modal` for confirmation (`home_delete_confirm_title`).
-  - API: Call `PATCH /api/property/:uuid/archive`.
-  - Local Update: Refresh the home data or remove the item from state.
+7. **Admin Dashboard (`/admin/tracker`):**
+- *Auth Guard:* Requires `permissions.includes('tracker:view')`.
+- *Table View:* Lists all trackers with email, active tags, event count, last page, and status (drop / complete).
+- *Detail View:* Clicking a row opens a full timeline of `tracker_events`, sorted ascending by `timestamp`.
+- *Timeline Row:* Displays tag badge (color-coded), action text, timestamp (`HH:MM:SS`), and page pill.
+- *Drop-off Indicator:* Last event in a `drop` tracker is visually marked as the exit point.
 
 # Tailwind Implementation Logic
-- *Layout:* Centered container `max-w-7xl mx-auto px-4 py-8`.
-
-- *Forecast Banner:* `flex items-center gap-2 bg-blue-50/50 p-3 rounded-xl border border-blue-100`.
-
-- *Animations:* Use `AnimatePresence` for transitioning between "Welcome" and "Dashboard" states.
-
-- *Transitions:* Apply `animate-in fade-in slide-in-from-bottom-4` for property cards.
+- *Timeline container:* `flex flex-col gap-3 p-4 bg-slate-50 rounded-xl`
+- *Event row:* `flex items-start gap-3 relative`
+- *Connector line:* `absolute right-[5px] top-5 bottom-[-12px] w-px bg-slate-200`
+- *Tag badge:* `inline-block text-xs font-medium px-2 py-0.5 rounded`
+- *Page pill:* `font-mono text-xs bg-white border border-slate-200 rounded px-1.5 py-0.5`
+- *Drop-off banner:* `flex items-center gap-2 p-3 bg-red-50 border border-red-100 rounded-lg text-red-800 text-sm font-medium`
 
 # Files Structure
 ROOT-PROJ
 └── src/
+    ├── hooks/
+    │   └── useActivityTracker.ts           # Global event capture hook
+    ├── types/
+    │   └── tracking.ts                     # ActivityEvent, TrackerRecord interfaces
     ├── pages/
-    │   └── HomePage.tsx                    # Main Orchestrator
+    │   └── admin/
+    │       └── TrackerDashboard.tsx        # Main admin orchestrator
     ├── components/
-    │   ├── layouts/
-    │   │   ├── HomeWelcome.tsx             # Empty state UI        
-    │   │   ├── HomeCities.tsx              # City navigation tabs          
-    │   │   ├── HomeCityProperties.tsx      # Property grid/list                       
-    │   │   └── HomeBestYields.tsx          # Top investment highlight
-    │   └── common/
-    │       ├── ScreenHeader.tsx        
-    │       └── Modal.tsx                   # For delete confirmation                          
+    │   └── tracker/
+    │       ├── TrackerTable.tsx            # Sessions table with status
+    │       └── TrackerTimeline.tsx         # Per-tracker event timeline
     ├── services/
-    │   ├── http.service.ts
-    │   └── home.service.ts                 # API call: PUT /user
-    ├── store/
-    │   └── slices/
-    │       └── user.slice.ts               # Action: getHome (supports fullData param) 
-    └── assets/
-        └── css/
-            └── main.css                    # Tailwind Theme (@theme)       
-
+    │   └── tracker.service.ts             # API calls: POST tracker, POST event
+    └── store/
+        └── slices/
+            └── tracker.slice.ts           # trackerId, isTracking state
 
 # Component Specification
 ```TypeScript
 // Usage in Router
-<Route path="/" element={<HomePage />} />
-<Route path="/home" element={<HomePage />} />
+<Route path="/admin/tracker" element={<TrackerDashboard />} />
+
+// Hook — mounted once
+// AppLayout.tsx
+useActivityTracker({ trackerId, userId })
+```

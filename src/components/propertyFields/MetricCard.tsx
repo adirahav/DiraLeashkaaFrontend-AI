@@ -31,7 +31,6 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   formatter,
   variant = 'emerald',
 }) => {
-  const roundedValue = Math.round(value);
   const v = VARIANT_MAP[variant];
 
   return (
@@ -58,7 +57,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
           isScrolled ? 'text-base lg:text-lg' : 'text-2xl lg:text-3xl'
         )}
       >
-        <AnimatedNumber value={roundedValue} formatter={formatter} />
+        <AnimatedNumber value={value} formatter={formatter} />
       </span>
     </div>
   );

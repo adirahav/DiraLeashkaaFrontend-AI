@@ -14,8 +14,8 @@ export const formatNumber = (val: number | string | undefined | null, hideZero: 
   return num.toLocaleString('en-US');
 };
 
-export const formatInputNumber = (val: string, formatWithCommas: boolean = true) => {
-  const digits = val.replace(/\D/g, '');
+export const formatInputNumber = (val: string | number | undefined, formatWithCommas: boolean = true) => {
+  const digits = (val?.toString() ?? '').replace(/\D/g, '');
   if (!formatWithCommas) return digits;
   return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 };
@@ -51,6 +51,15 @@ export const formatPercent = (val: number) => {
   const isNegative = val < 0;
   const absoluteVal = Math.abs(val);
   const formatted = Math.round(absoluteVal * 10) / 10;
+  return (
+    <span dir="ltr">{isNegative ? '-' : ''}{formatted}%</span>
+  );
+};
+
+export const formatFractionsToPercent = (val: number) => {
+  const isNegative = val < 0;
+  const absoluteVal = Math.abs(val);
+  const formatted = Math.round(absoluteVal * 1000) / 10;
   return (
     <span dir="ltr">{isNegative ? '-' : ''}{formatted}%</span>
   );

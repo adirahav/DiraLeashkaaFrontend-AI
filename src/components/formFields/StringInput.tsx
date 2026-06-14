@@ -22,6 +22,7 @@ export const StringInput: React.FC<{
   id?: string;
   autoComplete?: string;
   spellCheck?: boolean;
+  'data-track'?: string;
 }> = ({
   label,
   name,
@@ -41,6 +42,7 @@ export const StringInput: React.FC<{
   id: customId,
   autoComplete,
   spellCheck,
+  'data-track': dataTrack,
 }) => {
   const generatedId = React.useId();
   const id = customId || generatedId;
@@ -77,6 +79,7 @@ export const StringInput: React.FC<{
           dir={dir}
           autoComplete={autoComplete}
           spellCheck={spellCheck}
+          data-track={dataTrack}
           className={cn(
             'w-full h-[54px] px-4 border rounded-xl focus:outline-none transition-all text-right placeholder:text-right font-normal text-black shadow-none',
             disabled && 'bg-slate-50 cursor-not-allowed',

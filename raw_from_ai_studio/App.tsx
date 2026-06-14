@@ -10,10 +10,10 @@ import { ContactUsPage } from './screens/ContactUsPage';
 import { HomePage } from './screens/HomePage';
 import { PropertyPage } from './screens/PropertyPage';
 import { ForgotPassword } from './screens/ForgotPassword';
-import { LandingPage } from './screens/LandingPage';
 import { CalculatorsPage } from './screens/CalculatorsPage';
 import { MaxPriceCalculator } from './screens/MaxPriceCalculator';
 import { CompareCalculator } from './screens/CompareCalculator';
+import { AdminDashboard } from './screens/AdminDashboard';
 import { AccessibilityMenu } from './components/common/AccessibilityMenu';
 import { Footer } from './components/common/Footer';
 import { Header } from './components/common/Header';
@@ -21,7 +21,7 @@ import { UpgradeRequired } from './components/common/UpgradeRequired';
 import { UpgradeRecommended } from './components/common/UpgradeRecommended';
 
 const App: React.FC = () => {
-  const [currentScreen, setCurrentScreen] = useState<Screen>('LANDING');
+  const [currentScreen, setCurrentScreen] = useState<Screen>('LOGIN');
   const [userName] = useState('ישראל');
   const [userEmail, setUserEmail] = useState('');
   const [showTour, setShowTour] = useState(false);
@@ -44,21 +44,22 @@ const App: React.FC = () => {
     if (email.toLowerCase().trim() === 'tour@gmail.com') {
       localStorage.removeItem('tour_dismissed');
     }
-    navigate('HOME');
+    if (email.toLowerCase().trim() === 'admin@gmail.com') {
+      navigate('ADMIN');
+    } else {
+      navigate('HOME');
+    }
   };
 
   const isMajorVersionUser = userEmail.toLowerCase().trim() === 'majorversion@gmail.com';
   const isMinorVersionUser = userEmail.toLowerCase().trim() === 'minorversion@gmail.com';
 
-  const showNavigation = currentScreen !== 'LANDING' &&
-                        currentScreen !== 'LOGIN' && 
+  const showNavigation = currentScreen !== 'LOGIN' && 
                         currentScreen !== 'REGISTER' && 
                         currentScreen !== 'FORGOT_PASSWORD';
 
   const renderScreen = () => {
     switch (currentScreen) {
-      case 'LANDING':
-        return <LandingPage onNavigate={navigate} />;
       case 'LOGIN':
         return <Login onNavigate={navigate} onLogin={handleLogin} />;
       case 'REGISTER':
@@ -86,6 +87,8 @@ const App: React.FC = () => {
         return <MaxPriceCalculator onNavigate={navigate} />;
       case 'COMPARE_PROPERTIES':
         return <CompareCalculator onNavigate={navigate} />;
+      case 'ADMIN':
+        return <AdminDashboard onNavigate={navigate} />;
       default:
         return <Login onNavigate={navigate} />;
     }
@@ -108,7 +111,7 @@ const App: React.FC = () => {
         דלג לתוכן המרכזי
       </a>
       
-      {showNavigation && !isResultsMode && <Header onNavigate={navigate} userName={userName} currentScreen={currentScreen} />}
+      {showNavigation && !isResultsMode && <Header onNavigate={navigate} userName={userName} currentScreen={currentScreen} userEmail={userEmail} />}
 
       <div id="app-content" className="flex-1 flex flex-col">
         <main id="main-content" className="flex-1" tabIndex={-1}>

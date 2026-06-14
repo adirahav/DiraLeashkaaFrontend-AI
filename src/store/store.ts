@@ -5,8 +5,9 @@ import { createAppSlice, AppSlice } from './slices/app.slice'
 import { createPropertySlice, PropertySlice } from './slices/property.slice'
 import { createUserSlice, UserSlice } from './slices/user.slice'
 import { createHomeSlice, HomeSlice } from './slices/home.slice'
+import { createTrackerSlice, TrackerSlice } from './slices/tracker.slice'
 
-export type RootState = AuthSlice & AppSlice & PropertySlice & UserSlice & HomeSlice
+export type RootState = AuthSlice & AppSlice & PropertySlice & UserSlice & HomeSlice & TrackerSlice
 
 export const useStore = create<RootState>()(
   persist(
@@ -16,6 +17,7 @@ export const useStore = create<RootState>()(
       ...createPropertySlice(...a),
       ...createUserSlice(...a),
       ...createHomeSlice(...a),
+      ...createTrackerSlice(...a),
     }),
     {
       name: 'diraleashkaa-store',

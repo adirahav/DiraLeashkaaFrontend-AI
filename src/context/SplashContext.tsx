@@ -83,6 +83,7 @@ export function SplashProvider({ children }: { children: React.ReactNode }) {
           timestamp: cachedPhrases.data.timestamp,
         })
         const isStale = Date.now() - cachedPhrases.data.timestamp > STALE_THRESHOLD
+        console.log(`[VERSION] Splash loaded from cache — lang: ${lang}, phrases: ${Object.keys(cachedPhrases.data.phrases).length}, stale: ${isStale}`)
         if (isStale) backgroundRefresh()
         return
       }
@@ -99,7 +100,10 @@ export function SplashProvider({ children }: { children: React.ReactNode }) {
           saveWithExpiry<CachedPhrases>(phrasesKey, { phrases: normalized.phrases, timestamp: normalized.timestamp }, TTL),
           saveWithExpiry(PARAMS_KEY, normalized.fixedParameters, TTL),
         ])
-        if (!cancelled) setSplash(normalized)
+        if (!cancelled) {
+          setSplash(normalized)
+          console.log(`[VERSION] Splash fetched from server — lang: ${lang}, phrases: ${Object.keys(normalized.phrases).length}, params: ${Object.keys(normalized.fixedParameters).length}`)
+        }
       } catch {
         // Fallback to stale data to keep app functional
         if (!cancelled && cachedPhrases?.data && cachedParams?.data) {

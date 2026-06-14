@@ -10,6 +10,8 @@ import { useStore } from '../store/store'
 import { useSplash } from '../hooks/useSplash'
 import { forgotPasswordService } from '../services/forgotPassword.service'
 import { useNativeBackButton } from '../hooks/useNativeBackButton'
+import { useDebugTap } from '../hooks/useDebugTap'
+import { LogViewer } from '../components/debug/LogViewer'
 
 type ForgotStep = 'EMAIL' | 'VERIFY' | 'RESET'
 
@@ -79,6 +81,7 @@ export const ForgotPasswordPage: React.FC = () => {
       setForgotStep('VERIFY')
     }
   })
+  const { handleTap, showViewer, closeViewer } = useDebugTap()
   const [email, setEmail] = useState('')
   const [code, setCode] = useState(['', '', '', ''])
   const [forgotPasswordToken, setForgotPasswordToken] = useState('')
@@ -243,7 +246,7 @@ export const ForgotPasswordPage: React.FC = () => {
       >
         <Card className="w-full">
           <div className="flex flex-col items-center mb-6">
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleTap} className="cursor-pointer">
               <Logo size={64} className="mb-4" showText={true} />
             </motion.div>
           </div>
@@ -382,6 +385,7 @@ export const ForgotPasswordPage: React.FC = () => {
           </div>
         </Card>
       </motion.div>
+      {showViewer && <LogViewer onClose={closeViewer} />}
     </div>
   )
 }

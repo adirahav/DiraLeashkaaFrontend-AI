@@ -1,0 +1,210 @@
+openapi: 3.0.0
+info:
+  title: Tracker API
+  version: 1.1.0
+
+paths:
+  /api/tracker:
+    get:
+      summary: Get paginated tracker list
+      tags: [Tracker]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Paginated tracker list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trackers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Tracker'
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  pageSize:
+                    type: integer
+
+    post:
+      summary: Insert a new tracker
+      tags: [Tracker]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrackerInput'
+      responses:
+        '200':
+          description: Tracker inserted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsertResult'
+
+  /api/tracker/{trackerUUID}/event:
+    get:
+      summary: Get all events for a tracker
+      tags: [Tracker]
+      parameters:
+        - name: trackerUUID
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Event list for tracker
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TrackerEvent'
+        '404':
+          description: Tracker not found
+
+    post:
+      summary: Insert a tracker event
+      tags: [Tracker]
+      parameters:
+        - name: trackerUUID
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrackerEventInput'
+      responses:
+        '200':
+          description: Event inserted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsertResult'
+        '404':
+          description: Tracker not found
+
+components:
+  schemas:
+    Tracker:
+      type: object
+      properties:
+        uuid:
+          type: string
+        userId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        endedAt:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          type: string
+          enum: [drop, complete]
+        stoppedAt:
+          type: string
+          example: /calculator
+        platform:
+          type: string
+          example: android
+        version:
+          type: string
+          example: 2.5.12
+
+    TrackerInput:
+      type: object
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+        endedAt:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          type: string
+          enum: [drop, complete]
+        stoppedAt:
+          type: string
+          example: /calculator
+        platform:
+          type: string
+          example: android
+        version:
+          type: string
+          example: 2.5.12
+
+    TrackerEvent:
+      type: object
+      properties:
+        trackerId:
+          type: string
+        type:
+          type: string
+          enum: [click, focus, blur, scroll, idle, navigation, api]
+        tag:
+          type: string
+          enum: [UI, NAV, SPLASH, SIGNUP, LOGIN, PROPERTY, ERROR]
+        action:
+          type: string
+          example: "Click — button 'הוסף נכס'"
+        page:
+          type: string
+          example: /calculator
+        timestamp:
+          type: string
+          format: date-time
+        meta:
+          type: object
+          additionalProperties: true
+
+    TrackerEventInput:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [click, focus, blur, scroll, idle, navigation, api]
+        tag:
+          type: string
+          enum: [UI, NAV, SPLASH, SIGNUP, LOGIN, PROPERTY, ERROR]
+        action:
+          type: string
+        page:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        meta:
+          type: object
+          additionalProperties: true
+
+    InsertResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        _id:
+          type: string

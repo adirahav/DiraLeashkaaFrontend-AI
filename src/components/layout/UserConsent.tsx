@@ -56,7 +56,7 @@ export const UserConsent: React.FC<UserConsentProps> = ({
       {showButtons && onNext && (
         <div className={cn('grid gap-4', onPrev ? 'grid-cols-2' : 'grid-cols-1')}>
           {onPrev && (
-            <Button variant="outline" onClick={onPrev} className="py-4">
+            <Button variant="outline" onClick={onPrev} className="py-4" data-track="signup-back">
               {prevButtonText}
             </Button>
           )}
@@ -65,6 +65,7 @@ export const UserConsent: React.FC<UserConsentProps> = ({
             onClick={onNext}
             disabled={isNextDisabled || isLoading}
             className="py-4"
+            data-track="signup-submit"
           >
             {nextButtonText}
           </Button>
