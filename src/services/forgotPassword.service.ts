@@ -1,6 +1,6 @@
 import { httpService } from './http.service'
 
-const BASE_URL = '/forgotPassword'
+const USER_MANAGEMENT_API_URL: string = import.meta.env.VITE_USER_MANAGEMENT_API_URL
 
 export const forgotPasswordService = {
     generateCode,
@@ -10,14 +10,14 @@ export const forgotPasswordService = {
 
 async function generateCode(email: string): Promise<void> {
     console.log(`[FORGOT-PASSWORD] Call API POST '/forgotPassword/generateCode' — email: ${email}`)
-    await httpService.post(`${BASE_URL}/generateCode`, { email })
+    await httpService.post(`${USER_MANAGEMENT_API_URL}/forgotPassword/generateCode`, { email })
     console.log(`[FORGOT-PASSWORD] API POST '/forgotPassword/generateCode' response: code sent`)
 }
 
 async function validateCode(email: string, code: string): Promise<string> {
     console.log(`[FORGOT-PASSWORD] Call API POST '/forgotPassword/validateCode' — email: ${email}`)
     const response = await httpService.post<{ forgotPasswordToken: string }>(
-        `${BASE_URL}/validateCode`,
+        `${USER_MANAGEMENT_API_URL}/forgotPassword/validateCode`,
         { email, code }
     )
     console.log(`[FORGOT-PASSWORD] API POST '/forgotPassword/validateCode' response: token received`)
@@ -26,6 +26,6 @@ async function validateCode(email: string, code: string): Promise<string> {
 
 async function changePassword(newPassword: string, forgotPasswordToken: string): Promise<void> {
     console.log(`[FORGOT-PASSWORD] Call API PUT '/forgotPassword/changePassword'`)
-    await httpService.put(`${BASE_URL}/changePassword`, { newPassword }, forgotPasswordToken)
+    await httpService.put(`${USER_MANAGEMENT_API_URL}/forgotPassword/changePassword`, { newPassword }, forgotPasswordToken)
     console.log(`[FORGOT-PASSWORD] API PUT '/forgotPassword/changePassword' response: password changed`)
 }

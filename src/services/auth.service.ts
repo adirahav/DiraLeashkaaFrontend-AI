@@ -3,6 +3,7 @@ import { httpService } from './http.service'
 import { utilService } from './util.service'
 import { User } from '../types'
 
+const USER_MANAGEMENT_API_URL: string = import.meta.env.VITE_USER_MANAGEMENT_API_URL
 const STORAGE_KEY_LAST_LOGGEDIN_EMAIL = 'last_email'
 
 export interface SignupCredentials {
@@ -22,7 +23,7 @@ export const authService = {
 async function login(email: string, password: string): Promise<{ user: User; token: string }> {
     console.log(`[LOGIN] Call API POST '/auth/login' — email: ${email.trim().toLowerCase()}`)
     const raw = await httpService.post<string>(
-        '/auth/login',
+        `${USER_MANAGEMENT_API_URL}/auth/login`,
         { email: email.trim().toLowerCase(), password },
         undefined,
         { responseType: 'text' }
@@ -36,7 +37,7 @@ async function login(email: string, password: string): Promise<{ user: User; tok
 
 async function signup(credentials: SignupCredentials): Promise<{ user: User; token: string }> {
     console.log(`[SIGNUP] Call API POST '/auth/signup' — email: ${credentials.email}`)
-    await httpService.post('/auth/signup', {
+    await httpService.post(`${USER_MANAGEMENT_API_URL}/auth/signup`, {
         fullname: credentials.fullname,
         email: credentials.email,
         password: credentials.password,
@@ -46,7 +47,7 @@ async function signup(credentials: SignupCredentials): Promise<{ user: User; tok
 
     console.log(`[SIGNUP] Call API POST '/auth/login' (auto-login)`)
     const raw = await httpService.post<string>(
-        '/auth/login',
+        `${USER_MANAGEMENT_API_URL}/auth/login`,
         { email: credentials.email, password: credentials.password },
         undefined,
         { responseType: 'text' }

@@ -43,7 +43,7 @@ async function ajax<T>(
     console.log(`[API] Call API ${method} '${endpoint}'`)
 
     const config: AxiosRequestConfig = {
-        url: `${BASE_URL}${endpoint}`,
+        url: `${endpoint}`,
         method,
         params: method === 'GET' ? { ...data, platform } : null,
         data: method !== 'GET' ? { ...data, platform } : null,
